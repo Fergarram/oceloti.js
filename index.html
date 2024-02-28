@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html oceloti-reset>
+<head>
+	<meta charset="utf-8">
+	<title>Oceloti 1</title>
+	<style>
+		[oceloti-reset] {
+			scroll-behavior: smooth;
+		}
+
+		[oceloti-reset] body {
+			margin: 0;
+			padding: 0;
+		}
+
+		[oceloti-room] {
+			position: relative;
+			overflow: hidden;
+		}
+
+		[oceloti-card] {
+			position: absolute;
+		}
+
+		[oceloti-area] {
+			position: absolute;
+			width: 100vw;
+			height: 100vh;
+			transform: translate(-50%, -50%);
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		[oceloti-area="center"] {
+			left: 50%;
+			top: 50%;
+		}
+
+		:root {
+			--card-thickness-1:
+				drop-shadow(0 0 1px rgba(0,0,0,0.5))
+				drop-shadow(0 1px 2px rgba(0,0,0,0.23));
+
+			--card-thickness-2:
+				drop-shadow(0 1px 2px rgba(0,0,0,0.5))
+				drop-shadow(0 1px 3px rgba(0,0,0,0.23));
+
+			--card-thickness-3:
+				drop-shadow(0 2px 2px rgba(0,0,0,0.5))
+				drop-shadow(0 1px 4px rgba(0,0,0,0.23));
+		}
+
+		html {
+			font-size: 14px;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		.paper {
+			background-color: white;
+			filter: var(--card-thickness-1);
+		}
+
+		.wallpaper {
+			background-image: url(https://d2w9rnfcy7mm78.cloudfront.net/5536036/original_db39b80cc1cf444e7f7ba23968bc074d.png?1574193854?bc=0);
+			background-size: 64px;
+		}
+
+		#hud {
+			position: fixed;
+			left: 16px;
+			bottom: 16px;
+			z-index: 10000;
+		}
+
+		.toolbar-item {
+			width: 40px;
+			height: 40px;
+			font-size: 20px;
+			background-color: lightgray;
+			border-radius: 8px;
+			border: 2px solid #EEEEEE;
+			filter: drop-shadow(0px 3px 20px rgba(0,0,0,0.8));
+			font-size: 0px;
+			padding: 2px;
+			box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.23);
+			transition: all ease 100ms;
+		}
+
+		.toolbar-item:hover {
+			transform: scale(1.05);
+		}
+
+		.toolbar-item:active {
+			transform: scale(0.96);
+		}
+
+		.toolbar-item.selected {
+			position: relative;
+			z-index: 1;
+			background-color: lightcoral;
+		}
+		
+		.toolbar-item img {
+			border-radius: 5px;
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			object-position: center;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="hud">
+		<button class="toolbar-item " id="pointer-tool">
+			<img
+				src="pointer.png"
+				alt="pointer tool item"
+			/>
+		</button>
+		<button class="toolbar-item selected" id="hand-tool">
+			<img
+				src="hand.png"
+				alt="hand tool item"
+			/>
+		</button>
+	</div>
+	<div
+		class="wallpaper"
+		oceloti-room
+		style="
+			width: 2000px;
+			height: 2000px;
+		">
+		<a
+			oceloti-card
+			href="#center"
+			style="
+				left: 16px;
+				top: 16px;
+				background-color: floralwhite;
+				padding: 4px;
+				border-radius: 2px;
+				filter: var(--card-thickness-1);
+			">
+			Jump to center
+		</a>
+		<div
+			id="center"
+			aria-hidden="true"
+			oceloti-area="center">
+		</div>
+		<article
+			oceloti-card
+			class="paper"
+			style="
+				left: 400px;
+				top: 240px;
+				width: 300px;
+				height: 400px;
+				overflow: scroll;
+				padding: 8px;
+			">
+			<p>
+				Note: for icons and style in general, I have to decide. Is it retro? is it wonky 3d? is it formal and minimal? what is it?
+				<br/>
+				<br/>
+				I think I want wonky 3d.
+			</p>
+			<a
+				href="#far-away-card"
+				style="
+					display: block;
+					margin-top: 1rem;
+				">
+				Travel somewhere far
+			</a>
+		</article>
+		<figure
+			id="clock"
+			oceloti-card
+			style="
+				position: relative;
+				overflow: hidden;
+				border-radius: 500px;
+				left: 800px;
+				top: 20px;
+				width: 200px;
+				height: 200px;
+			">
+			<img
+				style="
+					position: absolute;
+					left: 50%;
+					top: 50%;
+					transform: translate(-50%, -50%) scale(0.5);
+				"
+				src="https://d2w9rnfcy7mm78.cloudfront.net/93462/original_45ef418ca39caeea179b55d058de97c3.gif?1364910097?bc=1"
+				alt="clock"
+			/>
+		</figure>
+		<figure
+			id="far-away-card"
+			oceloti-card
+			style="
+				left: 80px;
+				top: 1500px;
+			">
+			<img
+				src="https://d2w9rnfcy7mm78.cloudfront.net/8294526/original_0844dcaf1512dd159606cb6d88478a7a.gif?1597127225?bc=0"
+				alt="clock"
+			/>
+		</figure>
+	</div>
+	<script>
+		const room_el = document.querySelector("[oceloti-room]");
+		
+		let room_width = 0;
+		let room_height = 0;
+
+		if (room_el) {
+			room_width = room_el.offsetWidth;
+			room_height = room_el.offsetHeight;
+		}
+
+		const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
+		const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
+
+		let camera_x = last_scroll_x !== null ? last_scroll_x : 0;
+		let camera_y = last_scroll_y !== null ? last_scroll_y : 0;
+		let last_middle_click_x = 0;
+		let last_middle_click_y = 0;
+		let is_panning = false;
+		let scroll_ticking = false;
+
+		function handle_mousedown(e) {
+			 if (e.button === 1) {
+			 	e.preventDefault();
+		        is_panning = true;
+		        last_middle_click_x = e.clientX;
+		        last_middle_click_y = e.clientY;
+		    }
+		}
+
+		function handle_mouseup(e) {
+		    if (e.button === 1) {
+		        is_panning = false;
+		    }
+		}
+
+		function handle_mousemove(e) {
+			if (is_panning) {
+		        const dx = e.clientX - last_middle_click_x;
+		        const dy = e.clientY - last_middle_click_y;
+		        camera_x -= dx;
+		        camera_y -= dy;
+		        last_middle_click_x = e.clientX;
+		        last_middle_click_y = e.clientY;
+		    }
+		}
+
+		function handle_scroll(e) {
+			if (is_panning) return;
+			if (!scroll_ticking) {
+				window.requestAnimationFrame(() => {
+					camera_x = window.scrollX;
+					camera_y = window.scrollY;
+					localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
+					localStorage.setItem("OCELOTI_SCROLL_Y", camera_y);
+					scroll_ticking = false;
+				});
+				scroll_ticking = true;
+			}
+		}
+
+		function step(dt) {
+			if (camera_x <= 0) camera_x = 0;
+			if (camera_y <= 0) camera_y = 0;
+			if (camera_x >= room_width - window.innerWidth)
+				camera_x = room_width - window.innerWidth;
+			if (camera_y >= room_height - window.innerHeight)
+				camera_y = room_height - window.innerHeight;
+
+			if (is_panning) {
+				window.scroll({
+		        	top: camera_y,
+		        	left: camera_x,
+		        	behavior: "instant"
+		        });
+			}
+
+		    window.requestAnimationFrame(step);
+		}
+
+		window.requestAnimationFrame(step);
+		window.addEventListener("mousedown", handle_mousedown);
+		window.addEventListener("mouseup", handle_mouseup);
+		window.addEventListener("mousemove", handle_mousemove);
+		window.addEventListener("scroll", handle_scroll);
+	</script>
+</body>
+</html>
