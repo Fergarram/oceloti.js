@@ -1,0 +1,59 @@
+[oceloti-reset] {
+	scroll-behavior: smooth;
+}
+
+[oceloti-reset="black"] {
+	background-color: black;
+}
+
+[oceloti-reset] body {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	min-width: 100vw;
+	width: fit-content;
+	margin: 0;
+	padding: 0;
+}
+
+[oceloti-room] {
+	position: relative;
+	overflow: hidden;
+}
+
+[oceloti-card] {
+	position: absolute;
+}
+
+[oceloti-area] {
+	position: absolute;
+	width: 100vw;
+	height: 100vh;
+	transform: translate(-50%, -50%);
+	opacity: 0;
+	pointer-events: none;
+}
+
+[oceloti-area][debug] {
+	background-color: salmon;
+	opacity: 0.5;
+}
+
+[oceloti-area="center"] {
+	left: 50%;
+	top: 50%;
+	display: block;
+	transform: translate(-50%, -50%);
+}
+
+[oceloti-dialog] {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+[oceloti-dialog]::backdrop {
+	background-color: rgba(0, 0, 0, 0.65);
+}

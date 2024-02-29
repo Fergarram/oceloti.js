@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html oceloti-reset="black">
+<head>
+	<meta charset="utf-8">
+	<title>Basic Starter</title>
+	<meta name="description" content="A basic room starter with a few objects.">
+	<style oceloti-modules="oceloti,paper-theme,save-to-file,standard-controls">
+		/* STYLE MODULES */
+	</style>
+</head>
+<body>
+	<main
+		oceloti-room="basic-starter"
+		style="
+			width: 2000px;
+			height: 2000px;
+			background-color: white;
+			background-image: url(https://d2w9rnfcy7mm78.cloudfront.net/5536036/original_db39b80cc1cf444e7f7ba23968bc074d.png?1574193854?bc=0);
+			background-size: 64px;
+	">
+		<div id="center" aria-hidden="true" oceloti-area="center"></div>
+
+		<article oceloti-card="" class="paper" contenteditable="" style="
+			left: 400px;
+			top: 240px;
+			width: 300px;
+			height: 400px;
+			overflow: scroll;
+			padding: 8px;
+			font-size: 20px;
+		">
+			<div>Hello World</div>
+		</article>
+
+		<figure id="clock" oceloti-card="" style="
+			position: relative;
+			overflow: hidden;
+			border-radius: 500px;
+			left: 800px;
+			top: 20px;
+			width: 200px;
+			height: 200px;
+		">
+			<img style="
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%) scale(0.5);
+			" src="https://d2w9rnfcy7mm78.cloudfront.net/93462/original_45ef418ca39caeea179b55d058de97c3.gif?1364910097?bc=1" alt="clock">
+		</figure>
+	</main>
+</body>
+<script oceloti-modules="oceloti,paper-theme,save-to-file,standard-controls">
+	/* SCRIPT MODULES */
+</script>
+</html>
