@@ -1,22 +1,33 @@
 :root {
 	--card-thickness-1:
-		drop-shadow(0 0 1px rgba(0, 0, 0, 0.5)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.23));
+		drop-shadow(0 0 1px rgba(0, 0, 0, 0.5))
+		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.23));
 	--card-thickness-2:
-		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.23));
+		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))
+		drop-shadow(0 1px 3px rgba(0, 0, 0, 0.23));
 	--card-thickness-3:
-		drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5)) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.23));
+		drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5))
+		drop-shadow(0 1px 4px rgba(0, 0, 0, 0.23));
+	--card-elevated-1:
+		drop-shadow(0 1.25rem 3rem rgba(0, 0, 0, 0.30))
+		drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.22));
 }
 
 html {
 	font-size: 14px;
 }
 
-* {
-	margin: 0;
-	padding: 0;
-}
-
 .paper {
 	background-color: white;
 	filter: var(--card-thickness-1);
+}
+
+[oceloti-card] {
+	transition: filter, transform cubic-bezier(0.16, 1, 0.3, 1) 300ms;
+}
+
+[oceloti-card-state="elevated"] {
+	transform: scale(1.015);
+	filter: var(--card-elevated-1);
+	cursor: move;
 }
