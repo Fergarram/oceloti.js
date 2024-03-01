@@ -151,15 +151,19 @@ html {
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
 
-		<article oceloti-card="" class="paper" style="
-			left: 400px;
-			top: 240px;
-			width: 300px;
-			height: 400px;
-			overflow: scroll;
-			padding: 8px;
-			font-size: 20px;
-		">
+		<article
+			oceloti-card=""
+			class="paper"
+			contenteditable="true"
+			style="
+				left: 400px;
+				top: 240px;
+				width: 300px;
+				height: 400px;
+				overflow: scroll;
+				padding: 8px;
+				font-size: 20px;
+			">
 			<div>In any case...</div>
 		</article>
 
@@ -188,267 +192,305 @@ html {
 </body>
 <script oceloti-modules="
 	oceloti
-	paper-theme
 	standard-controls
 	draggable-cards
+	image-dropper
 	save-to-file
 ">/* MODULE: modules/standard-controls/standard-controls.js */
 (async () => {
-const room_el = document.querySelector("[oceloti-room]");
+	const room_el = document.querySelector("[oceloti-room]");
 
-let room_width = 0;
-let room_height = 0;
+	let room_width = 0;
+	let room_height = 0;
 
-if (room_el) {
-	room_width = room_el.offsetWidth;
-	room_height = room_el.offsetHeight;
-}
-
-const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
-const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
-
-let camera_x = last_scroll_x !== null ? last_scroll_x : 0;
-let camera_y = last_scroll_y !== null ? last_scroll_y : 0;
-
-let last_middle_click_x = 0;
-let last_middle_click_y = 0;
-
-let is_panning = false;
-let scroll_ticking = false;
-
-window.requestAnimationFrame(step);
-window.addEventListener("mousedown", handle_mousedown);
-window.addEventListener("mouseup", handle_mouseup);
-window.addEventListener("mousemove", handle_mousemove);
-window.addEventListener("scroll", handle_scroll);
-window.addEventListener("wheel", handle_wheel, { passive: false });
-
-function step(dt) {
-	if (camera_x <= 0) camera_x = 0;
-	if (camera_y <= 0) camera_y = 0;
-	if (camera_x >= room_width - window.innerWidth) camera_x = room_width - window.innerWidth;
-	if (camera_y >= room_height - window.innerHeight) camera_y = room_height - window.innerHeight;
-	if (is_panning) {
-		window.scroll({
-			top: camera_y,
-			left: camera_x,
-			behavior: "instant"
-		});
+	if (room_el) {
+		room_width = room_el.offsetWidth;
+		room_height = room_el.offsetHeight;
 	}
+
+	const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
+	const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
+
+	let camera_x = last_scroll_x !== null ? last_scroll_x : 0;
+	let camera_y = last_scroll_y !== null ? last_scroll_y : 0;
+
+	let last_middle_click_x = 0;
+	let last_middle_click_y = 0;
+
+	let is_panning = false;
+	let scroll_ticking = false;
+
 	window.requestAnimationFrame(step);
-}
+	window.addEventListener("mousedown", handle_mousedown);
+	window.addEventListener("mouseup", handle_mouseup);
+	window.addEventListener("mousemove", handle_mousemove);
+	window.addEventListener("scroll", handle_scroll);
+	window.addEventListener("wheel", handle_wheel, { passive: false });
 
-function are_dialogs_open() {
-	const dialogs = document.querySelectorAll('dialog');
-	return Array.from(dialogs).some(dialog => dialog.open);
-}
+	function step(dt) {
+		if (camera_x <= 0) camera_x = 0;
+		if (camera_y <= 0) camera_y = 0;
+		if (camera_x >= room_width - window.innerWidth) camera_x = room_width - window.innerWidth;
+		if (camera_y >= room_height - window.innerHeight) camera_y = room_height - window.innerHeight;
+		if (is_panning) {
+			window.scroll({
+				top: camera_y,
+				left: camera_x,
+				behavior: "instant"
+			});
+		}
+		window.requestAnimationFrame(step);
+	}
 
-function handle_mousedown(e) {
-	if (are_dialogs_open()) {
-		e.preventDefault();
-		return;
+	function are_dialogs_open() {
+		const dialogs = document.querySelectorAll('dialog');
+		return Array.from(dialogs).some(dialog => dialog.open);
 	}
-	if (e.button === 1) {
-		e.preventDefault();
-		is_panning = true;
-		last_middle_click_x = e.clientX;
-		last_middle_click_y = e.clientY;
-	}
-}
 
-function handle_mouseup(e) {
-	if (e.button === 1) {
-		is_panning = false;
+	function handle_mousedown(e) {
+		if (are_dialogs_open()) {
+			e.preventDefault();
+			return;
+		}
+		if (e.button === 1) {
+			e.preventDefault();
+			is_panning = true;
+			last_middle_click_x = e.clientX;
+			last_middle_click_y = e.clientY;
+		}
 	}
-}
 
-function handle_mousemove(e) {
-	if (is_panning) {
-		const dx = e.clientX - last_middle_click_x;
-		const dy = e.clientY - last_middle_click_y;
-		camera_x -= dx;
-		camera_y -= dy;
-		last_middle_click_x = e.clientX;
-		last_middle_click_y = e.clientY;
+	function handle_mouseup(e) {
+		if (e.button === 1) {
+			is_panning = false;
+		}
 	}
-}
 
-function handle_scroll(e) {
-	if (!scroll_ticking) {
-		window.requestAnimationFrame(() => {
-			camera_x = window.scrollX;
-			camera_y = window.scrollY;
-			localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
-			localStorage.setItem("OCELOTI_SCROLL_Y", camera_y);
-			scroll_ticking = false;
-		});
-		scroll_ticking = true;
+	function handle_mousemove(e) {
+		if (is_panning) {
+			const dx = e.clientX - last_middle_click_x;
+			const dy = e.clientY - last_middle_click_y;
+			camera_x -= dx;
+			camera_y -= dy;
+			last_middle_click_x = e.clientX;
+			last_middle_click_y = e.clientY;
+		}
 	}
-}
 
-function handle_wheel(e) {
-	if (are_dialogs_open()) {
-		e.preventDefault();
-		return;
+	function handle_scroll(e) {
+		if (!scroll_ticking) {
+			window.requestAnimationFrame(() => {
+				camera_x = window.scrollX;
+				camera_y = window.scrollY;
+				localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
+				localStorage.setItem("OCELOTI_SCROLL_Y", camera_y);
+				scroll_ticking = false;
+			});
+			scroll_ticking = true;
+		}
 	}
-	const dir = e.deltaY > 0 ? -10 : 10;
-	let zoom = window.devicePixelRatio * 100;
-	zoom = Math.round(zoom + dir);
-}
+
+	function handle_wheel(e) {
+		if (are_dialogs_open()) {
+			e.preventDefault();
+			return;
+		}
+		const dir = e.deltaY > 0 ? -10 : 10;
+		let zoom = window.devicePixelRatio * 100;
+		zoom = Math.round(zoom + dir);
+	}
 })();
 /* MODULE: modules/draggable-cards/draggable-cards.js */
 (async () => {
-const card_query = document.querySelectorAll("[oceloti-card]");
-const room = document.querySelector("[oceloti-room]");
+	const card_query = document.querySelectorAll("[oceloti-card]");
+	const room = document.querySelector("[oceloti-room]");
 
-if (!card_query || !room) return;
+	if (!card_query || !room) return;
 
-const all_cards = Array.from(card_query);
+	const all_cards = Array.from(card_query);
 
-let last_mouse_x = 0;
-let last_mouse_y = 0;
-let delta_x = 0;
-let delta_y = 0;
-let dragged_card = null;
-let dragging_x = 0;
-let dragging_y = 0;
+	let last_mouse_x = 0;
+	let last_mouse_y = 0;
+	let delta_x = 0;
+	let delta_y = 0;
+	let dragged_card = null;
+	let dragging_x = 0;
+	let dragging_y = 0;
 
-all_cards.forEach(initialize_card);
+	all_cards.forEach(initialize_card);
 
-function initialize_card(card) {
-    setTimeout(() => {
-    	card.setAttribute("oceloti-card-state", "idle");
-    	card.style.willChange = "";
-    }, 0);
+	function initialize_card(card) {
+	    setTimeout(() => {
+	    	card.setAttribute("oceloti-card-state", "idle");
+	    	card.style.willChange = "";
+	    }, 0);
 
-	card.addEventListener("mousedown", handle_mousedown);
+		card.addEventListener("mousedown", handle_mousedown);
 
-	function handle_mousedown(e) {
-	    if (!e.target) return;
-	    const target = e.target;
-	    if (
-	        typeof target.dataset.ignoredrag !== "undefined" ||
-	        target.dataset.ignoredrag === "true" ||
-	        target.dataset.ignoredrag === true ||
-	        target.tagName === "A" ||
-	        target.tagName === "BUTTON" ||
-	        target.tagName === "INPUT" ||
-	        target.tagName === "TEXTAREA" ||
-	        (target.tagName === "IMG" && target.getAttribute("draggable") !== "false") 
-	    ) {
-	        return;
-	    }
+		function handle_mousedown(e) {
+		    if (!e.target) return;
+		    const target = e.target;
+		    if (
+		        typeof target.dataset.ignoredrag !== "undefined" ||
+		        target.dataset.ignoredrag === "true" ||
+		        target.dataset.ignoredrag === true ||
+		        target.tagName === "A" ||
+		        target.tagName === "BUTTON" ||
+		        target.tagName === "INPUT" ||
+		        target.tagName === "TEXTAREA" ||
+		        (target.tagName === "IMG" && target.getAttribute("draggable") !== "false") 
+		    ) {
+		        return;
+		    }
 
+		    if (e.button !== 0) return;
+
+		    let x = Number(card.style.left.replace("px", ""));
+	    	let y = Number(card.style.top.replace("px", ""));
+	    	dragging_x = x;
+	    	dragging_y = y;
+
+		    last_mouse_x = e.clientX;
+		    last_mouse_y = e.clientY;
+
+		    card.style.willChange = "filter";
+
+		    const card_html = card.outerHTML;
+		    card.remove();
+
+		    const floating_wrapper = document.createElement("div");
+
+		    floating_wrapper.id = "oceloti-floating-card";
+		    floating_wrapper.style.position = "absolute";
+		    floating_wrapper.style.left = "0";
+		    floating_wrapper.style.top = "0";
+		    floating_wrapper.style.willChange = "transform";
+		    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
+		    floating_wrapper.innerHTML = card_html;
+
+		    const inner_card = floating_wrapper.firstElementChild;
+		    inner_card.style.left = "";
+		    inner_card.style.top = "";
+
+		    room.appendChild(floating_wrapper);
+		    dragged_card = inner_card;
+
+		    window.addEventListener("mousemove", handle_mousemove);
+		    window.addEventListener("mouseup", handle_mouseup);
+		}
+	}
+
+	function handle_mousemove(e) {
 	    if (e.button !== 0) return;
 
-	    let x = Number(card.style.left.replace("px", ""));
-    	let y = Number(card.style.top.replace("px", ""));
-    	dragging_x = x;
-    	dragging_y = y;
-
+	    delta_x = last_mouse_x - e.clientX;
+	    delta_y = last_mouse_y - e.clientY;
 	    last_mouse_x = e.clientX;
 	    last_mouse_y = e.clientY;
 
-	    card.style.willChange = "filter";
-
-	    const card_html = card.outerHTML;
-	    card.remove();
-
-	    const floating_wrapper = document.createElement("div");
-
-	    floating_wrapper.id = "oceloti-floating-card";
-	    floating_wrapper.style.position = "absolute";
-	    floating_wrapper.style.left = "0";
-	    floating_wrapper.style.top = "0";
-	    floating_wrapper.style.willChange = "transform";
-	    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
-	    floating_wrapper.innerHTML = card_html;
-
-	    const inner_card = floating_wrapper.firstElementChild;
-	    inner_card.style.left = "";
-	    inner_card.style.top = "";
-
-	    room.appendChild(floating_wrapper);
-	    dragged_card = inner_card;
-
-	    window.addEventListener("mousemove", handle_mousemove);
-	    window.addEventListener("mouseup", handle_mouseup);
+	    if (dragged_card) {
+	    	dragged_card.setAttribute("oceloti-card-state", "elevated");
+	    	dragging_x = dragging_x - delta_x;
+	    	dragging_y = dragging_y - delta_y;
+	    	dragged_card.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
+	    }
 	}
-}
 
-function handle_mousemove(e) {
-    if (e.button !== 0) return;
+	function handle_mouseup(e) {
+	    if (e.button !== 0) return;
+	    const wrapper = dragged_card.parentNode;
+	    wrapper.after(dragged_card);
 
-    delta_x = last_mouse_x - e.clientX;
-    delta_y = last_mouse_y - e.clientY;
-    last_mouse_x = e.clientX;
-    last_mouse_y = e.clientY;
+	    dragged_card.style.left = `${dragging_x}px`;
+	    dragged_card.style.top = `${dragging_y}px`;
+	    initialize_card(dragged_card);
 
-    if (dragged_card) {
-    	dragged_card.setAttribute("oceloti-card-state", "elevated");
-    	dragging_x = dragging_x - delta_x;
-    	dragging_y = dragging_y - delta_y;
-    	dragged_card.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
-    }
-}
+	    wrapper.remove();
+	    dragged_card = null;
 
-function handle_mouseup(e) {
-    if (e.button !== 0) return;
-    const wrapper = dragged_card.parentNode;
-    wrapper.after(dragged_card);
+	    window.removeEventListener("mousemove", handle_mousemove);
+	    window.removeEventListener("mouseup", handle_mouseup);
+	}
+})();
+/* MODULE: modules/image-dropper/image-dropper.js */
+(async () => {
+	const room = document.querySelector("[oceloti-room]");
+	if (!room) return;
 
-    dragged_card.style.left = `${dragging_x}px`;
-    dragged_card.style.top = `${dragging_y}px`;
-    initialize_card(dragged_card);
+	room.addEventListener("dragover", (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+		e.dataTransfer.dropEffect = "copy";
+	});
 
-    wrapper.remove();
-    dragged_card = null;
+	room.addEventListener("drop", (drop_event) => {
+		drop_event.stopPropagation();
+		drop_event.preventDefault();
+		const files = drop_event.dataTransfer.files;
 
-    window.removeEventListener("mousemove", handle_mousemove);
-    window.removeEventListener("mouseup", handle_mouseup);
-}
+		if (files.length) {
+			const file = files[0];
+			if (file.type.startsWith("image/")) {
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					const image_card = document.createElement("figure");
+					image_card.setAttribute("oceloti-card", "");
+					image_card.classList.add("paper");
+					image_card.style.left = `${window.scrollX + drop_event.clientX}px`;
+					image_card.style.top = `${window.scrollY + drop_event.clientY}px`;
+					image_card.style.width = "100px";
+					image_card.style.height = "100px";
+					const img = document.createElement("img");
+					img.src = e.target.result;
+					image_card.appendChild(img);
+					room.appendChild(image_card);
+				};
+				reader.readAsDataURL(file);
+			}
+		}
+	});
 })();
 /* MODULE: modules/save-to-file/save-to-file.js */
 (async () => {
-let wrapper_el = null;
+	let wrapper_el = null;
 
-window.addEventListener("keydown", handle_keydown);
+	window.addEventListener("keydown", handle_keydown);
 
-function handle_close() {
-	wrapper_el.remove();
-}
-
-function handle_keydown(e) {
-	if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-		e.preventDefault();
-		wrapper_el = document.createElement("div");
-		wrapper_el.innerHTML = `
-			<dialog oceloti-dialog="save-to-file">
-				<div>
-					<p>
-						Right-click download link to save as.
-					</p>
-					<a>Download</a>
-				</div>
-			</dialog>
-		`;
-		document.body.appendChild(wrapper_el);
-		
-		setTimeout(() => {
-			wrapper_el.firstElementChild.addEventListener("close", handle_close);
-
-			const dom_content = document.documentElement.outerHTML;
-			const blob = new Blob([dom_content], { type: 'text/html' });
-			const url = URL.createObjectURL(blob);
-			const dialog_el = document.querySelector(`[oceloti-dialog="save-to-file"]`);
-			const link_el = dialog_el.querySelector("a");
-			link_el.href = url;
-			link_el.download = `${document.title}.html`;
-			
-			dialog_el.showModal();
-		}, 0);
+	function handle_close() {
+		wrapper_el.remove();
 	}
-}
+
+	function handle_keydown(e) {
+		if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+			e.preventDefault();
+			wrapper_el = document.createElement("div");
+			wrapper_el.innerHTML = `
+				<dialog oceloti-dialog="save-to-file">
+					<div>
+						<p>
+							Right-click download link to save as.
+						</p>
+						<a>Download</a>
+					</div>
+				</dialog>
+			`;
+			document.body.appendChild(wrapper_el);
+			
+			setTimeout(() => {
+				wrapper_el.firstElementChild.addEventListener("close", handle_close);
+
+				const dom_content = document.documentElement.outerHTML;
+				const blob = new Blob([dom_content], { type: 'text/html' });
+				const url = URL.createObjectURL(blob);
+				const dialog_el = document.querySelector(`[oceloti-dialog="save-to-file"]`);
+				const link_el = dialog_el.querySelector("a");
+				link_el.href = url;
+				link_el.download = `${document.title}.html`;
+				
+				dialog_el.showModal();
+			}, 0);
+		}
+	}
 })();
 </script>
 </html>

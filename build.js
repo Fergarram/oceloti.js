@@ -80,8 +80,8 @@ function generate_rooms() {
                 fs.readdirSync(module_path).forEach(file => {
                     const file_path = path.join(module_path, file);
                     if (file.endsWith('.js')) {
-                        stringified_scripts += `/* MODULE: ${file_path} */\n(async () => {\n`;
-                        stringified_scripts += fs.readFileSync(file_path, 'utf8') + "\n})();\n";
+                        stringified_scripts += `/* MODULE: ${file_path} */\n`;
+                        stringified_scripts += fs.readFileSync(file_path, 'utf8') + "\n";
                     }
                 });
             });
