@@ -14,6 +14,27 @@
 	let dragging_x = 0;
 	let dragging_y = 0;
 
+	const observer = new MutationObserver((mutations) => {
+		for (let mutation of mutations) {
+			if (mutation.type === "childList") {
+				if (mutation.addedNodes.length > 0) {
+					mutation.addedNodes.forEach((node) => {
+						console.log("node added", node)
+						if (
+							node.id !== "oceloti-floating-card" &&
+							node.getAttribute("oceloti-card-state") !== "elevated" &&
+							node.hasAttribute("oceloti-card")
+						) {
+							initialize_card(node);
+						}
+					});
+				}
+			}
+		}
+	});
+
+	observer.observe(room, { childList: true });
+
 	all_cards.forEach(initialize_card);
 
 	function initialize_card(card) {
@@ -35,7 +56,10 @@
 		        target.tagName === "BUTTON" ||
 		        target.tagName === "INPUT" ||
 		        target.tagName === "TEXTAREA" ||
-		        (target.tagName === "IMG" && target.getAttribute("draggable") !== "false") 
+		        (
+		        	target.tagName === "IMG" && 
+		        	target.getAttribute("draggable") !== "false"
+		        ) 
 		    ) {
 		        return;
 		    }
