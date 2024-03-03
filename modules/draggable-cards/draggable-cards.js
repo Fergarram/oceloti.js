@@ -19,7 +19,6 @@
 			if (mutation.type === "childList") {
 				if (mutation.addedNodes.length > 0) {
 					mutation.addedNodes.forEach((node) => {
-						console.log("node added", node)
 						if (
 							node.id !== "oceloti-floating-card" &&
 							node.getAttribute("oceloti-card-state") !== "elevated" &&
@@ -29,6 +28,12 @@
 						}
 					});
 				}
+
+				// if (mutation.removedNodes.length > 0) {
+				// 	mutation.removedNodes.forEach((node) => {
+				// 		console.log(node);
+				// 	});
+				// }
 			}
 		}
 	});

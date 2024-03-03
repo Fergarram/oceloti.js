@@ -46,14 +46,3 @@
 	display: block;
 	transform: translate(-50%, -50%);
 }
-
-[oceloti-dialog] {
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-}
-
-[oceloti-dialog]::backdrop {
-	background-color: rgba(0, 0, 0, 0.65);
-}

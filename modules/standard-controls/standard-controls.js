@@ -9,6 +9,9 @@
 		room_height = room_el.offsetHeight;
 	}
 
+	// @TODO: Save zoom to local storage.
+	window.zoom = 100;
+
 	const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
 	const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
 
@@ -96,8 +99,14 @@
 			e.preventDefault();
 			return;
 		}
+
+		if (!e.ctrlKey) return;
+
 		const dir = e.deltaY > 0 ? -10 : 10;
 		let zoom = window.devicePixelRatio * 100;
 		zoom = Math.round(zoom + dir);
+		zoom = Math.round(zoom / 10) * 10;
+		window.zoom = zoom;
+		window.dispatchEvent(new Event("zoom"));
 	}
 })();

@@ -2,15 +2,13 @@
 <html oceloti-reset="black">
 <head>
 	<meta charset="utf-8">
-	<title>Basic Starter</title>
-	<meta name="description" content="A simple room with draggable cards.">
+	<title>Arena Garden</title>
+	<meta name="description" content="A simple room arena cards.">
+	<link rel="icon" href="../assets/icon.png"></link>
 	<style oceloti-modules="
 		css-reset
 		oceloti
-		standard-controls
-		draggable-cards
 		inventory
-		save-to-file
 		paper-theme
 	">/* STYLE MODULES */</style>
 </head>
@@ -21,8 +19,8 @@
 			width: 2000px;
 			height: 2000px;
 			background-color: white;
-			background-image: url(https://d2w9rnfcy7mm78.cloudfront.net/26677349/original_c48d58e9d3042dafb2f4430c50ae36bd.png?1709192894?bc=0);
-			background-size: 640px;
+			background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAChJREFUOI1jPHHv138GCgALAwMDg6HkF7INYKLE9lEDRg0YNYCKBgAArTgE/0GI5GAAAAAASUVORK5CYII=');
+			background-size: 16px;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
 
@@ -71,11 +69,14 @@
 				alt="clock">
 		</figure>
 	</main>
+	<div id="hud"></div>
 </body>
 <script oceloti-modules="
 	oceloti
 	standard-controls
 	draggable-cards
+	van
+	arena-api
 	image-dropper
 	save-to-file
 	inventory
