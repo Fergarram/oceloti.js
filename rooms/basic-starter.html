@@ -87,6 +87,10 @@ fieldset {
 	transform: translate(-50%, -50%);
 }
 
+/* MODULE: modules/draggable-cards/draggable-cards.css */
+.is-dragging * {
+	user-select: none;
+}
 /* MODULE: modules/inventory/inventory.css */
 
 /* MODULE: modules/paper-theme/paper-theme.css */
@@ -119,8 +123,13 @@ html {
 	filter: var(--card-thickness-1);
 }
 
-.backpack:hover {
-	transform: scale(1.1);
+[oceloti-room] {
+	cursor: url(../assets/cursors/grab.svg), grab;
+}
+
+.is-panning [oceloti-room],
+.is-dragging [oceloti-room]  {
+	cursor: url(../assets/cursors/grabbed.svg), grabbing;
 }
 
 [oceloti-card] {
@@ -130,7 +139,6 @@ html {
 [oceloti-card-state="elevated"] {
 	transform: scale(1.015);
 	filter: var(--card-elevated-1);
-	cursor: move;
 }
 
 [oceloti-dialog] {
@@ -208,7 +216,9 @@ button[disabled] {
 }
 
 #oceloti-menu {
-	position: absolute;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 	max-width: 200px;
 	width: fit-content;
 	height: fit-content;
@@ -220,8 +230,18 @@ button[disabled] {
 }
 
 #oceloti-menu button {
+	white-space: nowrap;
 	width: 100%;
 	filter: none;
+	border-radius: 2px;
+}
+
+#oceloti-menu button:hover {
+	background-color: silver;
+}
+
+#oceloti-menu button:active {
+	background-color: silver;
 }
 
 @keyframes slide_in {
@@ -408,6 +428,7 @@ function are_dialogs_open() {
 		if (e.button === 1) {
 			e.preventDefault();
 			is_panning = true;
+			document.body.classList.toggle("is-panning");
 			last_middle_click_x = e.clientX;
 			last_middle_click_y = e.clientY;
 		}
@@ -416,6 +437,7 @@ function are_dialogs_open() {
 	function handle_mouseup(e) {
 		if (e.button === 1) {
 			is_panning = false;
+			document.body.classList.toggle("is-panning");
 		}
 	}
 
@@ -544,6 +566,7 @@ function are_dialogs_open() {
 
 		    if (e.button !== 0) return;
 
+		    document.body.classList.toggle("is-dragging");
 		    let x = Number(card.style.left.replace("px", ""));
 	    	let y = Number(card.style.top.replace("px", ""));
 	    	dragging_x = x;
@@ -598,6 +621,7 @@ function are_dialogs_open() {
 
 	function handle_mouseup(e) {
 	    if (e.button !== 0) return;
+		document.body.classList.toggle("is-dragging");
 	    const wrapper = dragged_card.parentNode;
 	    wrapper.after(dragged_card);
 
@@ -669,7 +693,16 @@ function are_dialogs_open() {
 		if ((e.metaKey || e.ctrlKey) && e.key === "s") {
 			e.preventDefault();
 
+			const hud = document.getElementById("hud");
+			let hud_contents = "";
+			if (hud) {
+				hud_contents = hud.innerHTML;
+				hud.innerHTML = "";
+			}
+
 			const dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+			hud.innerHTML = hud_contents;
 
 			const dialog_el = dialog({
 				"oceloti-dialog": "save-to-file",
@@ -752,17 +785,44 @@ function are_dialogs_open() {
 				show_inventory.val = !show_inventory.val;
 			}
 		},
-			img({
-				src: "../assets/icons/backpack.svg",
-				alt: ""
-			}),
-			"backpack"
+			"🎒 backpack"
 		),
 		inventory_grid
 	);
 
 	van.add(hud, inventory_launcher);
 
+	const all_cards = document.querySelectorAll("[oceloti-card]");
+	if (all_cards) {
+		Array.from(all_cards).forEach((card) => {
+			// @LAST: I need to create a global hook that allows me to do custom stuff when a card is mounted.
+			card.setAttribute("oceloti-menu", "card-menu");
+			card.addEventListener("mousedown", (e) => {
+				if (e.button !== 2) return;
+				window.oceloti_menu_items = [
+					button({
+						onclick: () => console.log("pack")
+					},
+						"🎒 Put away"
+					),
+					// div({
+					// 	style: `
+					// 		width: 100%;
+					// 		border-bottom: 1px solid gray;
+					// 		pointer-events: none;
+					// 		padding-bottom: 2px;
+					// 		margin-bottom: 2px;
+					// 	`
+					// }),
+					button({
+						onclick: () => card.remove()
+					},
+						"♻️ Trash card"
+					),
+				];
+			})
+		});
+	}
 })();
 </script>
 </html>

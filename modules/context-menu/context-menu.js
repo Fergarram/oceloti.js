@@ -1,4 +1,5 @@
 (() => {
+	const hud = document.getElementById("hud");
 	window.oceloti_menu_items = [];
 	document.addEventListener("contextmenu", function(e) {
 		if (
@@ -19,9 +20,17 @@
 
 	    let menu = document.getElementById("oceloti-menu");
 
-	    function close_menu() {
+	    function close_menu(clean = false) {
 			if (menu) menu.remove();
-			if (!e.target.hasAttribute("oceloti-menu")) {
+			let el = e.target;
+			let has_menu = false;
+			while (el) {
+				has_menu = el.hasAttribute("oceloti-menu");
+				if (has_menu) break;
+				el = el.parentElement;
+			}
+
+			if (clean || !has_menu) {
 				window.oceloti_menu_items = [];
 			}
 		}
@@ -40,15 +49,16 @@
 	    menu = div({
 	    	id: "oceloti-menu",
 	    	style: () => `
-	    		left: ${e.pageX}px;
-	    		top: ${e.pageY}px;
+	    		position: fixed;
+	    		left: ${e.clientX}px;
+	    		top: ${e.clientY}px;
 	    	`
 	    },
 	    	window.oceloti_menu_items.length > 0
 	    		? window.oceloti_menu_items.map(i => i)
 	    		: button({ "disabled": "true" }, "Nothing to do")
 	    );
-	    van.add(document.body, menu);
+	    van.add(hud, menu);
 
 	    Array.from(menu.children).forEach((item) => {
 	    	item.addEventListener("click", () => close_menu());
@@ -68,6 +78,7 @@
 		        return;
 		    }
 	    	if (menu) close_menu();
+	    	window.oceloti_menu_items = [];
 	    });
 	});
 })();

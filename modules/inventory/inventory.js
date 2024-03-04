@@ -45,15 +45,42 @@
 				show_inventory.val = !show_inventory.val;
 			}
 		},
-			img({
-				src: "../assets/icons/backpack.svg",
-				alt: ""
-			}),
-			"backpack"
+			"🎒 backpack"
 		),
 		inventory_grid
 	);
 
 	van.add(hud, inventory_launcher);
 
+	const all_cards = document.querySelectorAll("[oceloti-card]");
+	if (all_cards) {
+		Array.from(all_cards).forEach((card) => {
+			// @LAST: I need to create a global hook that allows me to do custom stuff when a card is mounted.
+			card.setAttribute("oceloti-menu", "card-menu");
+			card.addEventListener("mousedown", (e) => {
+				if (e.button !== 2) return;
+				window.oceloti_menu_items = [
+					button({
+						onclick: () => console.log("pack")
+					},
+						"🎒 Put away"
+					),
+					// div({
+					// 	style: `
+					// 		width: 100%;
+					// 		border-bottom: 1px solid gray;
+					// 		pointer-events: none;
+					// 		padding-bottom: 2px;
+					// 		margin-bottom: 2px;
+					// 	`
+					// }),
+					button({
+						onclick: () => card.remove()
+					},
+						"♻️ Trash card"
+					),
+				];
+			})
+		});
+	}
 })();

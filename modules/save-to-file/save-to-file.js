@@ -12,7 +12,16 @@
 		if ((e.metaKey || e.ctrlKey) && e.key === "s") {
 			e.preventDefault();
 
+			const hud = document.getElementById("hud");
+			let hud_contents = "";
+			if (hud) {
+				hud_contents = hud.innerHTML;
+				hud.innerHTML = "";
+			}
+
 			const dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+			hud.innerHTML = hud_contents;
 
 			const dialog_el = dialog({
 				"oceloti-dialog": "save-to-file",

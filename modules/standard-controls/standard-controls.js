@@ -61,6 +61,7 @@ function are_dialogs_open() {
 		if (e.button === 1) {
 			e.preventDefault();
 			is_panning = true;
+			document.body.classList.toggle("is-panning");
 			last_middle_click_x = e.clientX;
 			last_middle_click_y = e.clientY;
 		}
@@ -69,6 +70,7 @@ function are_dialogs_open() {
 	function handle_mouseup(e) {
 		if (e.button === 1) {
 			is_panning = false;
+			document.body.classList.toggle("is-panning");
 		}
 	}
 

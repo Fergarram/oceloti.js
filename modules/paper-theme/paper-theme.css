@@ -27,8 +27,13 @@ html {
 	filter: var(--card-thickness-1);
 }
 
-.backpack:hover {
-	transform: scale(1.1);
+[oceloti-room] {
+	cursor: url(../assets/cursors/grab.svg), grab;
+}
+
+.is-panning [oceloti-room],
+.is-dragging [oceloti-room]  {
+	cursor: url(../assets/cursors/grabbed.svg), grabbing;
 }
 
 [oceloti-card] {
@@ -38,7 +43,6 @@ html {
 [oceloti-card-state="elevated"] {
 	transform: scale(1.015);
 	filter: var(--card-elevated-1);
-	cursor: move;
 }
 
 [oceloti-dialog] {
@@ -116,7 +120,9 @@ button[disabled] {
 }
 
 #oceloti-menu {
-	position: absolute;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 	max-width: 200px;
 	width: fit-content;
 	height: fit-content;
@@ -128,8 +134,18 @@ button[disabled] {
 }
 
 #oceloti-menu button {
+	white-space: nowrap;
 	width: 100%;
 	filter: none;
+	border-radius: 2px;
+}
+
+#oceloti-menu button:hover {
+	background-color: silver;
+}
+
+#oceloti-menu button:active {
+	background-color: silver;
 }
 
 @keyframes slide_in {

@@ -73,6 +73,7 @@
 
 		    if (e.button !== 0) return;
 
+		    document.body.classList.toggle("is-dragging");
 		    let x = Number(card.style.left.replace("px", ""));
 	    	let y = Number(card.style.top.replace("px", ""));
 	    	dragging_x = x;
@@ -127,6 +128,7 @@
 
 	function handle_mouseup(e) {
 	    if (e.button !== 0) return;
+		document.body.classList.toggle("is-dragging");
 	    const wrapper = dragged_card.parentNode;
 	    wrapper.after(dragged_card);
 

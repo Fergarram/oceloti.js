@@ -109,11 +109,15 @@
 	);
 
 	van.add(hud, button({
+		style: `
+			background: black;
+			color: white;
+		`,
 		onclick: () => {
 			van.add(document.body, dialog_el);
 			dialog_el.showModal();
 		}
 	},
-		"** are.na cards"
+		"** are.na"
 	));
 })();
