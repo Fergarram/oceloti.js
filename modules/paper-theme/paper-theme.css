@@ -23,17 +23,13 @@ html {
 	font-family: monospace;
 }
 
-.paper {
-	filter: var(--card-thickness-1);
-}
-
 [oceloti-room] {
-	cursor: url(../assets/cursors/grab.svg), grab;
+	cursor: var(--assets-cursors-grab-svg), grab;
 }
 
 .is-panning [oceloti-room],
 .is-dragging [oceloti-room]  {
-	cursor: url(../assets/cursors/grabbed.svg), grabbing;
+	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }
 
 [oceloti-card] {
@@ -59,28 +55,21 @@ html {
 	background-color: rgba(0, 0, 0, 0.25);
 }
 
-.nugget {
+#hud {
+	position: fixed;
+	left: 0;
+	top: 0;
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0.35rem;
-	border-radius: 0.5rem;
-	background-color: lavender;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 12px;
+	transition: opacity var(--ease-curve-1) 200ms;
 }
 
-.nugget > p {
-	display: flex;
-	padding: 0 0.5rem;
-}
-
-.nugget-error {
-	background-color: lightsalmon;
-	color: black;
-}
-
-.nugget-success {
-	background-color: darkseagreen;
-	color: black;
+.is-scrolling #hud {
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
 }
 
 button {
@@ -119,85 +108,30 @@ button[disabled] {
 	font-style: italic;
 }
 
-#oceloti-menu {
+.paper {
+	filter: var(--card-thickness-1);
+}
+
+.nugget {
 	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	max-width: 200px;
-	width: fit-content;
-	height: fit-content;
-	background: lightgray;
-	padding: 3px;
-	filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
-	border-radius: 4px;
-	z-index: 9999999;
-}
-
-#oceloti-menu button {
-	white-space: nowrap;
-	width: 100%;
-	filter: none;
-	border-radius: 2px;
-}
-
-#oceloti-menu button:hover {
-	background-color: silver;
-}
-
-#oceloti-menu button:active {
-	background-color: silver;
-}
-
-@keyframes slide_in {
-  from {
-    opacity: 0;
-    transform: translateY(95%);
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-#hud {
-	position: fixed;
-	left: 0;
-	top: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	padding: 12px;
-	transition: opacity var(--ease-curve-1) 200ms;
-}
-
-.is-scrolling #hud {
-	opacity: 0;
-	pointer-events: none;
-	user-select: none;
-}
-
-.inventory-grid {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	gap: 2px;
-	padding: 4px;
-	position: absolute;
-	left: 0;
-	bottom: -8px;
-	width: fit-content;
-	max-height: 65vh;
-	overflow: scroll;
-	background-color: lightgray;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.35rem;
 	border-radius: 0.5rem;
-	transform: translateY(100%);
-	filter: drop-shadow(2px 2px);
-	animation-name: slide_in;
-	animation-duration: 200ms;
-	animation-fill-mode: forwards;
+	background-color: lavender;
 }
 
-.inventory-slot {
-	border: 1px solid darkgray;
-	border-radius: 4px;
-	width: 48px;
-	height: 48px;
+.nugget > p {
+	display: flex;
+	padding: 0 0.5rem;
+}
+
+.nugget-error {
+	background-color: lightsalmon;
+	color: black;
+}
+
+.nugget-success {
+	background-color: darkseagreen;
+	color: black;
 }

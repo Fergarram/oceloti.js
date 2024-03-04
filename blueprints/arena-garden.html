@@ -4,12 +4,19 @@
 	<meta charset="utf-8">
 	<title>Arena Garden</title>
 	<meta name="description" content="A simple room arena cards.">
-	<link rel="icon" href="../assets/icon.png"></link>
+	<link
+		rel="icon"
+		href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANVJREFUOI1jYKAXyNpn8B+bOBMxiki2Cd0gbGJYXcDAwMBw9podimtgNEycoAHoNsM0n8yZxEiUASdzJjFisw2XNxgZGBgYzKfk/TfWOoThFXQxGJjmdAHuGjjDfEoe3HRkjcgGTXO6wAizDGYIhr+CvFX+MzAwMEgU8zAwMDAwvOj9giK/busdxqx9Bv9hBmCEwbqtdxh71ZgYSjd/Y4AZ1KvGxNCrxsSwbusdDAvxxgLMEHSAHAZ4DcBnCNEGEAJYEwcDAwPD/UI1lDhX7L+FUy1FAACzKVgfYDnMVgAAAABJRU5ErkJggg=="
+	></link>
+	<style oceloti-assets="*">
+		/* STATIC ASSETS */
+	</style>
 	<style oceloti-modules="
 		css-reset
 		oceloti
 		draggable-cards
 		inventory
+		context-menu
 		paper-theme
 	">/* STYLE MODULES */</style>
 </head>
@@ -20,8 +27,8 @@
 			width: 2000px;
 			height: 2000px;
 			background-color: white;
-			background-image: url('../assets/wood.png');
-/*			background-image: url('../assets/grid2.png');*/
+			background-image: var(--assets-wood-png);
+/*			background-image: var(--assets-grid2-png);*/
 			background-size: 128px;
 			image-rendering: pixelated;
 	">
@@ -42,7 +49,7 @@
 			<div style="
 				width: 100%;
 				height: 100%;
-				background-image: url('../assets/grid1.png');
+				background-image: var(--assets-grid1-png);
 				background-size: 20px;
 				line-height: 20px;
 				padding: 0 4px;

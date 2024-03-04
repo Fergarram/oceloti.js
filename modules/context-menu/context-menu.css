@@ -1,0 +1,28 @@
+#oceloti-menu {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-width: 200px;
+	width: fit-content;
+	height: fit-content;
+	background: lightgray;
+	padding: 3px;
+	filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
+	border-radius: 4px;
+	z-index: 9999999;
+}
+
+#oceloti-menu button {
+	white-space: nowrap;
+	width: 100%;
+	filter: none;
+	border-radius: 2px;
+}
+
+#oceloti-menu button:hover {
+	background-color: silver;
+}
+
+#oceloti-menu button:active {
+	background-color: silver;
+}
