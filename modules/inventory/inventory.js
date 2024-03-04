@@ -9,101 +9,34 @@
 	
 	if (!room || !hud) return;
 
-	const { dialog, form, fieldset, input, p, div, a, button } = van.tags;
+	const { div, button, img } = van.tags;
 
-	const dialog_el = dialog({
-		"oceloti-dialog": "arena-token",
-		onclose: (e) => e.target.remove(),
-		style: `
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-		`,
+	const slots = [
+		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+	];
+
+	const inventory_launcher = div({
+		style: "position: relative;",
 	},
-		form({
-			method: "dialog",
-			onsubmit: async (e) => {
-				e.preventDefault();
-				const form = new FormData(e.target);
-				const fields = {};
-				for (const [key, value] of form.entries()) {
-					fields[key] = value;
-				}
-				
-				const res = await arena_sign_in(fields.token);
-
-				const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
-
-				messages_el.innerHTML = "";
-				
-				if (res.status === "error") {
-					van.add(messages_el, div({
-						"class": "nugget nugget-error"
-					}, 
-						p(res.message)
-					));
-					return;
-				}
-
-				if (res.status === "success") {
-					van.add(messages_el, div({ 
-						"class": "nugget nugget-success"
-					},
-						p(res.message),
-						button({ onclick: () => dialog_el.close()}, 
-							"Close"
-						)
-					));
-				}
+		button({
+			onclick: (e) => {
+				e.target.classList.toggle("selected");
 			}
 		},
-			p({
-				style: "margin-bottom: 1rem;",
-			},
-				"To get your token visit: ",
-				a({
-					target: "_blank",
-					href: "https://arena-token-gen.vercel.app/"
-				},
-					"suna.garden/get-token"
-				)
-			),
-			fieldset({
-				style: `
-					display: flex;
-					gap: 0.5rem;
-				`
-			},
-				input({
-					"name": "token",
-					"type": "text",
-					"required": "true",
-					"style": "width: 100%;",
-					"autocomplete": "off",
-					// @TODO: Fix this absurd bug... wtf.
-					onclick: (e) => e.target.focus()
-				}),
-				button({
-					style: `
-						width: fit-content;
-						white-space: nowrap;
-					`,
-					"type": "submit"
-				},
-					"Submit"
-				)
-			)
+			img({
+				src: "../assets/icons/backpack.svg",
+				alt: ""
+			}),
+			"backpack"
 		),
-		div({ "oceloti-dialog-messages": "" })
+		div({
+			class: "inventory-grid"
+		},
+			slots.map(slot => div({ class: "inventory-slot" }))
+		)
 	);
 
-	van.add(room, button({
-		style: "left: 300px; top: 300px; position: absolute;",
-		onclick: () => {
-			van.add(document.body, dialog_el);
-			dialog_el.showModal();
-		}
-	},
-		"* Sign In"
-	));
+	van.add(hud, inventory_launcher);
+
 })();

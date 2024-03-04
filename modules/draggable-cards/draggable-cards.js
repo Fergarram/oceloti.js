@@ -45,13 +45,15 @@
 	function initialize_card(card) {
 	    setTimeout(() => {
 	    	card.setAttribute("oceloti-card-state", "idle");
-	    	card.style.willChange = "";
+		    card.style.removeProperty("will-change");
+		    card.style.removeProperty("pointer-events");
 	    }, 0);
 
 		card.addEventListener("mousedown", handle_mousedown);
 
 		function handle_mousedown(e) {
 		    if (!e.target) return;
+		    if (dragged_card !== null) return;
 		    const target = e.target;
 		    if (
 		        typeof target.dataset.ignoredrag !== "undefined" ||
@@ -79,14 +81,15 @@
 		    last_mouse_x = e.clientX;
 		    last_mouse_y = e.clientY;
 
-		    card.style.willChange = "filter";
-
+		    card.style.willChange = "filter, transform";
+		    card.style.pointerEvents = "none";
 		    const card_html = card.outerHTML;
 		    card.remove();
 
 		    const floating_wrapper = document.createElement("div");
 
 		    floating_wrapper.id = "oceloti-floating-card";
+		    floating_wrapper.style.pointerEvents = "none";
 		    floating_wrapper.style.position = "absolute";
 		    floating_wrapper.style.left = "0";
 		    floating_wrapper.style.top = "0";

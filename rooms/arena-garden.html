@@ -101,6 +101,11 @@ fieldset {
 	--card-elevated-1:
 		drop-shadow(0 1.25rem 3rem rgba(0, 0, 0, 0.30))
 		drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.22));
+	--card-elevated-2:
+		drop-shadow(0 1.25rem 1.5rem rgba(0, 0, 0, 0.30))
+		drop-shadow(0 1rem 1rem rgba(0, 0, 0, 0.22));
+	--ease-curve-1:
+		cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html {
@@ -108,19 +113,16 @@ html {
 	font-family: monospace;
 }
 
-#hud {
-	position: fixed;
-	left: 0;
-	top: 0;
-}
-
 .paper {
-	background-color: white;
 	filter: var(--card-thickness-1);
 }
 
+.backpack:hover {
+	transform: scale(1.1);
+}
+
 [oceloti-card] {
-	transition: filter, transform cubic-bezier(0.16, 1, 0.3, 1) 300ms;
+	transition: filter, transform var(--ease-curve-1) 300ms;
 }
 
 [oceloti-card-state="elevated"] {
@@ -131,7 +133,7 @@ html {
 
 [oceloti-dialog] {
 	border: none;
-	position: absolute;
+	position: fixed;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
@@ -140,7 +142,7 @@ html {
 }
 
 [oceloti-dialog]::backdrop {
-	background-color: rgba(0, 0, 0, 0.65);
+	background-color: rgba(0, 0, 0, 0.25);
 }
 
 .nugget {
@@ -149,7 +151,7 @@ html {
 	justify-content: space-between;
 	padding: 0.35rem;
 	border-radius: 0.5rem;
-	background-color: whitesmoke;
+	background-color: lavender;
 }
 
 .nugget > p {
@@ -170,6 +172,7 @@ html {
 button {
 	display: flex;
 	align-items: center;
+	gap: 3px;
 	line-height: 1.2;
 	background: lightgray;
 	color: black;
@@ -177,10 +180,57 @@ button {
 	border-radius: 0.5rem;
 	border: none;
 	cursor: pointer;
+	text-transform: lowercase;
+	transition: filter, transform var(--ease-curve-1) 150ms;
+	filter: drop-shadow(2px 2px);
 }
 
 button:hover {
 	background-color: lightblue;
+}
+
+button:active {
+	background-color: skyblue;
+	transform: scale(0.95);
+	filter: drop-shadow(0px 0px);
+}
+
+button.selected {
+	background-color: mediumaquamarine;
+}
+
+#hud {
+	position: fixed;
+	left: 0;
+	top: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 12px;
+}
+
+.inventory-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 2px;
+	padding: 4px;
+	position: absolute;
+	left: 0;
+	bottom: -8px;
+	width: fit-content;
+	max-height: 65vh;
+	overflow: scroll;
+	background-color: lightgray;
+	border-radius: 0.5rem;
+	transform: translateY(100%);
+	filter: drop-shadow(2px 2px);
+}
+
+.inventory-slot {
+	border: 1px solid darkgray;
+	border-radius: 4px;
+	width: 48px;
+	height: 48px;
 }
 </style>
 </head>
@@ -191,8 +241,10 @@ button:hover {
 			width: 2000px;
 			height: 2000px;
 			background-color: white;
-			background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAChJREFUOI1jPHHv138GCgALAwMDg6HkF7INYKLE9lEDRg0YNYCKBgAArTgE/0GI5GAAAAAASUVORK5CYII=');
-			background-size: 16px;
+/*			background-image: url('../assets/wood.png');*/
+			background-image: url('../assets/grid2.png');
+			background-size: 128px;
+			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
 
@@ -206,17 +258,24 @@ button:hover {
 				height: 400px;
 				overflow: scroll;
 				padding: 8px;
+				background-color: #f9f7ee;
 			">
-			<!-- <button 
-				id="testing-tools"
-				style="
-					position: absolute;
-					right: 8px;
-					top: 8px;
-				">
-				open tools
-			</button> -->
-			<div>In any case...</div>
+			<div style="
+				width: 100%;
+				height: 100%;
+				background-image: url('../assets/grid1.png');
+				background-size: 20px;
+				line-height: 20px;
+				padding: 0 4px;
+				image-rendering: pixelated;
+			">
+				In any case...<br />
+				In any case...<br />
+				In any case...<br />
+				In any case...<br />
+				In any case...<br />
+				In any case...<br />
+			</div>
 		</article>
 
 		<figure id="clock" oceloti-card="" style="
@@ -249,9 +308,10 @@ button:hover {
 	draggable-cards
 	van
 	arena-api
+	inventory
+	arena-cards
 	image-dropper
 	save-to-file
-	inventory
 ">/* MODULE: modules/standard-controls/standard-controls.js */
 (async () => {
 	const room_el = document.querySelector("[oceloti-room]");
@@ -413,13 +473,15 @@ button:hover {
 	function initialize_card(card) {
 	    setTimeout(() => {
 	    	card.setAttribute("oceloti-card-state", "idle");
-	    	card.style.willChange = "";
+		    card.style.removeProperty("will-change");
+		    card.style.removeProperty("pointer-events");
 	    }, 0);
 
 		card.addEventListener("mousedown", handle_mousedown);
 
 		function handle_mousedown(e) {
 		    if (!e.target) return;
+		    if (dragged_card !== null) return;
 		    const target = e.target;
 		    if (
 		        typeof target.dataset.ignoredrag !== "undefined" ||
@@ -447,14 +509,15 @@ button:hover {
 		    last_mouse_x = e.clientX;
 		    last_mouse_y = e.clientY;
 
-		    card.style.willChange = "filter";
-
+		    card.style.willChange = "filter, transform";
+		    card.style.pointerEvents = "none";
 		    const card_html = card.outerHTML;
 		    card.remove();
 
 		    const floating_wrapper = document.createElement("div");
 
 		    floating_wrapper.id = "oceloti-floating-card";
+		    floating_wrapper.style.pointerEvents = "none";
 		    floating_wrapper.style.position = "absolute";
 		    floating_wrapper.style.left = "0";
 		    floating_wrapper.style.top = "0";
@@ -689,6 +752,169 @@ async function fetch_arena({
 
 	return response.json();
 }
+/* MODULE: modules/inventory/inventory.js */
+(async () => {
+	if (!van) {
+		console.error("The inventory module depends on van.js");
+		return;
+	};
+
+	const hud = document.getElementById("hud");
+	const room = document.querySelector("[oceloti-room]");
+	
+	if (!room || !hud) return;
+
+	const { div, button, img } = van.tags;
+
+	const slots = [
+		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+	];
+
+	const inventory_launcher = div({
+		style: "position: relative;",
+	},
+		button({
+			onclick: (e) => {
+				e.target.classList.toggle("selected");
+			}
+		},
+			img({
+				src: "../assets/icons/backpack.svg",
+				alt: ""
+			}),
+			"backpack"
+		),
+		div({
+			class: "inventory-grid"
+		},
+			slots.map(slot => div({ class: "inventory-slot" }))
+		)
+	);
+
+	van.add(hud, inventory_launcher);
+
+})();
+/* MODULE: modules/arena-cards/arena-cards.js */
+(async () => {
+	if (!van) {
+		console.error("The inventory module depends on van.js");
+		return;
+	};
+
+	const hud = document.getElementById("hud");
+	const room = document.querySelector("[oceloti-room]");
+	
+	if (!room || !hud) return;
+
+	const { dialog, form, fieldset, input, p, div, a, button } = van.tags;
+
+	const dialog_el = dialog({
+		"oceloti-dialog": "arena-token",
+		onclose: (e) => e.target.remove(),
+		style: `
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		`,
+	},
+		form({
+			method: "dialog",
+			onsubmit: async (e) => {
+				e.preventDefault();
+				const form = new FormData(e.target);
+				const fields = {};
+				for (const [key, value] of form.entries()) {
+					fields[key] = value;
+				}
+				
+				const res = await arena_sign_in(fields.token);
+
+				const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
+
+				messages_el.innerHTML = "";
+				
+				if (res.status === "error") {
+					van.add(messages_el, div({
+						"class": "nugget nugget-error"
+					}, 
+						p(res.message)
+					));
+					return;
+				}
+
+				if (res.status === "success") {
+					van.add(messages_el, div({ 
+						"class": "nugget nugget-success"
+					},
+						p(res.message),
+						button({ onclick: () => dialog_el.close()}, 
+							"Close"
+						)
+					));
+				}
+			}
+		},
+			p({
+				style: "margin-bottom: 1rem;",
+			},
+				"Sign In to use Are.na blocks."
+			),
+			fieldset({
+				style: `
+					display: flex;
+					gap: 0.5rem;
+				`
+			},
+				input({
+					"name": "token",
+					"type": "text",
+					"required": "true",
+					"style": "width: 100%;",
+					"autocomplete": "off",
+					// @TODO: Fix this absurd bug... wtf.
+					onclick: (e) => e.target.focus()
+				}),
+				button({
+					style: `
+						width: fit-content;
+						white-space: nowrap;
+					`,
+					"type": "submit"
+				},
+					"add token"
+				)
+			)
+		),
+		div({
+			"oceloti-dialog-messages": ""
+		},
+			div({
+				class: "nugget"
+			},
+				p(
+					"To get your token visit: ",
+					a({
+						style: "margin-left: 8px;",
+						target: "_blank",
+						href: "https://arena-token-gen.vercel.app/"
+					},
+						"suna.garden/get-token"
+					)
+				),
+			)
+		)
+	);
+
+	van.add(hud, button({
+		onclick: () => {
+			van.add(document.body, dialog_el);
+			dialog_el.showModal();
+		}
+	},
+		"** are.na cards"
+	));
+})();
 /* MODULE: modules/image-dropper/image-dropper.js */
 (async () => {
 	const room = document.querySelector("[oceloti-room]");
@@ -780,116 +1006,6 @@ async function fetch_arena({
 			}, 0);
 		}
 	}
-})();
-/* MODULE: modules/inventory/inventory.js */
-(async () => {
-	if (!van) {
-		console.error("The inventory module depends on van.js");
-		return;
-	};
-
-	const hud = document.getElementById("hud");
-	const room = document.querySelector("[oceloti-room]");
-	
-	if (!room || !hud) return;
-
-	const { dialog, form, fieldset, input, p, div, a, button } = van.tags;
-
-	const dialog_el = dialog({
-		"oceloti-dialog": "arena-token",
-		onclose: (e) => e.target.remove(),
-		style: `
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-		`,
-	},
-		form({
-			method: "dialog",
-			onsubmit: async (e) => {
-				e.preventDefault();
-				const form = new FormData(e.target);
-				const fields = {};
-				for (const [key, value] of form.entries()) {
-					fields[key] = value;
-				}
-				
-				const res = await arena_sign_in(fields.token);
-
-				const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
-
-				messages_el.innerHTML = "";
-				
-				if (res.status === "error") {
-					van.add(messages_el, div({
-						"class": "nugget nugget-error"
-					}, 
-						p(res.message)
-					));
-					return;
-				}
-
-				if (res.status === "success") {
-					van.add(messages_el, div({ 
-						"class": "nugget nugget-success"
-					},
-						p(res.message),
-						button({ onclick: () => dialog_el.close()}, 
-							"Close"
-						)
-					));
-				}
-			}
-		},
-			p({
-				style: "margin-bottom: 1rem;",
-			},
-				"To get your token visit: ",
-				a({
-					target: "_blank",
-					href: "https://arena-token-gen.vercel.app/"
-				},
-					"suna.garden/get-token"
-				)
-			),
-			fieldset({
-				style: `
-					display: flex;
-					gap: 0.5rem;
-				`
-			},
-				input({
-					"name": "token",
-					"type": "text",
-					"required": "true",
-					"style": "width: 100%;",
-					"autocomplete": "off",
-					// @TODO: Fix this absurd bug... wtf.
-					onclick: (e) => e.target.focus()
-				}),
-				button({
-					style: `
-						width: fit-content;
-						white-space: nowrap;
-					`,
-					"type": "submit"
-				},
-					"Submit"
-				)
-			)
-		),
-		div({ "oceloti-dialog-messages": "" })
-	);
-
-	van.add(room, button({
-		style: "left: 300px; top: 300px; position: absolute;",
-		onclick: () => {
-			van.add(document.body, dialog_el);
-			dialog_el.showModal();
-		}
-	},
-		"* Sign In"
-	));
 })();
 </script>
 </html>

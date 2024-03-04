@@ -11,6 +11,11 @@
 	--card-elevated-1:
 		drop-shadow(0 1.25rem 3rem rgba(0, 0, 0, 0.30))
 		drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.22));
+	--card-elevated-2:
+		drop-shadow(0 1.25rem 1.5rem rgba(0, 0, 0, 0.30))
+		drop-shadow(0 1rem 1rem rgba(0, 0, 0, 0.22));
+	--ease-curve-1:
+		cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html {
@@ -18,19 +23,16 @@ html {
 	font-family: monospace;
 }
 
-#hud {
-	position: fixed;
-	left: 0;
-	top: 0;
-}
-
 .paper {
-	background-color: white;
 	filter: var(--card-thickness-1);
 }
 
+.backpack:hover {
+	transform: scale(1.1);
+}
+
 [oceloti-card] {
-	transition: filter, transform cubic-bezier(0.16, 1, 0.3, 1) 300ms;
+	transition: filter, transform var(--ease-curve-1) 300ms;
 }
 
 [oceloti-card-state="elevated"] {
@@ -41,7 +43,7 @@ html {
 
 [oceloti-dialog] {
 	border: none;
-	position: absolute;
+	position: fixed;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
@@ -50,7 +52,7 @@ html {
 }
 
 [oceloti-dialog]::backdrop {
-	background-color: rgba(0, 0, 0, 0.65);
+	background-color: rgba(0, 0, 0, 0.25);
 }
 
 .nugget {
@@ -59,7 +61,7 @@ html {
 	justify-content: space-between;
 	padding: 0.35rem;
 	border-radius: 0.5rem;
-	background-color: whitesmoke;
+	background-color: lavender;
 }
 
 .nugget > p {
@@ -80,6 +82,7 @@ html {
 button {
 	display: flex;
 	align-items: center;
+	gap: 3px;
 	line-height: 1.2;
 	background: lightgray;
 	color: black;
@@ -87,8 +90,55 @@ button {
 	border-radius: 0.5rem;
 	border: none;
 	cursor: pointer;
+	text-transform: lowercase;
+	transition: filter, transform var(--ease-curve-1) 150ms;
+	filter: drop-shadow(2px 2px);
 }
 
 button:hover {
 	background-color: lightblue;
+}
+
+button:active {
+	background-color: skyblue;
+	transform: scale(0.95);
+	filter: drop-shadow(0px 0px);
+}
+
+button.selected {
+	background-color: mediumaquamarine;
+}
+
+#hud {
+	position: fixed;
+	left: 0;
+	top: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 12px;
+}
+
+.inventory-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 2px;
+	padding: 4px;
+	position: absolute;
+	left: 0;
+	bottom: -8px;
+	width: fit-content;
+	max-height: 65vh;
+	overflow: scroll;
+	background-color: lightgray;
+	border-radius: 0.5rem;
+	transform: translateY(100%);
+	filter: drop-shadow(2px 2px);
+}
+
+.inventory-slot {
+	border: 1px solid darkgray;
+	border-radius: 4px;
+	width: 48px;
+	height: 48px;
 }
