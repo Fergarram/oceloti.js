@@ -201,6 +201,39 @@ button.selected {
 	background-color: mediumaquamarine;
 }
 
+button[disabled] {
+	opacity: 0.5;
+	pointer-events: none;
+	font-style: italic;
+}
+
+#oceloti-menu {
+	position: absolute;
+	max-width: 200px;
+	width: fit-content;
+	height: fit-content;
+	background: lightgray;
+	padding: 3px;
+	filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
+	border-radius: 4px;
+	z-index: 9999999;
+}
+
+#oceloti-menu button {
+	width: 100%;
+	filter: none;
+}
+
+@keyframes slide_in {
+  from {
+    opacity: 0;
+    transform: translateY(95%);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 #hud {
 	position: fixed;
 	left: 0;
@@ -209,6 +242,13 @@ button.selected {
 	flex-wrap: wrap;
 	gap: 8px;
 	padding: 12px;
+	transition: opacity var(--ease-curve-1) 200ms;
+}
+
+.is-scrolling #hud {
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
 }
 
 .inventory-grid {
@@ -226,6 +266,9 @@ button.selected {
 	border-radius: 0.5rem;
 	transform: translateY(100%);
 	filter: drop-shadow(2px 2px);
+	animation-name: slide_in;
+	animation-duration: 200ms;
+	animation-fill-mode: forwards;
 }
 
 .inventory-slot {
@@ -302,15 +345,20 @@ button.selected {
 	save-to-file
 	inventory
 ">/* MODULE: modules/standard-controls/standard-controls.js */
+function are_dialogs_open() {
+	const dialogs = document.querySelectorAll('dialog');
+	return Array.from(dialogs).some(dialog => dialog.open);
+}
+
 (async () => {
-	const room_el = document.querySelector("[oceloti-room]");
+	const room = document.querySelector("[oceloti-room]");
 
 	let room_width = 0;
 	let room_height = 0;
 
-	if (room_el) {
-		room_width = room_el.offsetWidth;
-		room_height = room_el.offsetHeight;
+	if (room) {
+		room_width = room.offsetWidth;
+		room_height = room.offsetHeight;
 	}
 
 	// @TODO: Save zoom to local storage.
@@ -327,9 +375,11 @@ button.selected {
 
 	let is_panning = false;
 	let scroll_ticking = false;
+	let is_scrolling = false;
+	let scrolling_timeout = null;
 
 	window.requestAnimationFrame(step);
-	window.addEventListener("mousedown", handle_mousedown);
+	room.addEventListener("mousedown", handle_mousedown);
 	window.addEventListener("mouseup", handle_mouseup);
 	window.addEventListener("mousemove", handle_mousemove);
 	window.addEventListener("scroll", handle_scroll);
@@ -348,11 +398,6 @@ button.selected {
 			});
 		}
 		window.requestAnimationFrame(step);
-	}
-
-	function are_dialogs_open() {
-		const dialogs = document.querySelectorAll('dialog');
-		return Array.from(dialogs).some(dialog => dialog.open);
 	}
 
 	function handle_mousedown(e) {
@@ -388,6 +433,15 @@ button.selected {
 	function handle_scroll(e) {
 		if (!scroll_ticking) {
 			window.requestAnimationFrame(() => {
+				if (!is_scrolling) {
+					document.body.classList.toggle("is-scrolling");
+				}
+				is_scrolling = true;
+				clearTimeout(scrolling_timeout);
+	            scrolling_timeout = setTimeout(() => {
+					document.body.classList.toggle("is-scrolling");
+	                is_scrolling = false;
+	            }, 150);
 				camera_x = window.scrollX;
 				camera_y = window.scrollY;
 				localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
@@ -669,12 +723,33 @@ button.selected {
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 	];
 
+	const show_inventory = van.state(false);
+
+	const inventory_grid = div({
+		class: "inventory-grid",
+		style: () => `
+			display: ${show_inventory.val ? "grid" : "none"}
+		`
+	},
+		slots.map(slot => div({
+			"oceloti-menu": "inventory-slot",
+			class: "inventory-slot",
+			onmousedown: (e) => {
+				if (e.button !== 2) return;
+				window.oceloti_menu_items = [
+					button({ onclick: () => console.log("tello") }, "test")
+				];
+			},
+		}))
+	);
+
 	const inventory_launcher = div({
 		style: "position: relative;",
 	},
 		button({
 			onclick: (e) => {
 				e.target.classList.toggle("selected");
+				show_inventory.val = !show_inventory.val;
 			}
 		},
 			img({
@@ -683,11 +758,7 @@ button.selected {
 			}),
 			"backpack"
 		),
-		div({
-			class: "inventory-grid"
-		},
-			slots.map(slot => div({ class: "inventory-slot" }))
-		)
+		inventory_grid
 	);
 
 	van.add(hud, inventory_launcher);

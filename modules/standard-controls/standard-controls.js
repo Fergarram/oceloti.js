@@ -1,12 +1,17 @@
+function are_dialogs_open() {
+	const dialogs = document.querySelectorAll('dialog');
+	return Array.from(dialogs).some(dialog => dialog.open);
+}
+
 (async () => {
-	const room_el = document.querySelector("[oceloti-room]");
+	const room = document.querySelector("[oceloti-room]");
 
 	let room_width = 0;
 	let room_height = 0;
 
-	if (room_el) {
-		room_width = room_el.offsetWidth;
-		room_height = room_el.offsetHeight;
+	if (room) {
+		room_width = room.offsetWidth;
+		room_height = room.offsetHeight;
 	}
 
 	// @TODO: Save zoom to local storage.
@@ -23,9 +28,11 @@
 
 	let is_panning = false;
 	let scroll_ticking = false;
+	let is_scrolling = false;
+	let scrolling_timeout = null;
 
 	window.requestAnimationFrame(step);
-	window.addEventListener("mousedown", handle_mousedown);
+	room.addEventListener("mousedown", handle_mousedown);
 	window.addEventListener("mouseup", handle_mouseup);
 	window.addEventListener("mousemove", handle_mousemove);
 	window.addEventListener("scroll", handle_scroll);
@@ -44,11 +51,6 @@
 			});
 		}
 		window.requestAnimationFrame(step);
-	}
-
-	function are_dialogs_open() {
-		const dialogs = document.querySelectorAll('dialog');
-		return Array.from(dialogs).some(dialog => dialog.open);
 	}
 
 	function handle_mousedown(e) {
@@ -84,6 +86,15 @@
 	function handle_scroll(e) {
 		if (!scroll_ticking) {
 			window.requestAnimationFrame(() => {
+				if (!is_scrolling) {
+					document.body.classList.toggle("is-scrolling");
+				}
+				is_scrolling = true;
+				clearTimeout(scrolling_timeout);
+	            scrolling_timeout = setTimeout(() => {
+					document.body.classList.toggle("is-scrolling");
+	                is_scrolling = false;
+	            }, 150);
 				camera_x = window.scrollX;
 				camera_y = window.scrollY;
 				localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
