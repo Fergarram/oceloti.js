@@ -417,6 +417,7 @@ function are_dialogs_open() {
 	// @TODO: Save zoom to local storage.
 	window.zoom = 100;
 
+	// @FIXME: Check if the window.location is exactly the same.
 	const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
 	const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
 
@@ -853,6 +854,7 @@ function are_dialogs_open() {
 	    		top: ${e.clientY}px;
 	    	`
 	    },
+	    	// @LAST: I want to use groups instead of array to enable adding menu items from multiple contexts.
 	    	window.oceloti_menu_items.length > 0
 	    		? window.oceloti_menu_items.map(i => i)
 	    		: button({ "disabled": "true" }, "Nothing to do")
@@ -1005,15 +1007,6 @@ async function fetch_arena({
 					},
 						"🎒 Put away"
 					),
-					// div({
-					// 	style: `
-					// 		width: 100%;
-					// 		border-bottom: 1px solid gray;
-					// 		pointer-events: none;
-					// 		padding-bottom: 2px;
-					// 		margin-bottom: 2px;
-					// 	`
-					// }),
 					button({
 						onclick: () => card.remove()
 					},

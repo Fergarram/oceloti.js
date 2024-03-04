@@ -54,6 +54,7 @@
 	    		top: ${e.clientY}px;
 	    	`
 	    },
+	    	// @LAST: I want to use groups instead of array to enable adding menu items from multiple contexts.
 	    	window.oceloti_menu_items.length > 0
 	    		? window.oceloti_menu_items.map(i => i)
 	    		: button({ "disabled": "true" }, "Nothing to do")

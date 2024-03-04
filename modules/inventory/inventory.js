@@ -65,15 +65,6 @@
 					},
 						"🎒 Put away"
 					),
-					// div({
-					// 	style: `
-					// 		width: 100%;
-					// 		border-bottom: 1px solid gray;
-					// 		pointer-events: none;
-					// 		padding-bottom: 2px;
-					// 		margin-bottom: 2px;
-					// 	`
-					// }),
 					button({
 						onclick: () => card.remove()
 					},
