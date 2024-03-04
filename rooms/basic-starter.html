@@ -167,6 +167,10 @@ html {
 	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }
 
+.paper {
+	filter: var(--card-thickness-1);
+}
+
 [oceloti-card] {
 	transition: filter, transform var(--ease-curve-1) 300ms;
 }
@@ -241,10 +245,6 @@ button[disabled] {
 	opacity: 0.5;
 	pointer-events: none;
 	font-style: italic;
-}
-
-.paper {
-	filter: var(--card-thickness-1);
 }
 
 .nugget {
