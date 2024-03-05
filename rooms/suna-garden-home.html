@@ -2,15 +2,13 @@
 <html oceloti-reset="black">
 <head>
 	<meta charset="utf-8">
-	<title>Arena Garden</title>
-	<meta name="description" content="A simple room arena cards.">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>suna.garden</title>
+	<meta name="description" content="Make cool html rooms.">
 	<link
 		rel="icon"
 		href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANVJREFUOI1jYKAXyNpn8B+bOBMxiki2Cd0gbGJYXcDAwMBw9podimtgNEycoAHoNsM0n8yZxEiUASdzJjFisw2XNxgZGBgYzKfk/TfWOoThFXQxGJjmdAHuGjjDfEoe3HRkjcgGTXO6wAizDGYIhr+CvFX+MzAwMEgU8zAwMDAwvOj9giK/busdxqx9Bv9hBmCEwbqtdxh71ZgYSjd/Y4AZ1KvGxNCrxsSwbusdDAvxxgLMEHSAHAZ4DcBnCNEGEAJYEwcDAwPD/UI1lDhX7L+FUy1FAACzKVgfYDnMVgAAAABJRU5ErkJggg=="
 	></link>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 	<style oceloti-assets="*">
 		:root {
 --assets-bin-png: url('data:image/png;base64,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');
@@ -400,27 +398,82 @@ button[disabled] {
 	font-family: "Noto Color Emoji", sans-serif;
 }
 </style>
+	<style>
+		#entrance {
+			width: 100vw;
+			height: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			color: white;
+			gap: 1.5rem;
+			padding-top: 10rem;
+			user-select: none;
+		}
+		
+		#entrance h1 {
+			font-size: 4rem;
+		}
+
+		#entrance h2 {
+			margin-top: 2rem;
+			font-size: 2rem;
+			font-weight: semibold;
+		}
+
+		#entrance p {
+			font-size: 1.15rem;
+			line-height: 1.35;
+			max-width: 28em;
+			text-align: center;
+		}
+
+		#entrance a:not(.button) {
+			color: white;
+			text-decoration: underline;
+		}
+
+		#entrance a:not(.button):hover {
+			font-style: italic;
+		}
+
+		#entrance p.headline {
+			font-size: 1.5rem;
+			max-width: 28em;
+		}
+	</style>
 </head>
 <body>
 	<main
 		oceloti-room=""
 		style="
-			width: 2000px;
-			height: 2000px;
+			width: 8000px;
+			height: 8000px;
 			background-color: white;
-			background-image: var(--assets-wood-png);
-/*			background-image: var(--assets-grid2-png);*/
+			background-image: var(--assets-grid2-png);
 			background-size: 128px;
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
+		<section id="entrance">
+			<h1>SUNA.GARDEN</h1>
+			<p class="headline">Welcome to suna.garden, a tool for making digital gardens and online spaces.</p>
+			<a class="button" href="#center">Start Exploring</a>
 
+			<h2>
+				How was this built?
+			</h2>
+			<p>
+				This tool was made using <a href="https://github.com/Fergarram/oceloti.js">Oceloti.js</a>, a webroom framework that I created after prototyping a lot of infinite canvas tools. 
+			</p>
+		</section>
+		<figure oceloti-card="" class="paper" style="width: 150px; height: 97px; left: 708px; top: 332.5px;" oceloti-card-state="idle"><img src="../assets/mouse.gif" draggable="false"></figure>
 		<article
 			oceloti-card=""
 			class="paper"
 			style="
-				left: 400px;
-				top: 240px;
+				left: 4000px;
+				top: 4000px;
 				width: 300px;
 				height: 400px;
 				overflow: scroll;
@@ -436,36 +489,17 @@ button[disabled] {
 				padding: 0 4px;
 				image-rendering: pixelated;
 			">
-				In any case...<br />
-				In any case...<br />
-				In any case...<br />
-				In any case...<br />
-				In any case...<br />
-				In any case...<br />
+				Hey there,
+				<br><br>
+				Try to drag cards around and use the mouse wheel to pan through the room.
+				<br><br>
+				You can play around and download your room html file by hitting CTRL/CMD+S.
+				<br><br>
+				Have fun!
+				<br><br>
+				NOTE: You can upload your html file to <a href="https://are.na/">are.na</a> and host it that way :)
 			</div>
 		</article>
-
-		<figure id="clock" oceloti-card="" style="
-			position: relative;
-			overflow: hidden;
-			border-radius: 500px;
-			left: 800px;
-			top: 20px;
-			width: 200px;
-			height: 200px;
-		">
-			<img
-				draggable="false"
-				style="
-					max-width: unset;
-					position: absolute;
-					left: 50%;
-					top: 50%;
-					transform: translate(-50%, -50%) scale(0.5);
-				"
-				src="https://d2w9rnfcy7mm78.cloudfront.net/93462/original_45ef418ca39caeea179b55d058de97c3.gif?1364910097?bc=1"
-				alt="clock">
-		</figure>
 	</main>
 	<div id="hud"></div>
 </body>

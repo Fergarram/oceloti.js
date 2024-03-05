@@ -92,7 +92,7 @@ fieldset {
 	user-select: none;
 }
 /* MODULE: modules/inventory/inventory.css */
-@keyframes slide_in {
+@keyframes slide_top {
   from {
     opacity: 0;
     transform: translateY(95%);
@@ -117,7 +117,7 @@ fieldset {
 	border-radius: 0.5rem;
 	transform: translateY(100%);
 	filter: drop-shadow(2px 2px);
-	animation-name: slide_in;
+	animation-name: slide_top;
 	animation-duration: 200ms;
 	animation-fill-mode: forwards;
 }
@@ -131,6 +131,16 @@ fieldset {
 
 .inventory-slot:hover {
 	background-color: silver;
+}
+
+.inventory-item {
+	user-select: none;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+	font-size: 30px;
 }
 /* MODULE: modules/paper-theme/paper-theme.css */
 :root {
@@ -205,12 +215,19 @@ html {
 	transition: opacity var(--ease-curve-1) 200ms;
 }
 
+.has-zoom #hud {
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
+}
+
 .is-scrolling #hud {
 	opacity: 0;
 	pointer-events: none;
 	user-select: none;
 }
 
+.button,
 button {
 	display: flex;
 	align-items: center;
@@ -225,22 +242,27 @@ button {
 	text-transform: lowercase;
 	transition: filter, transform var(--ease-curve-1) 150ms;
 	filter: drop-shadow(2px 2px);
+	text-decoration: none;
 }
 
+.button:hover,
 button:hover {
 	background-color: lightblue;
 }
 
+.button:active,
 button:active {
 	background-color: skyblue;
 	transform: scale(0.95);
 	filter: drop-shadow(0px 0px);
 }
 
+.button.selected,
 button.selected {
-	background-color: mediumaquamarine;
+	background-color: skyblue;
 }
 
+.button[disabled],
 button[disabled] {
 	opacity: 0.5;
 	pointer-events: none;
@@ -271,6 +293,9 @@ button[disabled] {
 	color: black;
 }
 
+.emoji {
+	font-family: "Noto Color Emoji", sans-serif;
+}
 </style>
 </head>
 <body>
@@ -462,6 +487,11 @@ function are_dialogs_open() {
 		zoom = Math.round(zoom + dir);
 		zoom = Math.round(zoom / 10) * 10;
 		window.zoom = zoom;
+		if (zoom === 100) {
+			document.body.classList.remove("has-zoom");
+		} else {
+			document.body.classList.add("has-zoom");
+		}
 		window.dispatchEvent(new Event("zoom"));
 	}
 })();
@@ -727,8 +757,8 @@ function are_dialogs_open() {
 	const { div, button, img } = van.tags;
 
 	const slots = [
-		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+		"📔","","📼","📃","🖼️","","📺","✂️","📷","📅","📻","","","","📰","","","",
+		"","","","📖","","","🔗","","✏️","","","💾","","","","","","",
 	];
 
 	const show_inventory = van.state(false);
@@ -748,7 +778,9 @@ function are_dialogs_open() {
 					button({ onclick: () => console.log("tello") }, "test")
 				];
 			},
-		}))
+		},
+			div({ class: "inventory-item emoji" }, slot)
+		))
 	);
 
 	const inventory_launcher = div({

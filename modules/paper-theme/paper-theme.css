@@ -70,12 +70,19 @@ html {
 	transition: opacity var(--ease-curve-1) 200ms;
 }
 
+.has-zoom #hud {
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
+}
+
 .is-scrolling #hud {
 	opacity: 0;
 	pointer-events: none;
 	user-select: none;
 }
 
+.button,
 button {
 	display: flex;
 	align-items: center;
@@ -90,22 +97,27 @@ button {
 	text-transform: lowercase;
 	transition: filter, transform var(--ease-curve-1) 150ms;
 	filter: drop-shadow(2px 2px);
+	text-decoration: none;
 }
 
+.button:hover,
 button:hover {
 	background-color: lightblue;
 }
 
+.button:active,
 button:active {
 	background-color: skyblue;
 	transform: scale(0.95);
 	filter: drop-shadow(0px 0px);
 }
 
+.button.selected,
 button.selected {
-	background-color: mediumaquamarine;
+	background-color: skyblue;
 }
 
+.button[disabled],
 button[disabled] {
 	opacity: 0.5;
 	pointer-events: none;
@@ -134,4 +146,8 @@ button[disabled] {
 .nugget-success {
 	background-color: darkseagreen;
 	color: black;
+}
+
+.emoji {
+	font-family: "Noto Color Emoji", sans-serif;
 }

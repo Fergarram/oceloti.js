@@ -121,6 +121,11 @@ function are_dialogs_open() {
 		zoom = Math.round(zoom + dir);
 		zoom = Math.round(zoom / 10) * 10;
 		window.zoom = zoom;
+		if (zoom === 100) {
+			document.body.classList.remove("has-zoom");
+		} else {
+			document.body.classList.add("has-zoom");
+		}
 		window.dispatchEvent(new Event("zoom"));
 	}
 })();

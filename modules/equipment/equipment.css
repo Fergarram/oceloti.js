@@ -1,45 +1,44 @@
-@keyframes slide_top {
+@keyframes slide_bottom {
   from {
     opacity: 0;
-    transform: translateY(95%);
+    transform: translate(0, 95%);
   }
   to {
     opacity: 1;
   }
 }
 
-.inventory-grid {
+.equipment-grid {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
-	gap: 2px;
+	gap: 4px;
 	padding: 4px;
-	position: absolute;
-	left: 0;
-	bottom: -8px;
+	background-color: lightgray;
+	position: fixed;
+	left: 12px;
+	bottom: 12px;
 	width: fit-content;
 	max-height: 65vh;
 	overflow: scroll;
-	background-color: lightgray;
-	border-radius: 0.5rem;
-	transform: translateY(100%);
-	filter: drop-shadow(2px 2px);
-	animation-name: slide_top;
+	animation-name: slide_bottom;
 	animation-duration: 200ms;
 	animation-fill-mode: forwards;
+	filter: drop-shadow(2px 2px);
+	border-radius: 0.5rem;
 }
 
-.inventory-slot {
+.equipment-slot {
 	border: 1px solid darkgray;
 	border-radius: 4px;
 	width: 48px;
 	height: 48px;
 }
 
-.inventory-slot:hover {
+.equipment-slot:hover {
 	background-color: silver;
 }
 
-.inventory-item {
+.equipment-item {
 	user-select: none;
 	display: flex;
 	width: 100%;

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html oceloti-reset="black">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>suna.garden</title>
+	<meta name="description" content="Make cool html rooms.">
+	<link
+		rel="icon"
+		href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANVJREFUOI1jYKAXyNpn8B+bOBMxiki2Cd0gbGJYXcDAwMBw9podimtgNEycoAHoNsM0n8yZxEiUASdzJjFisw2XNxgZGBgYzKfk/TfWOoThFXQxGJjmdAHuGjjDfEoe3HRkjcgGTXO6wAizDGYIhr+CvFX+MzAwMEgU8zAwMDAwvOj9giK/busdxqx9Bv9hBmCEwbqtdxh71ZgYSjd/Y4AZ1KvGxNCrxsSwbusdDAvxxgLMEHSAHAZ4DcBnCNEGEAJYEwcDAwPD/UI1lDhX7L+FUy1FAACzKVgfYDnMVgAAAABJRU5ErkJggg=="
+	></link>
+	<style oceloti-assets="*">
+		/* STATIC ASSETS */
+	</style>
+	<style oceloti-modules="
+		css-reset
+		oceloti
+		draggable-cards
+		context-menu
+		inventory
+		equipment
+		paper-theme
+	">/* STYLE MODULES */</style>
+	<style>
+		#entrance {
+			width: 100vw;
+			height: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			color: white;
+			gap: 1.5rem;
+			padding-top: 10rem;
+			user-select: none;
+		}
+		
+		#entrance h1 {
+			font-size: 4rem;
+		}
+
+		#entrance h2 {
+			margin-top: 2rem;
+			font-size: 2rem;
+			font-weight: semibold;
+		}
+
+		#entrance p {
+			font-size: 1.15rem;
+			line-height: 1.35;
+			max-width: 28em;
+			text-align: center;
+		}
+
+		#entrance a:not(.button) {
+			color: white;
+			text-decoration: underline;
+		}
+
+		#entrance a:not(.button):hover {
+			font-style: italic;
+		}
+
+		#entrance p.headline {
+			font-size: 1.5rem;
+			max-width: 28em;
+		}
+	</style>
+</head>
+<body>
+	<main
+		oceloti-room=""
+		style="
+			width: 8000px;
+			height: 8000px;
+			background-color: white;
+			background-image: var(--assets-grid2-png);
+			background-size: 128px;
+			image-rendering: pixelated;
+	">
+		<div id="center" aria-hidden="true" oceloti-area="center"></div>
+		<section id="entrance">
+			<h1>SUNA.GARDEN</h1>
+			<p class="headline">Welcome to suna.garden, a tool for making digital gardens and online spaces.</p>
+			<a class="button" href="#center">Start Exploring</a>
+
+			<h2>
+				How was this built?
+			</h2>
+			<p>
+				This tool was made using <a href="https://github.com/Fergarram/oceloti.js">Oceloti.js</a>, a webroom framework that I created after prototyping a lot of infinite canvas tools. 
+			</p>
+		</section>
+		<figure oceloti-card="" class="paper" style="width: 150px; height: 97px; left: 708px; top: 332.5px;" oceloti-card-state="idle"><img src="../assets/mouse.gif" draggable="false"></figure>
+		<article
+			oceloti-card=""
+			class="paper"
+			style="
+				left: 4000px;
+				top: 4000px;
+				width: 300px;
+				height: 400px;
+				overflow: scroll;
+				padding: 8px;
+				background-color: #f9f7ee;
+			">
+			<div style="
+				width: 100%;
+				height: 100%;
+				background-image: var(--assets-grid1-png);
+				background-size: 20px;
+				line-height: 20px;
+				padding: 0 4px;
+				image-rendering: pixelated;
+			">
+				Hey there,
+				<br><br>
+				Try to drag cards around and use the mouse wheel to pan through the room.
+				<br><br>
+				You can play around and download your room html file by hitting CTRL/CMD+S.
+				<br><br>
+				Have fun!
+				<br><br>
+				NOTE: You can upload your html file to <a href="https://are.na/">are.na</a> and host it that way :)
+			</div>
+		</article>
+	</main>
+	<div id="hud"></div>
+</body>
+<script oceloti-modules="
+	oceloti
+	standard-controls
+	draggable-cards
+	van
+	context-menu
+	arena-api
+	inventory
+	equipment
+	arena-cards
+	image-dropper
+	save-to-file
+">/* SCRIPT MODULES */</script>
+</html>

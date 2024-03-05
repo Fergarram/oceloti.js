@@ -12,8 +12,8 @@
 	const { div, button, img } = van.tags;
 
 	const slots = [
-		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+		"📔","","📼","📃","🖼️","","📺","✂️","📷","📅","📻","","","","📰","","","",
+		"","","","📖","","","🔗","","✏️","","","💾","","","","","","",
 	];
 
 	const show_inventory = van.state(false);
@@ -33,7 +33,9 @@
 					button({ onclick: () => console.log("tello") }, "test")
 				];
 			},
-		}))
+		},
+			div({ class: "inventory-item emoji" }, slot)
+		))
 	);
 
 	const inventory_launcher = div({
