@@ -64,9 +64,7 @@
 		    if (dragged_card !== null) return;
 		    const target = e.target;
 		    if (
-		        typeof target.dataset.ignoredrag !== "undefined" ||
-		        target.dataset.ignoredrag === "true" ||
-		        target.dataset.ignoredrag === true ||
+		        card.getAttribute("oceloti-card-state") !== "idle" ||
 		        target.tagName === "A" ||
 		        target.tagName === "BUTTON" ||
 		        target.tagName === "INPUT" ||

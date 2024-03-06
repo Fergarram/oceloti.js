@@ -23,10 +23,6 @@ html {
 	font-family: monospace;
 }
 
-.paper {
-	filter: var(--card-thickness-1);
-}
-
 [oceloti-card] {
 	transition: filter, transform var(--ease-curve-1) 300ms;
 }
@@ -113,6 +109,16 @@ button[disabled] {
 	opacity: 0.5;
 	pointer-events: none;
 	font-style: italic;
+}
+
+.button *,
+button * {
+	pointer-events: none;
+}
+
+.button .emoji,
+button .emoji {
+	filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5));
 }
 
 .nugget {
