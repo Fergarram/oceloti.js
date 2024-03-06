@@ -1,3 +1,8 @@
+[oceloti-card] {
+	cursor: var(--assets-cursors-grab-svg), grab;
+}
+
 .is-dragging * {
 	user-select: none;
+	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }

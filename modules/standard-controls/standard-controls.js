@@ -16,7 +16,15 @@ function are_dialogs_open() {
 
 	// @TODO: Save zoom to local storage.
 	window.zoom = 100;
-	if (!window.location.hash) window.scrollTo(0,0);
+
+	if (window.location.hash) {
+		const id = window.location.hash.replace("#", "");
+		const el = document.getElementById(id);
+		if (el) el.scrollIntoView();
+		else window.scrollTo(0,0);
+	} else {
+		window.scrollTo(0,0);
+	}
 
 	let camera_x = 0;
 	let camera_y = 0;
