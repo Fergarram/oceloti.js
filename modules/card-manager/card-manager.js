@@ -1,4 +1,4 @@
-(async () => {
+(() => {
 	const card_query = document.querySelectorAll("[oceloti-card]");
 	const room = document.querySelector("[oceloti-room]");
 

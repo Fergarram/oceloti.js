@@ -11,10 +11,32 @@
 
 	const { div, button, img } = van.tags;
 
-	const slots = [
-		"","","","📃","","","","","","","","","","","","","","",
-		"","","","","","","","","","","","","","","","","","",
+	const items = [
+		{
+			icon: "📃",
+			grid_x: 3,
+			grid_y: 1,
+			width: 300,
+			height: -1,
+			card: "notebook-paper",
+			state: "read",
+			content: "Hello youtube!\n\n This is ugly."
+		}
 	];
+
+	const slots = [
+		null,null,null,
+		null,null,null,
+		null,null,null,
+		null,null,null,
+		null,null,null,
+		null,null,null,
+	];
+
+	items.forEach((item) => {
+		const index = (item.grid_y - 1) * 3 + (item.grid_x - 1);
+  		slots[index] = item;
+	});
 
 	const show_inventory = van.state(false);
 
@@ -24,17 +46,20 @@
 			display: ${show_inventory.val ? "grid" : "none"}
 		`
 	},
-		slots.map(slot => div({
+		slots.map(item => div({
 			"oceloti-menu": "inventory-slot",
 			class: "inventory-slot",
 			onmousedown: (e) => {
-				if (e.button !== 2) return;
+				if (e.button !== 2 || !item) return;
 				window.oceloti_menu["inventory_item"] = [
-					button({ onclick: () => console.log("tello") }, "test")
+					button({ onclick: () => {
+						const event = new CustomEvent("inventorydrop", { detail: { item } });
+						window.dispatchEvent(event);
+					}}, "Drop")
 				];
 			},
 		},
-			div({ class: "inventory-item emoji" }, slot)
+			div({ class: "inventory-item emoji" }, item ? item.icon : "")
 		))
 	);
 

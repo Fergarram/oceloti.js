@@ -2,61 +2,32 @@
 	const room = document.querySelector("[oceloti-room]");
 	if (!room) return;
 
-	// NOTEBOOK PAPER
-
 	const { article, div, button, span } = van.tags;
 
-	const paper_content = div({
-		"oceloti-ref": "content"
-	});
+	function ReadState({ x, y, w }, text) {
+		const html = text.replaceAll("\n", "<br/>");
+		const el = article({
+			"oceloti-card": "notebook-paper",
+			"oceloti-inner-state": "read",
+			style: `
+				left: ${x}px;
+				top: ${y}px;
+				width: ${w}px;
+			`
+		},
+			div({
+				"oceloti-ref": "content"
+			})
+		);
+		el.firstElementChild.innerHTML = html;
+		return { el, html: el.outerHTML };
+	}
 
-	const paper = article({
-		"oceloti-card": "notebook-paper",
-		"oceloti-inner-state": "read",
-		style: `
-			left: 3800px;
-			top: 3800px;
-			width: 300px;
-		`
-	},
-		paper_content
-	);
+	function initialize_paper(card) {
+		const initial_state = card.getAttribute("oceloti-inner-state");
+		const state = van.state(initial_state);
 
-	van.add(room, paper);
-
-	window.addEventListener("carddrop", ({ detail: { card } }) => {
-
-		const toggle_ref = paper.querySelector(`[oceloti-ref="toggle"]`);
-		if (toggle_ref) {
-			toggle_ref.remove();
-		}
-
-		const state = van.state("read");
-
-		function handle_toggle() {
-			const content = card.querySelector(`[oceloti-ref="content"]`)
-
-			if (state.val === "read") {
-				state.val = "write";
-				card.setAttribute("oceloti-inner-state", "write");
-				card.setAttribute("oceloti-card-state", "active");
-				content.setAttribute("contenteditable", "");
-			} else {
-				state.val = "read"
-				card.setAttribute("oceloti-inner-state", "read");
-				card.setAttribute("oceloti-card-state", "idle");
-				content.removeAttribute("contenteditable");
-			}
-
-			content.addEventListener("mousedown", (e) => {
-				if (e.button !== 2) return;
-				window.oceloti_menu["paper_actions"] = [
-					button({ onclick: handle_toggle }, () => state.val === "read" ? "📝 Write" : "👓 Read")
-				];
-			});
-		}
-
-		const paper_toggle = button({
+		const toggle = button({
 			"oceloti-ref": "toggle",
 			style: `
 				position: absolute;
@@ -68,12 +39,51 @@
 			span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
 		);
 
-		van.add(card, paper_toggle);
+		van.add(card, toggle);
 
-		window.oceloti_menu["paper_actions"] = [
-			button({ onclick: handle_toggle }, () => state.val === "read" ? "📝 Write" : "👓 Read")
-		];
+		const content = card.querySelector(`[oceloti-ref="content"]`)
+
+		content.addEventListener("mousedown", (e) => {
+			if (e.button !== 2) return;
+			window.oceloti_menu["paper_actions"] = [
+				button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
+			];
+		});
+
+		function handle_toggle() {
+			if (state.val === "read") {
+				state.val = "write";
+				card.setAttribute("oceloti-inner-state", "write");
+				card.setAttribute("oceloti-card-state", "active");
+				content.setAttribute("contenteditable", "");
+			} else {
+				state.val = "read"
+				card.setAttribute("oceloti-inner-state", "read");
+				card.setAttribute("oceloti-card-state", "idle");
+				content.removeAttribute("contenteditable");
+			}
+		}
+	}
+
+	window.addEventListener("inventorydrop", ({ detail: { item } }) => {
+		if (item.card !== "notebook-paper")
+			return;
+
+		const note = ReadState({
+			x: window.scrollX + window.innerWidth/2,
+			y: window.scrollY + window.innerHeight/2,
+			w: item.width
+		},
+			item.content
+		);
+
+		van.add(room, note.el);
 	});
 
-	// IMAGE PRINT
+	window.addEventListener("carddrop", ({ detail: { card } }) => {
+		if (card.getAttribute("oceloti-card") !== "notebook-paper")
+			return;
+
+		initialize_paper(card);
+	});
 })();
