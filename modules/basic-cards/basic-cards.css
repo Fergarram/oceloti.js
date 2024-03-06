@@ -18,3 +18,7 @@
 [oceloti-card="notebook-paper"] [oceloti-ref="content"]:focus {
 	outline: none;
 }
+
+[oceloti-card="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
+	user-select: none;
+}
