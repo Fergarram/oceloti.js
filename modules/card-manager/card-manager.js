@@ -24,25 +24,33 @@
 							node.getAttribute("oceloti-card-state") !== "elevated" &&
 							node.hasAttribute("oceloti-card")
 						) {
-							initialize_card(node);
+							card_drop(node);
 						}
 					});
 				}
 
-				// if (mutation.removedNodes.length > 0) {
-				// 	mutation.removedNodes.forEach((node) => {
-				// 		console.log(node);
-				// 	});
-				// }
+				if (mutation.removedNodes.length > 0) {
+					mutation.removedNodes.forEach((node) => {
+						if (
+							node.id !== "oceloti-floating-card" &&
+							node.getAttribute("oceloti-card-state") !== "elevated" &&
+							node.hasAttribute("oceloti-card")
+						) {
+							card_lift(node);
+						}
+					});
+				}
 			}
 		}
 	});
 
 	observer.observe(room, { childList: true });
 
-	all_cards.forEach(initialize_card);
+	window.addEventListener("load", () => {
+		all_cards.forEach(card_drop);
+	});
 
-	function initialize_card(card) {
+	function initialize_card_state(card) {
 	    setTimeout(() => {
 	    	card.setAttribute("oceloti-card-state", "idle");
 		    card.style.removeProperty("will-change");
@@ -134,12 +142,23 @@
 
 	    dragged_card.style.left = `${dragging_x}px`;
 	    dragged_card.style.top = `${dragging_y}px`;
-	    initialize_card(dragged_card);
+	    card_drop(dragged_card);
 
 	    wrapper.remove();
 	    dragged_card = null;
 
 	    window.removeEventListener("mousemove", handle_mousemove);
 	    window.removeEventListener("mouseup", handle_mouseup);
+	}
+
+	function card_drop(card) {
+		initialize_card_state(card);
+		const event = new CustomEvent("carddrop", { detail: { card } });
+		window.dispatchEvent(event);
+	}
+
+	function card_lift(card) {
+		const event = new CustomEvent("cardlift", { detail: { card } });
+		window.dispatchEvent(event);
 	}
 })();

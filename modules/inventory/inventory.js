@@ -29,7 +29,7 @@
 			class: "inventory-slot",
 			onmousedown: (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu_items = [
+				window.oceloti_menu["inventory_item"] = [
 					button({ onclick: () => console.log("tello") }, "test")
 				];
 			},
@@ -54,26 +54,22 @@
 
 	van.add(hud, inventory_launcher);
 
-	const all_cards = document.querySelectorAll("[oceloti-card]");
-	if (all_cards) {
-		Array.from(all_cards).forEach((card) => {
-			// @LAST: I need to create a global hook that allows me to do custom stuff when a card is mounted.
-			card.setAttribute("oceloti-menu", "card-menu");
-			card.addEventListener("mousedown", (e) => {
-				if (e.button !== 2) return;
-				window.oceloti_menu_items = [
-					button({
-						onclick: () => console.log("pack")
-					},
-						"🎒 Put away"
-					),
-					button({
-						onclick: () => card.remove()
-					},
-						"♻️ Trash card"
-					),
-				];
-			})
+	window.addEventListener("carddrop", ({ detail: { card } }) => {
+		card.setAttribute("oceloti-menu", "card-menu");
+		card.addEventListener("mousedown", (e) => {
+			if (e.button !== 2) return;
+			window.oceloti_menu["inventory_actions"] = [
+				button({
+					onclick: () => console.log("pack")
+				},
+					"🎒 Put away"
+				),
+				button({
+					onclick: () => card.remove()
+				},
+					"♻️ Trash card"
+				),
+			];
 		});
-	}
+	});
 })();

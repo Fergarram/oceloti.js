@@ -1,0 +1,5 @@
+.is-panning *,
+.is-dragging * {
+	user-select: none;
+	cursor: var(--assets-cursors-grabbed-svg), grabbing !important;
+}

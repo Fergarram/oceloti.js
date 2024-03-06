@@ -6,7 +6,11 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 
 When running the `build.js` script, it will generate the built `room` and replace it.
 
-TODO:
+## TODO
+
+Important:
+- [ ] Implement context menu groups
+ 
+Not urgent:
 - [ ] Compiler should only build modified blueprints.
-- [ ] Add compiler option: build prod option. 
-- [ ] Add compiler option: save previous room versions. 
+- [ ] Add compiler option: make backups

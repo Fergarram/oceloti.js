@@ -28,9 +28,6 @@
 			class: "equipment-slot",
 			onmousedown: (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu_items = [
-					button({ onclick: () => console.log("tello") }, "test")
-				];
 			},
 		},
 			div({ class: "equipment-item emoji" }, slot)

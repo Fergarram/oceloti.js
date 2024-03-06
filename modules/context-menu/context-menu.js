@@ -1,10 +1,12 @@
 (() => {
 	const hud = document.getElementById("hud");
-	window.oceloti_menu_items = [];
+	window.oceloti_menu = {};
 	document.addEventListener("contextmenu", function(e) {
+		const selection = window.getSelection();
 		if (
 	        are_dialogs_open() ||
 	        e.target.hasAttribute("use-native-menu") ||
+	        selection.type === "Range" ||
 	        e.target.tagName === "A" ||
 	        e.target.tagName === "INPUT" ||
 	        e.target.tagName === "TEXTAREA" ||
@@ -31,7 +33,7 @@
 			}
 
 			if (clean || !has_menu) {
-				window.oceloti_menu_items = [];
+				window.oceloti_menu = {};
 			}
 		}
 
@@ -49,15 +51,16 @@
 	    menu = div({
 	    	id: "oceloti-menu",
 	    	style: () => `
-	    		position: fixed;
 	    		left: ${e.clientX}px;
 	    		top: ${e.clientY}px;
 	    	`
 	    },
-	    	// @LAST: I want to use groups instead of array to enable adding menu items from multiple contexts.
-	    	window.oceloti_menu_items.length > 0
-	    		? window.oceloti_menu_items.map(i => i)
-	    		: button({ "disabled": "true" }, "Nothing to do")
+	    	Object.keys(window.oceloti_menu).length > 0
+	    		? Object.keys(window.oceloti_menu).map((group_name) => [
+	    			div({ class: "separator" }),
+	    			...window.oceloti_menu[group_name].map(item => item)
+		    	])
+		    	: button({ "disabled": "true" }, "Nothing to do")
 	    );
 	    van.add(hud, menu);
 
@@ -79,7 +82,7 @@
 		        return;
 		    }
 	    	if (menu) close_menu();
-	    	window.oceloti_menu_items = [];
+	    	window.oceloti_menu = {};
 	    });
 	});
 })();

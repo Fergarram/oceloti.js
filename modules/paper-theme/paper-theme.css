@@ -23,15 +23,6 @@ html {
 	font-family: monospace;
 }
 
-[oceloti-room] {
-	cursor: var(--assets-cursors-grab-svg), grab;
-}
-
-.is-panning [oceloti-room],
-.is-dragging [oceloti-room]  {
-	cursor: var(--assets-cursors-grabbed-svg), grabbing;
-}
-
 .paper {
 	filter: var(--card-thickness-1);
 }

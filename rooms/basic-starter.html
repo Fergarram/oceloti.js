@@ -8,7 +8,7 @@
 		css-reset
 		oceloti
 		standard-controls
-		draggable-cards
+		card-manager
 		inventory
 		save-to-file
 		paper-theme
@@ -87,7 +87,14 @@ fieldset {
 	transform: translate(-50%, -50%);
 }
 
-/* MODULE: modules/draggable-cards/draggable-cards.css */
+/* MODULE: modules/standard-controls/standard-controls.css */
+.is-panning *,
+.is-dragging * {
+	user-select: none;
+	cursor: var(--assets-cursors-grabbed-svg), grabbing !important;
+}
+
+/* MODULE: modules/card-manager/card-manager.css */
 .is-dragging * {
 	user-select: none;
 }
@@ -166,15 +173,6 @@ fieldset {
 html {
 	font-size: 14px;
 	font-family: monospace;
-}
-
-[oceloti-room] {
-	cursor: var(--assets-cursors-grab-svg), grab;
-}
-
-.is-panning [oceloti-room],
-.is-dragging [oceloti-room]  {
-	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }
 
 .paper {
@@ -359,7 +357,7 @@ button[disabled] {
 <script oceloti-modules="
 	oceloti
 	standard-controls
-	draggable-cards
+	card-manager
 	image-dropper
 	save-to-file
 	inventory
@@ -382,13 +380,10 @@ function are_dialogs_open() {
 
 	// @TODO: Save zoom to local storage.
 	window.zoom = 100;
+	if (!window.location.hash) window.scrollTo(0,0);
 
-	// @FIXME: Check if the window.location is exactly the same.
-	const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
-	const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
-
-	let camera_x = last_scroll_x !== null ? last_scroll_x : 0;
-	let camera_y = last_scroll_y !== null ? last_scroll_y : 0;
+	let camera_x = 0;
+	let camera_y = 0;
 
 	let last_middle_click_x = 0;
 	let last_middle_click_y = 0;
@@ -466,8 +461,6 @@ function are_dialogs_open() {
 	            }, 150);
 				camera_x = window.scrollX;
 				camera_y = window.scrollY;
-				localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
-				localStorage.setItem("OCELOTI_SCROLL_Y", camera_y);
 				scroll_ticking = false;
 			});
 			scroll_ticking = true;
@@ -495,7 +488,7 @@ function are_dialogs_open() {
 		window.dispatchEvent(new Event("zoom"));
 	}
 })();
-/* MODULE: modules/draggable-cards/draggable-cards.js */
+/* MODULE: modules/card-manager/card-manager.js */
 (async () => {
 	const card_query = document.querySelectorAll("[oceloti-card]");
 	const room = document.querySelector("[oceloti-room]");
@@ -522,25 +515,33 @@ function are_dialogs_open() {
 							node.getAttribute("oceloti-card-state") !== "elevated" &&
 							node.hasAttribute("oceloti-card")
 						) {
-							initialize_card(node);
+							card_drop(node);
 						}
 					});
 				}
 
-				// if (mutation.removedNodes.length > 0) {
-				// 	mutation.removedNodes.forEach((node) => {
-				// 		console.log(node);
-				// 	});
-				// }
+				if (mutation.removedNodes.length > 0) {
+					mutation.removedNodes.forEach((node) => {
+						if (
+							node.id !== "oceloti-floating-card" &&
+							node.getAttribute("oceloti-card-state") !== "elevated" &&
+							node.hasAttribute("oceloti-card")
+						) {
+							card_lift(node);
+						}
+					});
+				}
 			}
 		}
 	});
 
 	observer.observe(room, { childList: true });
 
-	all_cards.forEach(initialize_card);
+	window.addEventListener("load", () => {
+		all_cards.forEach(card_drop);
+	});
 
-	function initialize_card(card) {
+	function initialize_card_state(card) {
 	    setTimeout(() => {
 	    	card.setAttribute("oceloti-card-state", "idle");
 		    card.style.removeProperty("will-change");
@@ -632,13 +633,24 @@ function are_dialogs_open() {
 
 	    dragged_card.style.left = `${dragging_x}px`;
 	    dragged_card.style.top = `${dragging_y}px`;
-	    initialize_card(dragged_card);
+	    card_drop(dragged_card);
 
 	    wrapper.remove();
 	    dragged_card = null;
 
 	    window.removeEventListener("mousemove", handle_mousemove);
 	    window.removeEventListener("mouseup", handle_mouseup);
+	}
+
+	function card_drop(card) {
+		initialize_card_state(card);
+		const event = new CustomEvent("carddrop", { detail: { card } });
+		window.dispatchEvent(event);
+	}
+
+	function card_lift(card) {
+		const event = new CustomEvent("cardlift", { detail: { card } });
+		window.dispatchEvent(event);
 	}
 })();
 /* MODULE: modules/image-dropper/image-dropper.js */
@@ -774,7 +786,7 @@ function are_dialogs_open() {
 			class: "inventory-slot",
 			onmousedown: (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu_items = [
+				window.oceloti_menu["inventory_item"] = [
 					button({ onclick: () => console.log("tello") }, "test")
 				];
 			},
@@ -799,28 +811,24 @@ function are_dialogs_open() {
 
 	van.add(hud, inventory_launcher);
 
-	const all_cards = document.querySelectorAll("[oceloti-card]");
-	if (all_cards) {
-		Array.from(all_cards).forEach((card) => {
-			// @LAST: I need to create a global hook that allows me to do custom stuff when a card is mounted.
-			card.setAttribute("oceloti-menu", "card-menu");
-			card.addEventListener("mousedown", (e) => {
-				if (e.button !== 2) return;
-				window.oceloti_menu_items = [
-					button({
-						onclick: () => console.log("pack")
-					},
-						"🎒 Put away"
-					),
-					button({
-						onclick: () => card.remove()
-					},
-						"♻️ Trash card"
-					),
-				];
-			})
+	window.addEventListener("carddrop", ({ detail: { card } }) => {
+		card.setAttribute("oceloti-menu", "card-menu");
+		card.addEventListener("mousedown", (e) => {
+			if (e.button !== 2) return;
+			window.oceloti_menu["inventory_actions"] = [
+				button({
+					onclick: () => console.log("pack")
+				},
+					"🎒 Put away"
+				),
+				button({
+					onclick: () => card.remove()
+				},
+					"♻️ Trash card"
+				),
+			];
 		});
-	}
+	});
 })();
 </script>
 </html>

@@ -16,13 +16,10 @@ function are_dialogs_open() {
 
 	// @TODO: Save zoom to local storage.
 	window.zoom = 100;
+	if (!window.location.hash) window.scrollTo(0,0);
 
-	// @FIXME: Check if the window.location is exactly the same.
-	const last_scroll_x = localStorage.getItem("OCELOTI_SCROLL_X");
-	const last_scroll_y = localStorage.getItem("OCELOTI_SCROLL_Y");
-
-	let camera_x = last_scroll_x !== null ? last_scroll_x : 0;
-	let camera_y = last_scroll_y !== null ? last_scroll_y : 0;
+	let camera_x = 0;
+	let camera_y = 0;
 
 	let last_middle_click_x = 0;
 	let last_middle_click_y = 0;
@@ -100,8 +97,6 @@ function are_dialogs_open() {
 	            }, 150);
 				camera_x = window.scrollX;
 				camera_y = window.scrollY;
-				localStorage.setItem("OCELOTI_SCROLL_X", camera_x);
-				localStorage.setItem("OCELOTI_SCROLL_Y", camera_y);
 				scroll_ticking = false;
 			});
 			scroll_ticking = true;
