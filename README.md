@@ -8,9 +8,6 @@ When running the `build.js` script, it will generate the built `room` and replac
 
 ## TODO
 - [ ] Design and implement inventory system.
-- [ ] Remove native dialogs, they are buggy AF.
-- [ ] Create module for saving changes locally...
-      This will be more of a backup feature that allows you to download the backup but not apply them in the current page.
  
 Not urgent:
 - [ ] Compiler should only build modified blueprints.

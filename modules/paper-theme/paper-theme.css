@@ -29,7 +29,7 @@ html {
 
 [oceloti-card-state="elevated"] {
 	transform: scale(1.015);
-	filter: var(--card-elevated-1);
+	filter: var(--card-elevated-1) !important;
 }
 
 [oceloti-dialog] {
@@ -55,6 +55,7 @@ html {
 	gap: 8px;
 	padding: 12px;
 	transition: opacity var(--ease-curve-1) 200ms;
+	z-index: 999999;
 }
 
 .has-zoom #hud {

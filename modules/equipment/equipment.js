@@ -43,7 +43,7 @@
 				show_equipment.val = !show_equipment.val;
 			}
 		},
-			"👤 equipment"
+			"🔌 equipment"
 		),
 		equipment_grid
 	);

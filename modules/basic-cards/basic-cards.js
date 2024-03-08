@@ -39,7 +39,7 @@
 			span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
 		);
 
-		van.add(card, toggle);
+		// van.add(card, toggle);
 
 		const content = card.querySelector(`[oceloti-ref="content"]`)
 
