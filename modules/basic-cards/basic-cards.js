@@ -70,13 +70,13 @@
 	//        This way other modules can just register the card states
 	//        and initializers.
 
-	window.addEventListener("inventorydrop", ({ detail: { item } }) => {
+	window.addEventListener("inventorydrop", ({ detail: { item, pos } }) => {
 		if (item.card !== "notebook-paper")
 			return;
 
 		const note = ReadState({
-			x: window.scrollX + window.innerWidth/2,
-			y: window.scrollY + window.innerHeight/2,
+			x: pos ? pos.x : window.scrollX + window.innerWidth/2,
+			y: pos ? pos.y : window.scrollY + window.innerHeight/2,
 			w: item.width
 		},
 			item.content

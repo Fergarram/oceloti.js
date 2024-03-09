@@ -3,13 +3,11 @@
 	if (!room) return;
 
 	room.addEventListener("dragover", (e) => {
-		e.stopPropagation();
 		e.preventDefault();
-		e.dataTransfer.dropEffect = "copy";
+		// e.dataTransfer.dropEffect = "copy";
 	});
 
 	room.addEventListener("drop", (drop_event) => {
-		drop_event.stopPropagation();
 		drop_event.preventDefault();
 		const files = drop_event.dataTransfer.files;
 		const is_web_image = drop_event.dataTransfer.types.find(t => t.includes("image")) !== undefined;

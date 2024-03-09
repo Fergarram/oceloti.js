@@ -26,6 +26,7 @@
 	animation-name: slide_top;
 	animation-duration: 200ms;
 	animation-fill-mode: forwards;
+	list-style: none;
 }
 
 .inventory-slot {
@@ -35,7 +36,7 @@
 	height: 48px;
 }
 
-.inventory-slot:hover {
+.inventory-slot[oceloti-menu]:hover {
 	background-color: silver;
 }
 
