@@ -13,14 +13,15 @@
 
 	const items = [
 		{
-			icon: "📃",
+			icon: "🗒️",
+			description: "A spiral notebook.",
 			grid_x: 3,
 			grid_y: 1,
 			width: 300,
 			height: 400,
 			card: "notebook-paper",
 			state: "read",
-			content: "Hello youtube!\n\n This is ugly."
+			content: ""
 		}
 	];
 
@@ -47,21 +48,44 @@
 		`
 	},
 		slots.map(item => li({
-			...(item ? { "oceloti-menu": "inventory-item" } : {}),
 			class: "inventory-slot",
-			onmousedown: (e) => {
-				if (e.button !== 2 || !item) return;
-				window.oceloti_menu["inventory_item"] = [
-					button({
-						onclick: () => {
-							const event = new CustomEvent("inventorydrop", { detail: { item } });
-							window.dispatchEvent(event);
-						}
-					},
-						"Drop"
-					)
-				];
-			},
+			...(item ? {
+				"oceloti-menu": "inventory-item",
+				"title": item.description,
+				onmousedown: (e) => {
+					if (e.button !== 2) return;
+					window.oceloti_menu["inventory_item"] = [
+						button({
+							onclick: () => {
+								const event = new CustomEvent("inventorydrop", { detail: { item } });
+								window.dispatchEvent(event);
+							}
+						},
+							"⤵️ Drop"
+						),
+						button({
+							onclick: () => {}
+						},
+							"🖨️ copy"
+						),
+						button({
+							onclick: () => {}
+						},
+							"🗑️ Trash"
+						)
+					];
+				},
+			} : {
+				ondragover: (e) => {
+					e.preventDefault();
+					e.dataTransfer.dropEffect = "move";
+					e.dataTransfer
+				},
+				ondrop: (e) => {
+					e.preventDefault();
+					console.log(e.dataTransfer.getData("text/plain"));
+				},
+			}),
 		},
 			span({
 				"draggable": item ? "true" : "false",
@@ -73,17 +97,6 @@
 						event.dataTransfer.effectAllowed = 'move';
 					} else {
 						event.preventDefault();
-					}
-				},
-				ondragend: (e) => {
-					if (e.dataTransfer.dropEffect == "move") {
-						// @TODO: Remove from backpack
-						const pos = {
-							x: e.clientX - item.width / 2,
-							y: e.clientY - item.height / 2,
-						};
-						const event = new CustomEvent("inventorydrop", { detail: { item, pos } });
-						window.dispatchEvent(event);
 					}
 				},
 			},
@@ -121,7 +134,7 @@
 				button({
 					onclick: () => card.remove()
 				},
-					"♻️ Trash card"
+					"🗑️ Trash card"
 				),
 			];
 		});

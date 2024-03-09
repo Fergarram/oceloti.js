@@ -4,7 +4,6 @@
 
 	room.addEventListener("dragover", (e) => {
 		e.preventDefault();
-		// e.dataTransfer.dropEffect = "copy";
 	});
 
 	room.addEventListener("drop", (drop_event) => {

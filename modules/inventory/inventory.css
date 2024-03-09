@@ -30,13 +30,14 @@
 }
 
 .inventory-slot {
+	position: relative;
 	border: 1px solid darkgray;
 	border-radius: 4px;
 	width: 48px;
 	height: 48px;
 }
 
-.inventory-slot[oceloti-menu]:hover {
+.inventory-slot:hover {
 	background-color: silver;
 }
 
