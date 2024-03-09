@@ -14,12 +14,23 @@
 	const items = [
 		{
 			icon: "🗒️",
-			description: "A spiral notebook.",
+			description: "A spiral notebook. Drag to rip page.",
 			grid_x: 3,
 			grid_y: 1,
 			width: 300,
 			height: 400,
-			card: "notebook-paper",
+			renderer: "notebook-paper",
+			state: "read",
+			content: ""
+		},
+		{
+			icon: "❓",
+			description: "Unknown item, requires pdf-reader renderer.",
+			grid_x: 5,
+			grid_y: 1,
+			width: 300,
+			height: 400,
+			renderer: "notebook-paper",
 			state: "read",
 			content: ""
 		}
@@ -62,6 +73,11 @@
 							}
 						},
 							"⤵️ Drop"
+						),
+						button({
+							onclick: () => {}
+						},
+							"🔍 inspect"
 						),
 						button({
 							onclick: () => {}
@@ -114,12 +130,29 @@
 				show_inventory.val = !show_inventory.val;
 			}
 		},
-			"🎒 backpack"
+			"🎒 bag"
 		),
 		inventory_grid
 	);
 
 	van.add(hud, inventory_launcher);
+
+	van.add(hud, div({
+		style: "position: relative;",
+	},
+		button({
+			style: `
+				background: royalblue;
+				color: white;
+			`,
+			onclick: (e) => {
+				e.target.classList.toggle("selected");
+				show_inventory.val = !show_inventory.val;
+			}
+		},
+			"☁️ drive"
+		),
+	));
 
 	window.addEventListener("carddrop", ({ detail: { card } }) => {
 		card.setAttribute("oceloti-menu", "card-menu");

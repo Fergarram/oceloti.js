@@ -71,7 +71,7 @@
 	//        and initializers.
 
 	window.addEventListener("inventorydrop", ({ detail: { item, pos } }) => {
-		if (item.card !== "notebook-paper")
+		if (item.renderer !== "notebook-paper")
 			return;
 
 		const note = ReadState({

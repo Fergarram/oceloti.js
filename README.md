@@ -7,8 +7,13 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## TODO
-- [ ] Design and implement inventory system.
+- [ ] Refactor move image-dropper/dnd logic to inventory module
+- [ ] Drag-n-drop between slots/bags.
+- [ ] Create `register_card_renderer` function
+- [ ] Inventory is in charge of initializing cards via card-manager.
  
 Not urgent:
+- [ ] Implement paste handler
+- [ ] Movable shortcuts
 - [ ] Compiler should only build modified blueprints.
 - [ ] Add compiler option: make backups
