@@ -20,6 +20,9 @@
 		paper-theme
 		basic-cards
 	">/* STYLE MODULES */</style>
+	<style oceloti-assets="*">
+		/* STATIC ASSETS */
+	</style>
 	<style>
 		#entrance {
 			position: relative;
@@ -57,7 +60,7 @@
 		}
 
 		#entrance a:not(.button) {
-			color: white;
+			color: lightskyblue;
 			text-decoration: underline;
 		}
 
@@ -87,8 +90,8 @@
 			width: 8000px;
 			height: 8000px;
 			background-color: white;
-			background-image: var(--assets-wood-png);
-			background-size: 256px;
+			background-image: var(--assets-grid2-png);
+			background-size: 128px;
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
@@ -112,17 +115,14 @@
 	oceloti
 	standard-controls
 	card-manager
+	dnd-manager
 	van
 	context-menu
 	arena-api
 	inventory
 	equipment
-	image-dropper
 	save-to-file
 	basic-cards
 	arena-cards
 ">/* SCRIPT MODULES */</script>
-<style oceloti-assets="*">
-	/* STATIC ASSETS */
-</style>
 </html>

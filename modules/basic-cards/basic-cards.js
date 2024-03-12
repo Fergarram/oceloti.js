@@ -65,7 +65,7 @@
 		}
 	}
 
-	// @LAST: I think a better approach is for the inventory module to
+	// @STEP: I think a better approach is for the inventory module to
 	//        export  a register hook so that we don't use "intentorydrop".
 	//        This way other modules can just register the card states
 	//        and initializers.

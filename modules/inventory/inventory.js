@@ -1,36 +1,61 @@
 (async () => {
-	if (!van) {
-		console.error("The inventory module depends on van.js");
-		return;
-	};
-
 	const hud = document.getElementById("hud");
 	const room = document.querySelector("[oceloti-room]");
 	
 	if (!room || !hud) return;
 
-	const { div, button, img, ul, li, span } = van.tags;
+	const item_handlers = [];
+
+	function register_item_handler({ name, descriptor, icon, renderers }) {
+		item_handlers.push({
+			name, // Handler name
+			descriptor, // Function that generates item description
+			icon, // Emoji if this is the default renderer
+			renderers: {/* read: ..., write: ..., DEFAULT: ... */}
+		});
+	}
+
+	window.register_item_handler = register_item_handler;
+
+	window.addEventListener("carddrop", ({ detail: { card } }) => {
+		card.setAttribute("oceloti-menu", "card-menu");
+		card.addEventListener("mousedown", (e) => {
+			if (e.button !== 2) return;
+			window.oceloti_menu["inventory_actions"] = [
+				button({
+					onclick: () => console.log("pack")
+				},
+					"🎒 Put away"
+				),
+				button({
+					onclick: () => card.remove()
+				},
+					"🗑️ Trash card"
+				),
+			];
+		});
+	});
 
 	const items = [
 		{
 			icon: "🗒️",
-			description: "A spiral notebook. Drag to rip page.",
+			description: "An empty text note.",
 			grid_x: 3,
 			grid_y: 1,
 			width: 300,
 			height: 400,
-			renderer: "notebook-paper",
+			handler: "notebook-paper",
 			state: "read",
 			content: ""
 		},
 		{
 			icon: "❓",
-			description: "Unknown item, requires pdf-reader renderer.",
+			description: "Unknown item, requires pdf-reader handler.",
 			grid_x: 5,
 			grid_y: 1,
 			width: 300,
 			height: 400,
-			renderer: "notebook-paper",
+			handler: "pdf-reader",
 			state: "read",
 			content: ""
 		}
@@ -49,6 +74,13 @@
 		const index = (item.grid_y - 1) * 3 + (item.grid_x - 1);
   		slots[index] = item;
 	});
+
+	if (!van) {
+		console.error("The inventory module depends on van.js");
+		return;
+	};
+
+	const { div, button, img, ul, li, span } = van.tags;
 
 	const show_inventory = van.state(false);
 
@@ -130,7 +162,7 @@
 				show_inventory.val = !show_inventory.val;
 			}
 		},
-			"🎒 bag"
+			"🎒 local bag"
 		),
 		inventory_grid
 	);
@@ -145,31 +177,8 @@
 				background: royalblue;
 				color: white;
 			`,
-			onclick: (e) => {
-				e.target.classList.toggle("selected");
-				show_inventory.val = !show_inventory.val;
-			}
 		},
-			"☁️ drive"
+			"☁️ drive bag"
 		),
 	));
-
-	window.addEventListener("carddrop", ({ detail: { card } }) => {
-		card.setAttribute("oceloti-menu", "card-menu");
-		card.addEventListener("mousedown", (e) => {
-			if (e.button !== 2) return;
-			window.oceloti_menu["inventory_actions"] = [
-				button({
-					onclick: () => console.log("pack")
-				},
-					"🎒 Put away"
-				),
-				button({
-					onclick: () => card.remove()
-				},
-					"🗑️ Trash card"
-				),
-			];
-		});
-	});
 })();

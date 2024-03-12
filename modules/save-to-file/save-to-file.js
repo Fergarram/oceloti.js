@@ -13,7 +13,7 @@
 		onclick: save
 	}, "💾 Save");
 
-	van.add(hud, hud_button);
+	// van.add(hud, hud_button);
 
 	window.addEventListener("keydown", handle_keydown);
 

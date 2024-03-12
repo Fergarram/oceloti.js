@@ -118,6 +118,6 @@
 			dialog_el.showModal();
 		}
 	},
-		"** are.na"
+		"** are.na bag"
 	));
 })();

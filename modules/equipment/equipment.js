@@ -35,7 +35,11 @@
 	);
 
 	const equipment_launcher = div({
-		style: "position: relative;",
+		style: `
+			position: fixed;
+			left: 12px;
+			bottom: 12px;
+		`,
 	},
 		button({
 			onclick: (e) => {
