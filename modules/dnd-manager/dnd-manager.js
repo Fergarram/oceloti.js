@@ -18,6 +18,7 @@ register_oceloti_module({
 			const files = drop_event.dataTransfer.files;
 			const is_link = drop_event.dataTransfer.types.find(t => t.includes("url")) !== undefined;
 			const text_data = drop_event.dataTransfer.getData("text/plain");
+			const is_oceloti_item = drop_event.dataTransfer.types.includes("oceloti/item");
 
 			// @NOTES:
 			// ------

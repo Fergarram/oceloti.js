@@ -13,7 +13,7 @@
 	};
 
 	// @DEBUG
-	// window.oceloti = oceloti;
+	window.oceloti = oceloti;
 
 	oceloti.utils.are_dialogs_open = function() {
 		const dialogs = document.querySelectorAll('dialog');
@@ -52,6 +52,6 @@
 			use_module(mod) {
 				return oceloti.active_modules[mod];
 			},
-		});
+		}) || {};
 	}
 }

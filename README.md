@@ -7,10 +7,8 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
-- [ ] Refactor: move image-dropper/dnd logic to inventory module
-- [ ] Create `register_card_renderer` function
-- [ ] Inventory is in charge of initializing cards via card-manager.
-- [ ] Drag-n-drop between slots/bags.
+- [ ] Register room drop handlers, there will be a default, multiple handlers can coexist if manually configured.
+- [ ] Create keyboard shortcuts module.
 
 ## Cool steps:
 - [ ] Assistant use case: "shift all cards about 300px to the right and top"

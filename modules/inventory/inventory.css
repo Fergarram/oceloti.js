@@ -23,9 +23,9 @@
 	border-radius: 0.5rem;
 	transform: translateY(100%);
 	filter: drop-shadow(2px 2px);
-	animation-name: slide_top;
+/*	animation-name: slide_top;
 	animation-duration: 200ms;
-	animation-fill-mode: forwards;
+	animation-fill-mode: forwards;*/
 	list-style: none;
 }
 
@@ -37,6 +37,7 @@
 	height: 48px;
 }
 
+.inventory-slot.dragover,
 .inventory-slot:hover {
 	background-color: silver;
 }

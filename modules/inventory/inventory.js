@@ -2,19 +2,65 @@ register_oceloti_module({
 	name: "inventory",
 	deps: ["van", "context-menu"],
 	init({ use_module, hud }) {
+		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 
 		const item_handlers = [];
 
-		function register_item_handler({ name, descriptor, icon, initializer, renderer }) {
+		function register_item_handler({ name, icon, description, initializer, renderer }) {
 			item_handlers.push({
 				name, // Handler name.
-				descriptor, // Function that generates item description.
 				icon, // Function that returns icon.
+				description, // Function that generates item description.
 				initializer, // Function that takes card element and initializes UI.
 				renderer, // Function that takes item and returns HTMLElement node.
 			});
 		}
+
+		const slots = van.state([
+			null,null,null,
+			null,null,null,
+			null,null,null,
+			null,null,null,
+			null,null,null,
+			null,null,null,
+		]);
+
+		function move_item_in_bag(from, to) {
+			const slots_copy = [...slots.val];
+			const item = { ...slots.val[from] };
+			slots_copy[to] = item;
+			slots_copy[from] = null;
+	  		slots.val = slots_copy;
+		}
+
+		function add_item_to_bag(bag, item, index) {
+			const compatible_handlers = item_handlers.filter(h => h.name === item.handler);
+			if (compatible_handlers.length === 0) {
+				const slots_copy = [...slots.val];
+				slots_copy[index] = {
+	  				icon: "❓",
+	  				description: `Unknown item, requires "${item.handler}" handler.`,
+	  				data: item
+	  			};
+	  			slots.val = slots_copy;
+	  			return;
+			}
+
+			// @TODO: Have a way to select or configure a default handler.
+			const { icon, description, initializer, renderer } = compatible_handlers[0]
+			const slots_copy = [...slots.val];
+			slots_copy[index] = {
+  				icon: icon(),
+  				description: description(item),
+  				initializer,
+  				renderer,
+  				data: item
+  			};
+  			slots.val = slots_copy;
+		}
+
+		// @STEP: Register a dnd handler so that whenever an item or known drop type is dropped we can take care of that from here.
 
 		window.addEventListener("carddrop", ({ detail: { card } }) => {
 			card.setAttribute("oceloti-menu", "card-menu");
@@ -35,116 +81,99 @@ register_oceloti_module({
 			});
 		});
 
-		const items = [
-			{
-				handler: "notebook-paper",
-				width: 300,
-				height: 400,
-				state: "read",
-				content: ""
-			},
-			{
-				handler: "pdf-reader",
-				width: 300,
-				height: 400,
-				state: "read",
-				content: ""
-			}
-		];
-
-		const slots = [
-			null,null,null,
-			null,null,null,
-			null,null,null,
-			null,null,null,
-			null,null,null,
-			null,null,null,
-		];
-
-		items.forEach((item, index) => {
-			// @STEP: Get icon and description here.
-
-			// icon: "❓",
-			// description: "Unknown item, requires pdf-reader handler.",
-
-	  		slots[index] = item;
-		});
-
-		const van = use_module("van");
 		const { div, button, img, ul, li, span } = van.tags;
 
 		const show_inventory = van.state(false);
 
-		const inventory_grid = ul({
-			class: "inventory-grid",
-			style: () => `
-				display: ${show_inventory.val ? "grid" : "none"}
-			`
-		},
-			slots.map(item => li({
+		function Slot(slot, index) {
+			const attrs = {
+				index,
 				class: "inventory-slot",
-				...(item ? {
-					"oceloti-menu": "inventory-item",
-					"title": item.description,
-					onmousedown: (e) => {
-						if (e.button !== 2) return;
-						add_menu("inventory_item", [
-							button({
-								onclick: () => {
-									const event = new CustomEvent("inventorydrop", { detail: { item } });
-									window.dispatchEvent(event);
-								}
-							},
-								"⤵️ Drop"
-							),
-							button({
-								onclick: () => {}
-							},
-								"🔍 inspect"
-							),
-							button({
-								onclick: () => {}
-							},
-								"🖨️ copy"
-							),
-							button({
-								onclick: () => {}
-							},
-								"🗑️ Trash"
-							)
-						]);
-					},
-				} : {
-					ondragover: (e) => {
-						e.preventDefault();
-						e.dataTransfer.dropEffect = "move";
-						e.dataTransfer
-					},
-					ondrop: (e) => {
-						e.preventDefault();
-						console.log(e.dataTransfer.getData("text/plain"));
-					},
-				}),
-			},
+			};
+			if (slot) {
+				attrs["oceloti-menu"] = "inventory-item";
+				attrs["title"] = slot.description;
+				attrs["onmousedown"] = (e) => {
+					if (e.button !== 2) return;
+					add_menu("inventory_item", [
+						button({
+							onclick: () => {
+								// @STEP: Use item renderer to add element node to room.
+								// const event = new CustomEvent("inventorydrop", { detail: { item } });
+								// window.dispatchEvent(event);
+							}
+						},
+							"⤵️ Drop"
+						),
+						button({
+							onclick: () => {}
+						},
+							"🔍 inspect"
+						),
+						button({
+							onclick: () => {}
+						},
+							"🖨️ copy"
+						),
+						button({
+							onclick: () => {}
+						},
+							"🗑️ Trash"
+						)
+					]);
+				}
+			} else {
+				attrs["ondragover"] = (e) => {
+					e.preventDefault();
+					// Loop through all slots to remove class???
+					// e.target.classList.toggle("dragover");
+					if (!e.dataTransfer.types.includes("oceloti/item")) {
+						e.dataTransfer.effectAllowed = "none";
+					}
+				};
+				attrs["ondrop"] = (e) => {
+					e.preventDefault();
+					if (e.dataTransfer.types.includes("oceloti/item")) {
+						const slot = JSON.parse(e.dataTransfer.getData("oceloti/item"));
+						const to = Number(e.currentTarget.getAttribute("index"));
+						move_item_in_bag(slot.index, to);
+					}
+				};
+			}
+			return li(
+				attrs,
 				span({
-					"draggable": item ? "true" : "false",
-					"data-value": item ? `${item.grid_x},${item.grid_y}` : null,
+					"draggable": slot ? "true" : "false",
 					class: "inventory-item emoji",
 					ondragstart: (e) => {
-						if (item) {
-							event.dataTransfer.setData('text/plain', event.target.dataset.value);
+						if (slot) {
+							event.dataTransfer.setData('oceloti/item', JSON.stringify({
+								index,
+								...slot,
+							}));
 							event.dataTransfer.effectAllowed = 'move';
 						} else {
 							event.preventDefault();
 						}
 					},
 				},
-					item ? item.icon : ""
+					slot ? slot.icon : ""
 				)
-			))
-		);
+			);
+		}
 
-		const inventory_launcher = div({
+		function InventoryGrid(list) {
+			return ul({
+				class: "inventory-grid",
+				style: () => `
+					display: ${show_inventory.val ? "grid" : "none"}
+				`
+			},
+				...list.map( (slot, i) => Slot(slot, i))
+			);
+		}
+
+		van.add(hud, div({
 			style: "position: relative;",
 		},
 			button({
@@ -155,10 +184,8 @@ register_oceloti_module({
 			},
 				"🎒 local bag (b)"
 			),
-			inventory_grid
-		);
-
-		van.add(hud, inventory_launcher);
+			() => InventoryGrid(slots.val)
+		));
 
 		van.add(hud, div({
 			style: "position: relative;",
@@ -175,7 +202,8 @@ register_oceloti_module({
 
 		return {
 			item_handlers,
-			register_item_handler
+			register_item_handler,
+			add_item_to_bag
 		}
 	}
 });
