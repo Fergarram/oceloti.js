@@ -6,6 +6,10 @@ register_oceloti_module({
 			menu: {}
 		};
 
+		self.add_menu = function(name, items) {
+			self.menu[name] = items;
+		}
+
 		const van = use_module("van");
 
 		document.addEventListener("contextmenu", function(e) {

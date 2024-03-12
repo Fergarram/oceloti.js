@@ -1,8 +1,9 @@
 register_oceloti_module({
 	name: "notebook",
-	deps: ["inventory", "van"],
+	deps: ["inventory", "van", "context-menu"],
 	init({ use_module }) {
 		const van = use_module("van");
+		const { add_menu } = use_module("context-menu");
 		const { register_item_handler } = use_module("inventory");
 
 		register_item_handler({
@@ -66,9 +67,9 @@ register_oceloti_module({
 
 			content.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu["paper_actions"] = [
+				add_menu("paper_actions", [
 					button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
-				];
+				]);
 			});
 
 			function handle_toggle() {

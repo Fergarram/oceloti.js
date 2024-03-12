@@ -1,7 +1,9 @@
 register_oceloti_module({
 	name: "inventory",
-	deps: ["van"],
+	deps: ["van", "context-menu"],
 	init({ use_module, hud }) {
+		const { add_menu } = use_module("context-menu");
+
 		const item_handlers = [];
 
 		function register_item_handler({ name, descriptor, icon, initializer, renderer }) {
@@ -18,7 +20,7 @@ register_oceloti_module({
 			card.setAttribute("oceloti-menu", "card-menu");
 			card.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu["inventory_actions"] = [
+				add_menu("inventory_actions", [
 					button({
 						onclick: () => console.log("pack")
 					},
@@ -29,7 +31,7 @@ register_oceloti_module({
 					},
 						"🗑️ Trash card"
 					),
-				];
+				]);
 			});
 		});
 
@@ -86,7 +88,7 @@ register_oceloti_module({
 					"title": item.description,
 					onmousedown: (e) => {
 						if (e.button !== 2) return;
-						window.oceloti_menu["inventory_item"] = [
+						add_menu("inventory_item", [
 							button({
 								onclick: () => {
 									const event = new CustomEvent("inventorydrop", { detail: { item } });
@@ -110,7 +112,7 @@ register_oceloti_module({
 							},
 								"🗑️ Trash"
 							)
-						];
+						]);
 					},
 				} : {
 					ondragover: (e) => {

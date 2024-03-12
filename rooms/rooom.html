@@ -1102,6 +1102,10 @@ register_oceloti_module({
 			menu: {}
 		};
 
+		self.add_menu = function(name, items) {
+			self.menu[name] = items;
+		}
+
 		const van = use_module("van");
 
 		document.addEventListener("contextmenu", function(e) {
@@ -1261,8 +1265,10 @@ register_oceloti_module({
 /* MODULE: modules/inventory/inventory.js */
 register_oceloti_module({
 	name: "inventory",
-	deps: ["van"],
+	deps: ["van", "context-menu"],
 	init({ use_module, hud }) {
+		const { add_menu } = use_module("context-menu");
+
 		const item_handlers = [];
 
 		function register_item_handler({ name, descriptor, icon, initializer, renderer }) {
@@ -1279,7 +1285,7 @@ register_oceloti_module({
 			card.setAttribute("oceloti-menu", "card-menu");
 			card.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu["inventory_actions"] = [
+				add_menu("inventory_actions", [
 					button({
 						onclick: () => console.log("pack")
 					},
@@ -1290,7 +1296,7 @@ register_oceloti_module({
 					},
 						"🗑️ Trash card"
 					),
-				];
+				]);
 			});
 		});
 
@@ -1347,7 +1353,7 @@ register_oceloti_module({
 					"title": item.description,
 					onmousedown: (e) => {
 						if (e.button !== 2) return;
-						window.oceloti_menu["inventory_item"] = [
+						add_menu("inventory_item", [
 							button({
 								onclick: () => {
 									const event = new CustomEvent("inventorydrop", { detail: { item } });
@@ -1371,7 +1377,7 @@ register_oceloti_module({
 							},
 								"🗑️ Trash"
 							)
-						];
+						]);
 					},
 				} : {
 					ondragover: (e) => {
@@ -1578,9 +1584,10 @@ register_oceloti_module({
 /* MODULE: modules/notebook/notebook.js */
 register_oceloti_module({
 	name: "notebook",
-	deps: ["inventory", "van"],
+	deps: ["inventory", "van", "context-menu"],
 	init({ use_module }) {
 		const van = use_module("van");
+		const { add_menu } = use_module("context-menu");
 		const { register_item_handler } = use_module("inventory");
 
 		register_item_handler({
@@ -1644,9 +1651,9 @@ register_oceloti_module({
 
 			content.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
-				window.oceloti_menu["paper_actions"] = [
+				add_menu("paper_actions", [
 					button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
-				];
+				]);
 			});
 
 			function handle_toggle() {
