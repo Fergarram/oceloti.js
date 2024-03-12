@@ -1,56 +1,69 @@
-(async () => {
-	if (!van) {
-		console.error("The equipment module depends on van.js");
-		return;
-	};
+register_oceloti_module({
+	name: "equipment",
+	deps: ["van"],
+	init({ use_module, hud }) {
+		const van = use_module("van");
 
-	const hud = document.getElementById("hud");
-	const room = document.querySelector("[oceloti-room]");
-	
-	if (!room || !hud) return;
+		const { div, button, img } = van.tags;
 
-	const { div, button, img } = van.tags;
+		const slots = [
+			"📃"," ","🤚","✏️",
+		];
 
-	const slots = [
-		"📃"," ","🤚","✏️",
-	];
+		const show_equipment = van.state(false);
 
-	const show_equipment = van.state(false);
-
-	const equipment_grid = div({
-		class: "equipment-grid",
-		style: () => `
-			display: ${show_equipment.val ? "grid" : "none"}
-		`
-	},
-		slots.map(slot => div({
-			"oceloti-menu": "equipment-slot",
-			class: "equipment-slot",
-			onmousedown: (e) => {
-				if (e.button !== 2) return;
+		const equipment_grid = div({
+			class: "equipment-grid",
+			style: () => `
+				display: ${show_equipment.val ? "grid" : "none"}
+			`
+		},
+			slots.map(slot => div({
+				"oceloti-menu": "equipment-slot",
+				class: "equipment-slot",
+				onmousedown: (e) => {
+					if (e.button !== 2) return;
+				},
 			},
-		},
-			div({ class: "equipment-item emoji" }, slot)
-		))
-	);
+				div({ class: "equipment-item emoji" }, slot)
+			))
+		);
 
-	const equipment_launcher = div({
-		style: `
-			position: fixed;
-			left: 12px;
-			bottom: 12px;
-		`,
-	},
-		button({
-			onclick: (e) => {
-				e.target.classList.toggle("selected");
-				show_equipment.val = !show_equipment.val;
-			}
+		const equipment_launcher = div({
+			style: `
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				position: fixed;
+				left: 12px;
+				bottom: 12px;
+			`,
 		},
-			"🔌 equipment"
-		),
-		equipment_grid
-	);
+			div({
+				style: "position: relative;"
+			},
+				button({
+					onclick: (e) => {
+						e.target.classList.toggle("selected");
+						show_equipment.val = !show_equipment.val;
+					}
+				},
+					"🔌 equipment (e)"
+				),
+				equipment_grid
+			),
+			div({
+				style: "position: relative;"
+			},
+				button({
+					onclick: (e) => {
+					}
+				},
+					"🧰 toolbox (T)"
+				),
+			)
+		);
 
-	van.add(hud, equipment_launcher);
-})();
+		van.add(hud, equipment_launcher);
+	}	
+});

@@ -18,7 +18,7 @@
 		inventory
 		equipment
 		paper-theme
-		basic-cards
+		notebook
 	">/* MODULE: modules/css-reset/css-reset.css */
 *, *::before, *::after {
   padding: 0;
@@ -405,7 +405,7 @@ button .emoji {
 .emoji {
 	font-family: "Noto Color Emoji", sans-serif;
 }
-/* MODULE: modules/basic-cards/basic-cards.css */
+/* MODULE: modules/notebook/notebook.css */
 [oceloti-card="notebook-paper"] {
 	height: fit-content;
 	padding: 8px 12px;
@@ -548,1174 +548,1243 @@ button .emoji {
 	inventory
 	equipment
 	arena-api
-	basic-cards
+	notebook
 	arena-cards
-">/* MODULE: modules/standard-controls/standard-controls.js */
-function are_dialogs_open() {
-	const dialogs = document.querySelectorAll('dialog');
-	return Array.from(dialogs).some(dialog => dialog.open);
-}
+">/* MODULE: modules/oceloti/oceloti.js */
+{
+	const oceloti = {
+		room: document.querySelector("[oceloti-room]"),
+		hud: document.getElementById("hud"),
+		css_modules: document.querySelector("style[oceloti-modules]")
+			.getAttribute("oceloti-modules").trim().split(/\s+/),
+		css_assets:  document.querySelector("style[oceloti-assets]")
+			.getAttribute("oceloti-assets").trim().split(/\s+/),
+		js_modules: document.querySelector("script[oceloti-modules]")
+			.getAttribute("oceloti-modules").trim().split(/\s+/),
+		active_modules: {},
+		utils: {}
+	};
 
-(async () => {
-	const room = document.querySelector("[oceloti-room]");
+	// @DEBUG
+	// window.oceloti = oceloti;
 
-	let room_width = 0;
-	let room_height = 0;
-
-	if (room) {
-		room_width = room.offsetWidth;
-		room_height = room.offsetHeight;
+	oceloti.utils.are_dialogs_open = function() {
+		const dialogs = document.querySelectorAll('dialog');
+		return Array.from(dialogs).some(dialog => dialog.open);
 	}
 
-	// @TODO: Save zoom to local storage.
-	window.zoom = 100;
-
-	if (window.location.hash) {
-		const id = window.location.hash.replace("#", "");
-		const el = document.getElementById(id);
-		if (el) el.scrollIntoView();
-		else window.scrollTo(0,0);
-	} else {
-		window.scrollTo(0,0);
-	}
-
-	let camera_x = 0;
-	let camera_y = 0;
-
-	let last_middle_click_x = 0;
-	let last_middle_click_y = 0;
-
-	let is_panning = false;
-	let scroll_ticking = false;
-	let is_scrolling = false;
-	let scrolling_timeout = null;
-
-	window.requestAnimationFrame(step);
-	room.addEventListener("mousedown", handle_mousedown);
-	window.addEventListener("mouseup", handle_mouseup);
-	window.addEventListener("mousemove", handle_mousemove);
-	window.addEventListener("scroll", handle_scroll);
-	window.addEventListener("wheel", handle_wheel, { passive: false });
-
-	function step(dt) {
-		if (camera_x <= 0) camera_x = 0;
-		if (camera_y <= 0) camera_y = 0;
-		if (camera_x >= room_width - window.innerWidth) camera_x = room_width - window.innerWidth;
-		if (camera_y >= room_height - window.innerHeight) camera_y = room_height - window.innerHeight;
-		if (is_panning) {
-			window.scroll({
-				top: camera_y,
-				left: camera_x,
-				behavior: "instant"
-			});
-		}
-		window.requestAnimationFrame(step);
-	}
-
-	function handle_mousedown(e) {
-		if (are_dialogs_open()) {
-			e.preventDefault();
-			return;
-		}
-		if (e.button === 1) {
-			e.preventDefault();
-			is_panning = true;
-			document.body.classList.toggle("is-panning");
-			last_middle_click_x = e.clientX;
-			last_middle_click_y = e.clientY;
-		}
-	}
-
-	function handle_mouseup(e) {
-		if (e.button === 1) {
-			is_panning = false;
-			document.body.classList.toggle("is-panning");
-		}
-	}
-
-	function handle_mousemove(e) {
-		if (is_panning) {
-			const dx = e.clientX - last_middle_click_x;
-			const dy = e.clientY - last_middle_click_y;
-			camera_x -= dx;
-			camera_y -= dy;
-			last_middle_click_x = e.clientX;
-			last_middle_click_y = e.clientY;
-		}
-	}
-
-	function handle_scroll(e) {
-		if (!scroll_ticking) {
-			window.requestAnimationFrame(() => {
-				if (!is_scrolling) {
-					document.body.classList.toggle("is-scrolling");
-				}
-				is_scrolling = true;
-				clearTimeout(scrolling_timeout);
-	            scrolling_timeout = setTimeout(() => {
-					document.body.classList.toggle("is-scrolling");
-	                is_scrolling = false;
-	            }, 150);
-				camera_x = window.scrollX;
-				camera_y = window.scrollY;
-				scroll_ticking = false;
-			});
-			scroll_ticking = true;
-		}
-	}
-
-	function handle_wheel(e) {
-		if (are_dialogs_open()) {
-			e.preventDefault();
-			return;
+	window.register_oceloti_module = function({ name, deps, init }) {
+		if (!oceloti || !oceloti.room || !oceloti.hud) {
+			throw new Error("Oceloti was not setup correctly:", oceloti);
 		}
 
-		if (!e.ctrlKey) return;
-
-		const dir = e.deltaY > 0 ? -10 : 10;
-		let zoom = window.devicePixelRatio * 100;
-		zoom = Math.round(zoom + dir);
-		zoom = Math.round(zoom / 10) * 10;
-		window.zoom = zoom;
-		if (zoom === 100) {
-			document.body.classList.remove("has-zoom");
-		} else {
-			document.body.classList.add("has-zoom");
+		if (!oceloti.js_modules.includes(name)) {
+			throw new Error(`Trying to register undeclared module "${name}". Available modules:`, oceloti.js_modules);
 		}
-		window.dispatchEvent(new Event("zoom"));
-	}
-})();
-/* MODULE: modules/card-manager/card-manager.js */
-(() => {
-	const card_query = document.querySelectorAll("[oceloti-card]");
-	const room = document.querySelector("[oceloti-room]");
 
-	if (!card_query || !room) return;
+		if (oceloti.active_modules[name]) {
+			throw new Error(`Module "${name}" has already been registered.`);
+		}
 
-	const all_cards = Array.from(card_query);
-
-	let last_mouse_x = 0;
-	let last_mouse_y = 0;
-	let delta_x = 0;
-	let delta_y = 0;
-	let dragged_card = null;
-	let dragging_x = 0;
-	let dragging_y = 0;
-
-	const observer = new MutationObserver((mutations) => {
-		for (let mutation of mutations) {
-			if (mutation.type === "childList") {
-				if (mutation.addedNodes.length > 0) {
-					mutation.addedNodes.forEach((node) => {
-						if (
-							node.id !== "oceloti-floating-card" &&
-							node.getAttribute("oceloti-card-state") !== "elevated" &&
-							node.hasAttribute("oceloti-card")
-						) {
-							card_drop(node);
-						}
-					});
-				}
-
-				if (mutation.removedNodes.length > 0) {
-					mutation.removedNodes.forEach((node) => {
-						if (
-							node.id !== "oceloti-floating-card" &&
-							node.getAttribute("oceloti-card-state") !== "elevated" &&
-							node.hasAttribute("oceloti-card")
-						) {
-							card_lift(node);
-						}
-					});
-				}
+		deps.forEach(mod => {
+			if (!oceloti.js_modules.includes(mod)) {
+				console.error(`"${name}" module requires "${mod}" but it wasn't included in room.`);
+				return;
 			}
+
+			if (!oceloti.active_modules[mod]) {
+				console.error(`"${name}" module requires "${mod}" to work but it hasn't been initialized.`);
+				return;
+			}
+		});
+
+		oceloti.active_modules[name] = init({
+			room: oceloti.room,
+			hud: oceloti.hud,
+			utils: oceloti.utils,
+			use_module(mod) {
+				return oceloti.active_modules[mod];
+			},
+		});
+	}
+}
+/* MODULE: modules/standard-controls/standard-controls.js */
+register_oceloti_module({
+	name: "standard-controls",
+	deps: [],
+	init({ use_module, room, utils: { are_dialogs_open } }) {
+		let room_width = room.offsetWidth;
+		let room_height = room.offsetHeight;
+
+		// @TODO: Save zoom to local storage.
+		window.zoom = 100;
+
+		if (window.location.hash) {
+			const id = window.location.hash.replace("#", "");
+			const el = document.getElementById(id);
+			if (el) el.scrollIntoView();
+			else window.scrollTo(0,0);
+		} else {
+			window.scrollTo(0,0);
 		}
-	});
 
-	observer.observe(room, { childList: true });
+		let camera_x = 0;
+		let camera_y = 0;
 
-	window.addEventListener("load", () => {
-		all_cards.forEach(card_drop);
-	});
+		let last_middle_click_x = 0;
+		let last_middle_click_y = 0;
 
-	function initialize_card_state(card) {
-	    setTimeout(() => {
-	    	card.setAttribute("oceloti-card-state", "idle");
-		    card.style.removeProperty("will-change");
-		    card.style.removeProperty("pointer-events");
-	    }, 0);
+		let is_panning = false;
+		let scroll_ticking = false;
+		let is_scrolling = false;
+		let scrolling_timeout = null;
 
-		card.addEventListener("mousedown", handle_mousedown);
+		window.requestAnimationFrame(step);
+		room.addEventListener("mousedown", handle_mousedown);
+		window.addEventListener("mouseup", handle_mouseup);
+		window.addEventListener("mousemove", handle_mousemove);
+		window.addEventListener("scroll", handle_scroll);
+		window.addEventListener("wheel", handle_wheel, { passive: false });
+
+		function step(dt) {
+			if (camera_x <= 0) camera_x = 0;
+			if (camera_y <= 0) camera_y = 0;
+			if (camera_x >= room_width - window.innerWidth) camera_x = room_width - window.innerWidth;
+			if (camera_y >= room_height - window.innerHeight) camera_y = room_height - window.innerHeight;
+			if (is_panning) {
+				window.scroll({
+					top: camera_y,
+					left: camera_x,
+					behavior: "instant"
+				});
+			}
+			window.requestAnimationFrame(step);
+		}
 
 		function handle_mousedown(e) {
-		    if (!e.target) return;
-		    if (dragged_card !== null) return;
-		    const target = e.target;
-		    if (
-		        card.getAttribute("oceloti-card-state") !== "idle" ||
-		        target.tagName === "A" ||
-		        target.tagName === "BUTTON" ||
-		        target.tagName === "INPUT" ||
-		        target.tagName === "TEXTAREA" ||
+			if (are_dialogs_open()) {
+				e.preventDefault();
+				return;
+			}
+			if (e.button === 1) {
+				e.preventDefault();
+				is_panning = true;
+				document.body.classList.toggle("is-panning");
+				last_middle_click_x = e.clientX;
+				last_middle_click_y = e.clientY;
+			}
+		}
+
+		function handle_mouseup(e) {
+			if (e.button === 1) {
+				is_panning = false;
+				document.body.classList.toggle("is-panning");
+			}
+		}
+
+		function handle_mousemove(e) {
+			if (is_panning) {
+				const dx = e.clientX - last_middle_click_x;
+				const dy = e.clientY - last_middle_click_y;
+				camera_x -= dx;
+				camera_y -= dy;
+				last_middle_click_x = e.clientX;
+				last_middle_click_y = e.clientY;
+			}
+		}
+
+		function handle_scroll(e) {
+			if (!scroll_ticking) {
+				window.requestAnimationFrame(() => {
+					if (!is_scrolling) {
+						document.body.classList.toggle("is-scrolling");
+					}
+					is_scrolling = true;
+					clearTimeout(scrolling_timeout);
+		            scrolling_timeout = setTimeout(() => {
+						document.body.classList.toggle("is-scrolling");
+		                is_scrolling = false;
+		            }, 150);
+					camera_x = window.scrollX;
+					camera_y = window.scrollY;
+					scroll_ticking = false;
+				});
+				scroll_ticking = true;
+			}
+		}
+
+		function handle_wheel(e) {
+			if (are_dialogs_open()) {
+				e.preventDefault();
+				return;
+			}
+
+			if (!e.ctrlKey) return;
+
+			const dir = e.deltaY > 0 ? -10 : 10;
+			let zoom = window.devicePixelRatio * 100;
+			zoom = Math.round(zoom + dir);
+			zoom = Math.round(zoom / 10) * 10;
+			window.zoom = zoom;
+			if (zoom === 100) {
+				document.body.classList.remove("has-zoom");
+			} else {
+				document.body.classList.add("has-zoom");
+			}
+			window.dispatchEvent(new Event("zoom"));
+		}
+	}
+});
+/* MODULE: modules/card-manager/card-manager.js */
+register_oceloti_module({
+	name: "card-manager",
+	deps: [],
+	init({ use_module, room, hud }) {
+		const card_query = document.querySelectorAll("[oceloti-card]");
+		const all_cards = Array.from(card_query);
+
+		let last_mouse_x = 0;
+		let last_mouse_y = 0;
+		let delta_x = 0;
+		let delta_y = 0;
+		let dragged_card = null;
+		let dragging_x = 0;
+		let dragging_y = 0;
+
+		const observer = new MutationObserver((mutations) => {
+			for (let mutation of mutations) {
+				if (mutation.type === "childList") {
+					if (mutation.addedNodes.length > 0) {
+						mutation.addedNodes.forEach((node) => {
+							if (
+								node.id !== "oceloti-floating-card" &&
+								node.getAttribute("oceloti-card-state") !== "elevated" &&
+								node.hasAttribute("oceloti-card")
+							) {
+								card_drop(node);
+							}
+						});
+					}
+
+					if (mutation.removedNodes.length > 0) {
+						mutation.removedNodes.forEach((node) => {
+							if (
+								node.id !== "oceloti-floating-card" &&
+								node.getAttribute("oceloti-card-state") !== "elevated" &&
+								node.hasAttribute("oceloti-card")
+							) {
+								card_lift(node);
+							}
+						});
+					}
+				}
+			}
+		});
+
+		observer.observe(room, { childList: true });
+
+		window.addEventListener("load", () => {
+			all_cards.forEach(card_drop);
+		});
+
+		function initialize_card_state(card) {
+		    setTimeout(() => {
+		    	card.setAttribute("oceloti-card-state", "idle");
+			    card.style.removeProperty("will-change");
+			    card.style.removeProperty("pointer-events");
+		    }, 0);
+
+			card.addEventListener("mousedown", handle_mousedown);
+
+			function handle_mousedown(e) {
+			    if (!e.target) return;
+			    if (dragged_card !== null) return;
+			    const target = e.target;
+			    if (
+			        card.getAttribute("oceloti-card-state") !== "idle" ||
+			        target.tagName === "A" ||
+			        target.tagName === "BUTTON" ||
+			        target.tagName === "INPUT" ||
+			        target.tagName === "TEXTAREA" ||
+			        (
+			        	target.tagName === "IMG" && 
+			        	target.getAttribute("draggable") !== "false"
+			        ) 
+			    ) {
+			        return;
+			    }
+
+			    if (e.button !== 0) return;
+
+			    document.body.classList.toggle("is-dragging");
+			    let x = Number(card.style.left.replace("px", ""));
+		    	let y = Number(card.style.top.replace("px", ""));
+		    	dragging_x = x;
+		    	dragging_y = y;
+
+			    last_mouse_x = e.clientX;
+			    last_mouse_y = e.clientY;
+
+			    card.style.willChange = "filter, transform";
+			    card.style.pointerEvents = "none";
+			    const card_html = card.outerHTML;
+			    card.remove();
+
+			    const floating_wrapper = document.createElement("div");
+
+			    floating_wrapper.id = "oceloti-floating-card";
+			    floating_wrapper.style.pointerEvents = "none";
+			    floating_wrapper.style.position = "absolute";
+			    floating_wrapper.style.left = "0";
+			    floating_wrapper.style.top = "0";
+			    floating_wrapper.style.willChange = "transform";
+			    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
+			    floating_wrapper.innerHTML = card_html;
+
+			    const inner_card = floating_wrapper.firstElementChild;
+			    inner_card.style.left = "";
+			    inner_card.style.top = "";
+
+			    room.appendChild(floating_wrapper);
+			    dragged_card = inner_card;
+
+			    window.addEventListener("mousemove", handle_mousemove);
+			    window.addEventListener("mouseup", handle_mouseup);
+			}
+		}
+
+		function handle_mousemove(e) {
+		    if (e.button !== 0) return;
+
+		    delta_x = last_mouse_x - e.clientX;
+		    delta_y = last_mouse_y - e.clientY;
+		    last_mouse_x = e.clientX;
+		    last_mouse_y = e.clientY;
+
+		    if (dragged_card) {
+		    	dragged_card.setAttribute("oceloti-card-state", "elevated");
+		    	dragging_x = dragging_x - delta_x;
+		    	dragging_y = dragging_y - delta_y;
+		    	dragged_card.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
+		    }
+		}
+
+		function handle_mouseup(e) {
+		    if (e.button !== 0) return;
+			document.body.classList.toggle("is-dragging");
+		    const wrapper = dragged_card.parentNode;
+		    wrapper.after(dragged_card);
+
+		    dragged_card.style.left = `${dragging_x}px`;
+		    dragged_card.style.top = `${dragging_y}px`;
+		    card_drop(dragged_card);
+
+		    wrapper.remove();
+		    dragged_card = null;
+
+		    window.removeEventListener("mousemove", handle_mousemove);
+		    window.removeEventListener("mouseup", handle_mouseup);
+		}
+
+		function card_drop(card) {
+			initialize_card_state(card);
+			const event = new CustomEvent("carddrop", { detail: { card } });
+			window.dispatchEvent(event);
+		}
+
+		function card_lift(card) {
+			const event = new CustomEvent("cardlift", { detail: { card } });
+			window.dispatchEvent(event);
+		}
+	}
+});
+/* MODULE: modules/dnd-manager/dnd-manager.js */
+register_oceloti_module({
+	name: "dnd-manager",
+	deps: [],
+	init({ use_module, room }) {
+
+		const dnd_handlers = [];
+		function register_dnd_handler({ for_type, on_drop }) {
+			dnd_handlers.push({ for_type, on_drop });
+		}
+
+		room.addEventListener("dragover", (e) => {
+			e.preventDefault();
+			// @TODO: Show custom UI for dropping something... We don't know what that something is.
+		});
+
+		room.addEventListener("drop", (drop_event) => {
+			drop_event.preventDefault();
+			const files = drop_event.dataTransfer.files;
+			const is_link = drop_event.dataTransfer.types.find(t => t.includes("url")) !== undefined;
+			const text_data = drop_event.dataTransfer.getData("text/plain");
+
+			// @NOTES:
+			// ------
+			// There are two main branching types: file / text
+			// The text branch could be anything from link to plain text to internal dnd type.
+			// If file, types get more predictable.
+
+			if (files.length === 0) {
+				console.log("is link?", is_link); // @TODO: use link to see if it's an image.
+				console.log("text data", text_data);
+
+				// @STEP 1: Handle known text_data type for cards.
+
+			} else if (files.length > 0) {
+				for (let file of files) {
+					
+					// @STEP 2: Determine file dnd type
+
+					// @STEP 3: Once we know the type, filter handlers to match with for_type.
+					//          It's possible there are multiple handlers for a single type.
+					//          In that case the user should be asked to select one (optionally select default).
+
+					if (file.type.startsWith("image/")) {
+						const reader = new FileReader();
+						reader.onload = (e) => {
+							const img = new Image();
+							img.onload = () => {
+								const image_card = document.createElement("figure");
+								image_card.setAttribute("oceloti-card", "");
+								image_card.classList.add("paper");
+								image_card.style.left = `${window.scrollX + drop_event.clientX - (img.naturalWidth / 2)}px`;
+								image_card.style.top = `${window.scrollY + drop_event.clientY - (img.naturalHeight / 2)}px`;
+								image_card.style.width = `${img.naturalWidth}px`;
+								image_card.style.height = `${img.naturalHeight}px`;
+								image_card.appendChild(img);
+								room.appendChild(image_card);
+							};
+							img.src = e.target.result;
+							img.setAttribute("draggable", "false");
+						};
+						reader.readAsDataURL(file);
+					}
+				}
+			}
+		});
+	}
+});
+/* MODULE: modules/van/van.js */
+register_oceloti_module({
+	name: "van",
+	deps: [],
+	init() {
+		var Obj = Object;
+		var _undefined;
+		var protoOf = Obj.getPrototypeOf;
+		var doc = document;
+		var changedStates;
+		var curDeps;
+		var curNewDerives;
+		var alwaysConnectedDom = { isConnected: 1 };
+		var gcCycleInMs = 1e3;
+		var statesToGc;
+		var propSetterCache = {};
+		var objProto = protoOf(alwaysConnectedDom);
+		var funcProto = protoOf(protoOf);
+		var addAndScheduleOnFirst = (set, s, f, waitMs) => (set ?? (setTimeout(f, waitMs), /* @__PURE__ */ new Set())).add(s);
+		var runAndCaptureDeps = (f, deps, arg) => {
+			let prevDeps = curDeps;
+			curDeps = deps;
+			try {
+				return f(arg);
+			} catch (e) {
+				console.error(e);
+				return arg;
+			} finally {
+				curDeps = prevDeps;
+			}
+		};
+		var keepConnected = (l) => l.filter((b) => b._dom?.isConnected);
+		var addStatesToGc = (d) => statesToGc = addAndScheduleOnFirst(statesToGc, d, () => {
+			for (let s of statesToGc)
+				s._bindings = keepConnected(s._bindings), s._listeners = keepConnected(s._listeners);
+			statesToGc = _undefined;
+		}, gcCycleInMs);
+		var stateProto = {
+			get val() {
+				curDeps?._getters?.add(this);
+				return this._val;
+			},
+			get oldVal() {
+				curDeps?._getters?.add(this);
+				return this._oldVal;
+			},
+			set val(v) {
+				curDeps?._setters?.add(this);
+				if (v !== this._val) {
+					this._val = v;
+					let listeners = [...this._listeners = keepConnected(this._listeners)];
+					for (let l of listeners)
+						derive(l.f, l.s, l._dom), l._dom = _undefined;
+					this._bindings.length ? changedStates = addAndScheduleOnFirst(changedStates, this, updateDoms) : this._oldVal = v;
+				}
+			}
+		};
+		var state = (initVal) => ({
+			__proto__: stateProto,
+			_val: initVal,
+			_oldVal: initVal,
+			_bindings: [],
+			_listeners: []
+		});
+		var isState = (s) => protoOf(s ?? 0) === stateProto;
+		var val = (s) => isState(s) ? s.val : s;
+		var oldVal = (s) => isState(s) ? s.oldVal : s;
+		var bind = (f, dom) => {
+			let deps = { _getters: /* @__PURE__ */ new Set(), _setters: /* @__PURE__ */ new Set() }, binding = { f }, prevNewDerives = curNewDerives;
+			curNewDerives = [];
+			let newDom = runAndCaptureDeps(f, deps, dom);
+			newDom = (newDom ?? doc).nodeType ? newDom : new Text(newDom);
+			for (let d of deps._getters)
+				deps._setters.has(d) || (addStatesToGc(d), d._bindings.push(binding));
+			for (let l of curNewDerives)
+				l._dom = newDom;
+			curNewDerives = prevNewDerives;
+			return binding._dom = newDom;
+		};
+		var derive = (f, s = state(), dom) => {
+			let deps = { _getters: /* @__PURE__ */ new Set(), _setters: /* @__PURE__ */ new Set() }, listener = { f, s };
+			listener._dom = dom ?? curNewDerives?.push(listener) ?? alwaysConnectedDom;
+			s.val = runAndCaptureDeps(f, deps, s._val);
+			for (let d of deps._getters)
+				deps._setters.has(d) || (addStatesToGc(d), d._listeners.push(listener));
+			return s;
+		};
+		var add = (dom, ...children) => {
+			for (let c of children.flat(Infinity)) {
+				let protoOfC = protoOf(c ?? 0);
+				let child = protoOfC === stateProto ? bind(() => c.val) : protoOfC === funcProto ? bind(c) : c;
+				child != _undefined && dom.append(child);
+			}
+			return dom;
+		};
+		var _ = (f) => (f._isBindingFunc = 1, f);
+		var tagsNS = (ns) => new Proxy((name, ...args) => {
+			let [props, ...children] = protoOf(args[0] ?? 0) === objProto ? args : [{}, ...args];
+			let dom = ns ? doc.createElementNS(ns, name) : doc.createElement(name);
+			for (let [k, v] of Obj.entries(props)) {
+				let getPropDescriptor = (proto) => proto ? Obj.getOwnPropertyDescriptor(proto, k) ?? getPropDescriptor(protoOf(proto)) : _undefined;
+				let cacheKey = name + "," + k;
+				let propSetter = propSetterCache[cacheKey] ?? (propSetterCache[cacheKey] = getPropDescriptor(protoOf(dom))?.set ?? 0);
+				let setter = k.startsWith("on") ? (v2, oldV) => {
+					let event = k.slice(2);
+					dom.removeEventListener(event, oldV);
+					dom.addEventListener(event, v2);
+				} : propSetter ? propSetter.bind(dom) : dom.setAttribute.bind(dom, k);
+				let protoOfV = protoOf(v ?? 0);
+				protoOfV === funcProto && (!k.startsWith("on") || v._isBindingFunc) && (v = derive(v), protoOfV = stateProto);
+				protoOfV === stateProto ? bind(() => (setter(v.val, v._oldVal), dom)) : setter(v);
+			}
+			return add(dom, ...children);
+		}, { get: (tag, name) => tag.bind(_undefined, name) });
+		var update = (dom, newDom) => newDom ? newDom !== dom && dom.replaceWith(newDom) : dom.remove();
+		var updateDoms = () => {
+			let changedStatesArray = [...changedStates].filter((s) => s._val !== s._oldVal);
+			changedStates = _undefined;
+			for (let b of new Set(changedStatesArray.flatMap((s) => s._bindings = keepConnected(s._bindings))))
+				update(b._dom, bind(b.f, b._dom)), b._dom = _undefined;
+			for (let s of changedStatesArray)
+				s._oldVal = s._val;
+		};
+		var hydrate = (dom, f) => update(dom, bind(f, dom));
+		return { add, _, tags: tagsNS(), tagsNS, state, val, oldVal, derive, hydrate };
+	}
+});
+/* MODULE: modules/context-menu/context-menu.js */
+register_oceloti_module({
+	name: "context-menu",
+	deps: ["van"],
+	init({ use_module, hud, utils: { are_dialogs_open } }) {
+		const self = {
+			menu: {}
+		};
+
+		const van = use_module("van");
+
+		document.addEventListener("contextmenu", function(e) {
+			const selection = window.getSelection();
+			if (
+		        are_dialogs_open() ||
+		        e.target.hasAttribute("use-native-menu") ||
+		        selection.type === "Range" ||
+		        e.target.tagName === "A" ||
+		        e.target.tagName === "INPUT" ||
+		        e.target.tagName === "TEXTAREA" ||
 		        (
-		        	target.tagName === "IMG" && 
-		        	target.getAttribute("draggable") !== "false"
+		        	e.target.tagName === "IMG" && 
+		        	e.target.getAttribute("draggable") !== "false"
 		        ) 
 		    ) {
 		        return;
 		    }
 
-		    if (e.button !== 0) return;
+		    e.preventDefault();
 
-		    document.body.classList.toggle("is-dragging");
-		    let x = Number(card.style.left.replace("px", ""));
-	    	let y = Number(card.style.top.replace("px", ""));
-	    	dragging_x = x;
-	    	dragging_y = y;
+		    let menu = document.getElementById("oceloti-menu");
 
-		    last_mouse_x = e.clientX;
-		    last_mouse_y = e.clientY;
+		    function close_menu(clean = false) {
+				if (menu) menu.remove();
+				let el = e.target;
+				let has_menu = false;
+				while (el) {
+					has_menu = el.hasAttribute("oceloti-menu");
+					if (has_menu) break;
+					el = el.parentElement;
+				}
 
-		    card.style.willChange = "filter, transform";
-		    card.style.pointerEvents = "none";
-		    const card_html = card.outerHTML;
-		    card.remove();
-
-		    const floating_wrapper = document.createElement("div");
-
-		    floating_wrapper.id = "oceloti-floating-card";
-		    floating_wrapper.style.pointerEvents = "none";
-		    floating_wrapper.style.position = "absolute";
-		    floating_wrapper.style.left = "0";
-		    floating_wrapper.style.top = "0";
-		    floating_wrapper.style.willChange = "transform";
-		    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
-		    floating_wrapper.innerHTML = card_html;
-
-		    const inner_card = floating_wrapper.firstElementChild;
-		    inner_card.style.left = "";
-		    inner_card.style.top = "";
-
-		    room.appendChild(floating_wrapper);
-		    dragged_card = inner_card;
-
-		    window.addEventListener("mousemove", handle_mousemove);
-		    window.addEventListener("mouseup", handle_mouseup);
-		}
-	}
-
-	function handle_mousemove(e) {
-	    if (e.button !== 0) return;
-
-	    delta_x = last_mouse_x - e.clientX;
-	    delta_y = last_mouse_y - e.clientY;
-	    last_mouse_x = e.clientX;
-	    last_mouse_y = e.clientY;
-
-	    if (dragged_card) {
-	    	dragged_card.setAttribute("oceloti-card-state", "elevated");
-	    	dragging_x = dragging_x - delta_x;
-	    	dragging_y = dragging_y - delta_y;
-	    	dragged_card.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
-	    }
-	}
-
-	function handle_mouseup(e) {
-	    if (e.button !== 0) return;
-		document.body.classList.toggle("is-dragging");
-	    const wrapper = dragged_card.parentNode;
-	    wrapper.after(dragged_card);
-
-	    dragged_card.style.left = `${dragging_x}px`;
-	    dragged_card.style.top = `${dragging_y}px`;
-	    card_drop(dragged_card);
-
-	    wrapper.remove();
-	    dragged_card = null;
-
-	    window.removeEventListener("mousemove", handle_mousemove);
-	    window.removeEventListener("mouseup", handle_mouseup);
-	}
-
-	function card_drop(card) {
-		initialize_card_state(card);
-		const event = new CustomEvent("carddrop", { detail: { card } });
-		window.dispatchEvent(event);
-	}
-
-	function card_lift(card) {
-		const event = new CustomEvent("cardlift", { detail: { card } });
-		window.dispatchEvent(event);
-	}
-})();
-/* MODULE: modules/dnd-manager/dnd-manager.js */
-(() => {
-	const room = document.querySelector("[oceloti-room]");
-	if (!room) return;
-
-	dnd_handlers = [];
-
-	function register_dnd_handler({ for_type, on_drop }) {
-		dnd_handlers.push({ for_type, on_drop });
-	}
-
-	window.register_dnd_handler = register_dnd_handler;
-
-	room.addEventListener("dragover", (e) => {
-		e.preventDefault();
-		// @TODO: Show custom UI for dropping something... We don't know what that something is.
-	});
-
-	room.addEventListener("drop", (drop_event) => {
-		drop_event.preventDefault();
-		const files = drop_event.dataTransfer.files;
-		const is_link = drop_event.dataTransfer.types.find(t => t.includes("url")) !== undefined;
-		const text_data = drop_event.dataTransfer.getData("text/plain");
-
-		// @NOTES:
-		// ------
-		// There are two main branching types: file / text
-		// The text branch could be anything from link to plain text to internal dnd type.
-		// If file, types get more predictable.
-
-		if (files.length === 0) {
-			console.log("is link?", is_link); // @TODO: use link to see if it's an image.
-			console.log("text data", text_data);
-
-			// @STEP 1: Handle known text_data type for cards.
-
-		} else if (files.length > 0) {
-			for (let file of files) {
-				
-				// @STEP 2: Determine file dnd type
-
-				// @STEP 3: Once we know the type, filter handlers to match with for_type.
-				//          It's possible there are multiple handlers for a single type.
-				//          In that case the user should be asked to select one (optionally select default).
-
-				if (file.type.startsWith("image/")) {
-					const reader = new FileReader();
-					reader.onload = (e) => {
-						const img = new Image();
-						img.onload = () => {
-							const image_card = document.createElement("figure");
-							image_card.setAttribute("oceloti-card", "");
-							image_card.classList.add("paper");
-							image_card.style.left = `${window.scrollX + drop_event.clientX - (img.naturalWidth / 2)}px`;
-							image_card.style.top = `${window.scrollY + drop_event.clientY - (img.naturalHeight / 2)}px`;
-							image_card.style.width = `${img.naturalWidth}px`;
-							image_card.style.height = `${img.naturalHeight}px`;
-							image_card.appendChild(img);
-							room.appendChild(image_card);
-						};
-						img.src = e.target.result;
-						img.setAttribute("draggable", "false");
-					};
-					reader.readAsDataURL(file);
+				if (clean || !has_menu) {
+					self.menu = {};
 				}
 			}
-		}
-	});
-})();
-/* MODULE: modules/van/van.js */
-(() => {
-  // van.js
-  var Obj = Object;
-  var _undefined;
-  var protoOf = Obj.getPrototypeOf;
-  var doc = document;
-  var changedStates;
-  var curDeps;
-  var curNewDerives;
-  var alwaysConnectedDom = { isConnected: 1 };
-  var gcCycleInMs = 1e3;
-  var statesToGc;
-  var propSetterCache = {};
-  var objProto = protoOf(alwaysConnectedDom);
-  var funcProto = protoOf(protoOf);
-  var addAndScheduleOnFirst = (set, s, f, waitMs) => (set ?? (setTimeout(f, waitMs), /* @__PURE__ */ new Set())).add(s);
-  var runAndCaptureDeps = (f, deps, arg) => {
-    let prevDeps = curDeps;
-    curDeps = deps;
-    try {
-      return f(arg);
-    } catch (e) {
-      console.error(e);
-      return arg;
-    } finally {
-      curDeps = prevDeps;
-    }
-  };
-  var keepConnected = (l) => l.filter((b) => b._dom?.isConnected);
-  var addStatesToGc = (d) => statesToGc = addAndScheduleOnFirst(statesToGc, d, () => {
-    for (let s of statesToGc)
-      s._bindings = keepConnected(s._bindings), s._listeners = keepConnected(s._listeners);
-    statesToGc = _undefined;
-  }, gcCycleInMs);
-  var stateProto = {
-    get val() {
-      curDeps?._getters?.add(this);
-      return this._val;
-    },
-    get oldVal() {
-      curDeps?._getters?.add(this);
-      return this._oldVal;
-    },
-    set val(v) {
-      curDeps?._setters?.add(this);
-      if (v !== this._val) {
-        this._val = v;
-        let listeners = [...this._listeners = keepConnected(this._listeners)];
-        for (let l of listeners)
-          derive(l.f, l.s, l._dom), l._dom = _undefined;
-        this._bindings.length ? changedStates = addAndScheduleOnFirst(changedStates, this, updateDoms) : this._oldVal = v;
-      }
-    }
-  };
-  var state = (initVal) => ({
-    __proto__: stateProto,
-    _val: initVal,
-    _oldVal: initVal,
-    _bindings: [],
-    _listeners: []
-  });
-  var isState = (s) => protoOf(s ?? 0) === stateProto;
-  var val = (s) => isState(s) ? s.val : s;
-  var oldVal = (s) => isState(s) ? s.oldVal : s;
-  var bind = (f, dom) => {
-    let deps = { _getters: /* @__PURE__ */ new Set(), _setters: /* @__PURE__ */ new Set() }, binding = { f }, prevNewDerives = curNewDerives;
-    curNewDerives = [];
-    let newDom = runAndCaptureDeps(f, deps, dom);
-    newDom = (newDom ?? doc).nodeType ? newDom : new Text(newDom);
-    for (let d of deps._getters)
-      deps._setters.has(d) || (addStatesToGc(d), d._bindings.push(binding));
-    for (let l of curNewDerives)
-      l._dom = newDom;
-    curNewDerives = prevNewDerives;
-    return binding._dom = newDom;
-  };
-  var derive = (f, s = state(), dom) => {
-    let deps = { _getters: /* @__PURE__ */ new Set(), _setters: /* @__PURE__ */ new Set() }, listener = { f, s };
-    listener._dom = dom ?? curNewDerives?.push(listener) ?? alwaysConnectedDom;
-    s.val = runAndCaptureDeps(f, deps, s._val);
-    for (let d of deps._getters)
-      deps._setters.has(d) || (addStatesToGc(d), d._listeners.push(listener));
-    return s;
-  };
-  var add = (dom, ...children) => {
-    for (let c of children.flat(Infinity)) {
-      let protoOfC = protoOf(c ?? 0);
-      let child = protoOfC === stateProto ? bind(() => c.val) : protoOfC === funcProto ? bind(c) : c;
-      child != _undefined && dom.append(child);
-    }
-    return dom;
-  };
-  var _ = (f) => (f._isBindingFunc = 1, f);
-  var tagsNS = (ns) => new Proxy((name, ...args) => {
-    let [props, ...children] = protoOf(args[0] ?? 0) === objProto ? args : [{}, ...args];
-    let dom = ns ? doc.createElementNS(ns, name) : doc.createElement(name);
-    for (let [k, v] of Obj.entries(props)) {
-      let getPropDescriptor = (proto) => proto ? Obj.getOwnPropertyDescriptor(proto, k) ?? getPropDescriptor(protoOf(proto)) : _undefined;
-      let cacheKey = name + "," + k;
-      let propSetter = propSetterCache[cacheKey] ?? (propSetterCache[cacheKey] = getPropDescriptor(protoOf(dom))?.set ?? 0);
-      let setter = k.startsWith("on") ? (v2, oldV) => {
-        let event = k.slice(2);
-        dom.removeEventListener(event, oldV);
-        dom.addEventListener(event, v2);
-      } : propSetter ? propSetter.bind(dom) : dom.setAttribute.bind(dom, k);
-      let protoOfV = protoOf(v ?? 0);
-      protoOfV === funcProto && (!k.startsWith("on") || v._isBindingFunc) && (v = derive(v), protoOfV = stateProto);
-      protoOfV === stateProto ? bind(() => (setter(v.val, v._oldVal), dom)) : setter(v);
-    }
-    return add(dom, ...children);
-  }, { get: (tag, name) => tag.bind(_undefined, name) });
-  var update = (dom, newDom) => newDom ? newDom !== dom && dom.replaceWith(newDom) : dom.remove();
-  var updateDoms = () => {
-    let changedStatesArray = [...changedStates].filter((s) => s._val !== s._oldVal);
-    changedStates = _undefined;
-    for (let b of new Set(changedStatesArray.flatMap((s) => s._bindings = keepConnected(s._bindings))))
-      update(b._dom, bind(b.f, b._dom)), b._dom = _undefined;
-    for (let s of changedStatesArray)
-      s._oldVal = s._val;
-  };
-  var hydrate = (dom, f) => update(dom, bind(f, dom));
-  var van_default = { add, _, tags: tagsNS(), tagsNS, state, val, oldVal, derive, hydrate };
 
-  // van.forbundle.js
-  window.van = van_default;
-})();
-/* MODULE: modules/context-menu/context-menu.js */
-(() => {
-	const hud = document.getElementById("hud");
-	window.oceloti_menu = {};
-	document.addEventListener("contextmenu", function(e) {
-		const selection = window.getSelection();
-		if (
-	        are_dialogs_open() ||
-	        e.target.hasAttribute("use-native-menu") ||
-	        selection.type === "Range" ||
-	        e.target.tagName === "A" ||
-	        e.target.tagName === "INPUT" ||
-	        e.target.tagName === "TEXTAREA" ||
-	        (
-	        	e.target.tagName === "IMG" && 
-	        	e.target.getAttribute("draggable") !== "false"
-	        ) 
-	    ) {
-	        return;
-	    }
-
-	    e.preventDefault();
-
-	    let menu = document.getElementById("oceloti-menu");
-
-	    function close_menu(clean = false) {
-			if (menu) menu.remove();
-			let el = e.target;
-			let has_menu = false;
-			while (el) {
-				has_menu = el.hasAttribute("oceloti-menu");
-				if (has_menu) break;
-				el = el.parentElement;
-			}
-
-			if (clean || !has_menu) {
-				window.oceloti_menu = {};
-			}
-		}
-
-		if (
-	    	e.target.id === "oceloti-menu" ||
-	    	e.target.parentNode.id === "oceloti-menu"
-	    ) {
-	    	close_menu();
-	    	return;
-	    }
-
-	    if (menu) close_menu();
-
-    	const { div, button } = van.tags;
-	    menu = div({
-	    	id: "oceloti-menu",
-	    	style: () => `
-	    		left: ${e.clientX}px;
-	    		top: ${e.clientY}px;
-	    	`
-	    },
-	    	Object.keys(window.oceloti_menu).length > 0
-	    		? Object.keys(window.oceloti_menu).map((group_name) => [
-	    			div({ class: "separator" }),
-	    			...window.oceloti_menu[group_name].map(item => item)
-		    	])
-		    	: button({ "disabled": "true" }, "Nothing to do")
-	    );
-	    van.add(hud, menu);
-
-	    Array.from(menu.children).forEach((item) => {
-	    	item.addEventListener("click", () => close_menu());
-	    });
-
-	    window.addEventListener("keydown", (e) => {
-	    	if (e.key === "Escape") {
-	    		if (menu) close_menu();
-	    	}
-	    });
-
-	    window.addEventListener("mousedown", (e) => {
-	    	if (
-		        e.button === 2 ||
-		        e.target.parentNode === menu
+			if (
+		    	e.target.id === "oceloti-menu" ||
+		    	e.target.parentNode.id === "oceloti-menu"
 		    ) {
-		        return;
+		    	close_menu();
+		    	return;
 		    }
-	    	if (menu) close_menu();
-	    	window.oceloti_menu = {};
-	    });
-	});
-})();
+
+		    if (menu) close_menu();
+
+	    	const { div, button } = van.tags;
+		    menu = div({
+		    	id: "oceloti-menu",
+		    	style: () => `
+		    		left: ${e.clientX}px;
+		    		top: ${e.clientY}px;
+		    	`
+		    },
+		    	Object.keys(self.menu).length > 0
+		    		? Object.keys(self.menu).map((group_name) => [
+		    			div({ class: "separator" }),
+		    			...self.menu[group_name].map(item => item)
+			    	])
+			    	: button({ "disabled": "true" }, "Nothing to do")
+		    );
+		    van.add(hud, menu);
+
+		    Array.from(menu.children).forEach((item) => {
+		    	item.addEventListener("click", () => close_menu());
+		    });
+
+		    window.addEventListener("keydown", (e) => {
+		    	if (e.key === "Escape") {
+		    		if (menu) close_menu();
+		    	}
+		    });
+
+		    window.addEventListener("mousedown", (e) => {
+		    	if (
+			        e.button === 2 ||
+			        e.target.parentNode === menu
+			    ) {
+			        return;
+			    }
+		    	if (menu) close_menu();
+		    	self.menu = {};
+		    });
+		});
+
+		return self;
+	}
+});
 /* MODULE: modules/save-to-file/save-to-file.js */
-(async () => {
-	const hud = document.getElementById("hud");
-	if (!hud) return;
+register_oceloti_module({
+	name: "save-to-file",
+	deps: ["van"],
+	init({ use_module, hud }) {
 
-	if (!van) {
-		console.error("The inventory module depends on van.js");
-		return;
-	};
+		const van = use_module("van");
 
-	const { dialog, button, p, div, a } = van.tags;
+		const { dialog, button, p, div, a } = van.tags;
 
-	const hud_button = button({
-		onclick: save
-	}, "💾 Save");
+		const hud_button = button({
+			onclick: save
+		}, "💾 Save");
 
-	// van.add(hud, hud_button);
+		// van.add(hud, hud_button);
 
-	window.addEventListener("keydown", handle_keydown);
+		window.addEventListener("keydown", handle_keydown);
 
-	function handle_keydown(e) {
-		if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-			e.preventDefault();
-			save();
-		}
-	}
-
-	function save() {
-		let dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-
-		if (hud) {
-			let hud_contents = hud.innerHTML;
-			dom_content = dom_content.replace(hud_contents, "");
+		function handle_keydown(e) {
+			if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+				e.preventDefault();
+				save();
+			}
 		}
 
-		const dialog_el = dialog({
-			"oceloti-dialog": "save-to-file",
-			onclose: (e) => e.target.remove()
-		},
-			div({
-				style: `
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					flex-direction: column;
-					gap: 0.75rem;
-				`
+		function save() {
+			let dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+			if (hud) {
+				let hud_contents = hud.innerHTML;
+				dom_content = dom_content.replace(hud_contents, "");
+			}
+
+			const dialog_el = dialog({
+				"oceloti-dialog": "save-to-file",
+				onclose: (e) => e.target.remove()
 			},
-				p(`Right-click download button to "save as".`),
-				a({ class: "button" }, "⬇️ Download")
-			)
-		);
+				div({
+					style: `
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						flex-direction: column;
+						gap: 0.75rem;
+					`
+				},
+					p(`Right-click download button to "save as".`),
+					a({ class: "button" }, "⬇️ Download")
+				)
+			);
 
-		van.add(document.body, dialog_el)
-		
-		setTimeout(() => {
-			const blob = new Blob([dom_content], { type: 'text/html' });
-			const url = URL.createObjectURL(blob);
-			const dialog_el = document.querySelector(`[oceloti-dialog="save-to-file"]`);
-			const link_el = dialog_el.querySelector("a");
-			link_el.href = url;
-			link_el.download = `${document.title}.html`;
+			van.add(document.body, dialog_el)
 			
-			dialog_el.showModal();
-		}, 0);
+			setTimeout(() => {
+				const blob = new Blob([dom_content], { type: 'text/html' });
+				const url = URL.createObjectURL(blob);
+				const dialog_el = document.querySelector(`[oceloti-dialog="save-to-file"]`);
+				const link_el = dialog_el.querySelector("a");
+				link_el.href = url;
+				link_el.download = `${document.title}.html`;
+				
+				dialog_el.showModal();
+			}, 0);
+		}
 	}
-})();
+});
 /* MODULE: modules/inventory/inventory.js */
-(async () => {
-	const hud = document.getElementById("hud");
-	const room = document.querySelector("[oceloti-room]");
-	
-	if (!room || !hud) return;
+register_oceloti_module({
+	name: "inventory",
+	deps: ["van"],
+	init({ use_module, hud }) {
+		const item_handlers = [];
 
-	const item_handlers = [];
-
-	function register_item_handler({ name, descriptor, icon, renderers }) {
-		item_handlers.push({
-			name, // Handler name
-			descriptor, // Function that generates item description
-			icon, // Emoji if this is the default renderer
-			renderers: {/* read: ..., write: ..., DEFAULT: ... */}
-		});
-	}
-
-	window.register_item_handler = register_item_handler;
-
-	window.addEventListener("carddrop", ({ detail: { card } }) => {
-		card.setAttribute("oceloti-menu", "card-menu");
-		card.addEventListener("mousedown", (e) => {
-			if (e.button !== 2) return;
-			window.oceloti_menu["inventory_actions"] = [
-				button({
-					onclick: () => console.log("pack")
-				},
-					"🎒 Put away"
-				),
-				button({
-					onclick: () => card.remove()
-				},
-					"🗑️ Trash card"
-				),
-			];
-		});
-	});
-
-	const items = [
-		{
-			icon: "🗒️",
-			description: "An empty text note.",
-			grid_x: 3,
-			grid_y: 1,
-			width: 300,
-			height: 400,
-			handler: "notebook-paper",
-			state: "read",
-			content: ""
-		},
-		{
-			icon: "❓",
-			description: "Unknown item, requires pdf-reader handler.",
-			grid_x: 5,
-			grid_y: 1,
-			width: 300,
-			height: 400,
-			handler: "pdf-reader",
-			state: "read",
-			content: ""
+		function register_item_handler({ name, descriptor, icon, initializer, renderer }) {
+			item_handlers.push({
+				name, // Handler name.
+				descriptor, // Function that generates item description.
+				icon, // Function that returns icon.
+				initializer, // Function that takes card element and initializes UI.
+				renderer, // Function that takes item and returns HTMLElement node.
+			});
 		}
-	];
 
-	const slots = [
-		null,null,null,
-		null,null,null,
-		null,null,null,
-		null,null,null,
-		null,null,null,
-		null,null,null,
-	];
-
-	items.forEach((item) => {
-		const index = (item.grid_y - 1) * 3 + (item.grid_x - 1);
-  		slots[index] = item;
-	});
-
-	if (!van) {
-		console.error("The inventory module depends on van.js");
-		return;
-	};
-
-	const { div, button, img, ul, li, span } = van.tags;
-
-	const show_inventory = van.state(false);
-
-	const inventory_grid = ul({
-		class: "inventory-grid",
-		style: () => `
-			display: ${show_inventory.val ? "grid" : "none"}
-		`
-	},
-		slots.map(item => li({
-			class: "inventory-slot",
-			...(item ? {
-				"oceloti-menu": "inventory-item",
-				"title": item.description,
-				onmousedown: (e) => {
-					if (e.button !== 2) return;
-					window.oceloti_menu["inventory_item"] = [
-						button({
-							onclick: () => {
-								const event = new CustomEvent("inventorydrop", { detail: { item } });
-								window.dispatchEvent(event);
-							}
-						},
-							"⤵️ Drop"
-						),
-						button({
-							onclick: () => {}
-						},
-							"🔍 inspect"
-						),
-						button({
-							onclick: () => {}
-						},
-							"🖨️ copy"
-						),
-						button({
-							onclick: () => {}
-						},
-							"🗑️ Trash"
-						)
-					];
-				},
-			} : {
-				ondragover: (e) => {
-					e.preventDefault();
-					e.dataTransfer.dropEffect = "move";
-					e.dataTransfer
-				},
-				ondrop: (e) => {
-					e.preventDefault();
-					console.log(e.dataTransfer.getData("text/plain"));
-				},
-			}),
-		},
-			span({
-				"draggable": item ? "true" : "false",
-				"data-value": item ? `${item.grid_x},${item.grid_y}` : null,
-				class: "inventory-item emoji",
-				ondragstart: (e) => {
-					if (item) {
-						event.dataTransfer.setData('text/plain', event.target.dataset.value);
-						event.dataTransfer.effectAllowed = 'move';
-					} else {
-						event.preventDefault();
-					}
-				},
-			},
-				item ? item.icon : ""
-			)
-		))
-	);
-
-	const inventory_launcher = div({
-		style: "position: relative;",
-	},
-		button({
-			onclick: (e) => {
-				e.target.classList.toggle("selected");
-				show_inventory.val = !show_inventory.val;
-			}
-		},
-			"🎒 local bag"
-		),
-		inventory_grid
-	);
-
-	van.add(hud, inventory_launcher);
-
-	van.add(hud, div({
-		style: "position: relative;",
-	},
-		button({
-			style: `
-				background: royalblue;
-				color: white;
-			`,
-		},
-			"☁️ drive bag"
-		),
-	));
-})();
-/* MODULE: modules/equipment/equipment.js */
-(async () => {
-	if (!van) {
-		console.error("The equipment module depends on van.js");
-		return;
-	};
-
-	const hud = document.getElementById("hud");
-	const room = document.querySelector("[oceloti-room]");
-	
-	if (!room || !hud) return;
-
-	const { div, button, img } = van.tags;
-
-	const slots = [
-		"📃"," ","🤚","✏️",
-	];
-
-	const show_equipment = van.state(false);
-
-	const equipment_grid = div({
-		class: "equipment-grid",
-		style: () => `
-			display: ${show_equipment.val ? "grid" : "none"}
-		`
-	},
-		slots.map(slot => div({
-			"oceloti-menu": "equipment-slot",
-			class: "equipment-slot",
-			onmousedown: (e) => {
+		window.addEventListener("carddrop", ({ detail: { card } }) => {
+			card.setAttribute("oceloti-menu", "card-menu");
+			card.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
-			},
-		},
-			div({ class: "equipment-item emoji" }, slot)
-		))
-	);
-
-	const equipment_launcher = div({
-		style: `
-			position: fixed;
-			left: 12px;
-			bottom: 12px;
-		`,
-	},
-		button({
-			onclick: (e) => {
-				e.target.classList.toggle("selected");
-				show_equipment.val = !show_equipment.val;
-			}
-		},
-			"🔌 equipment"
-		),
-		equipment_grid
-	);
-
-	van.add(hud, equipment_launcher);
-})();
-/* MODULE: modules/arena-api/arena-api.js */
-async function arena_sign_in(token) {
-	if (!token) {
-		console.error("Can't sign in without token.");
-		return {
-			status: "error",
-			message: "Can't sign in without token."
-		};
-	}
-
-	try {
-		const user = await fetch_arena({
-			endpoint: "/me",
-			token
+				window.oceloti_menu["inventory_actions"] = [
+					button({
+						onclick: () => console.log("pack")
+					},
+						"🎒 Put away"
+					),
+					button({
+						onclick: () => card.remove()
+					},
+						"🗑️ Trash card"
+					),
+				];
+			});
 		});
-		localStorage.setItem("ARENA_TOKEN", token);
-		return {
-			status: "success",
-			message: `Hello ${user.full_name}.`,
-			user
-		}
-	} catch(e) {
-		console.error("Failed to sign in with token:", token);
-		return {
-			status: "error",
-			message: "Bad token. Use a different token or generate again."
-		};
-	}
-}
 
-async function fetch_arena({
-	endpoint,
-	token,
-	params = "",
-	body = {}
-}) {
-	const local_token = localStorage.getItem("ARENA_TOKEN");
+		const items = [
+			{
+				handler: "notebook-paper",
+				width: 300,
+				height: 400,
+				state: "read",
+				content: ""
+			},
+			{
+				handler: "pdf-reader",
+				width: 300,
+				height: 400,
+				state: "read",
+				content: ""
+			}
+		];
 
-	const BASE_URL = 'https://api.are.na/v2';
+		const slots = [
+			null,null,null,
+			null,null,null,
+			null,null,null,
+			null,null,null,
+			null,null,null,
+			null,null,null,
+		];
 
-	const headers = { "Content-Type": "application/json" }
+		items.forEach((item, index) => {
+			// @STEP: Get icon and description here.
 
-	if (token || local_token) {
-		headers["Authorization"] = `Bearer ${token || local_token}`
-	}
+			// icon: "❓",
+			// description: "Unknown item, requires pdf-reader handler.",
 
-	const response = await fetch(`${BASE_URL}${endpoint}${params}`, {
-		method: "GET",
-		headers
-	});
+	  		slots[index] = item;
+		});
 
-	if (!response.ok)
-		throw new Error('Network response was not ok');
+		const van = use_module("van");
+		const { div, button, img, ul, li, span } = van.tags;
 
-	return response.json();
-}
-/* MODULE: modules/basic-cards/basic-cards.js */
-(() => {
-	const room = document.querySelector("[oceloti-room]");
-	if (!room) return;
+		const show_inventory = van.state(false);
 
-	const { article, div, button, span } = van.tags;
-
-	function ReadState({ x, y, w }, text) {
-		const html = text.replaceAll("\n", "<br/>");
-		const el = article({
-			"oceloti-card": "notebook-paper",
-			"oceloti-inner-state": "read",
-			style: `
-				left: ${x}px;
-				top: ${y}px;
-				width: ${w}px;
+		const inventory_grid = ul({
+			class: "inventory-grid",
+			style: () => `
+				display: ${show_inventory.val ? "grid" : "none"}
 			`
 		},
-			div({
-				"oceloti-ref": "content"
-			})
+			slots.map(item => li({
+				class: "inventory-slot",
+				...(item ? {
+					"oceloti-menu": "inventory-item",
+					"title": item.description,
+					onmousedown: (e) => {
+						if (e.button !== 2) return;
+						window.oceloti_menu["inventory_item"] = [
+							button({
+								onclick: () => {
+									const event = new CustomEvent("inventorydrop", { detail: { item } });
+									window.dispatchEvent(event);
+								}
+							},
+								"⤵️ Drop"
+							),
+							button({
+								onclick: () => {}
+							},
+								"🔍 inspect"
+							),
+							button({
+								onclick: () => {}
+							},
+								"🖨️ copy"
+							),
+							button({
+								onclick: () => {}
+							},
+								"🗑️ Trash"
+							)
+						];
+					},
+				} : {
+					ondragover: (e) => {
+						e.preventDefault();
+						e.dataTransfer.dropEffect = "move";
+						e.dataTransfer
+					},
+					ondrop: (e) => {
+						e.preventDefault();
+						console.log(e.dataTransfer.getData("text/plain"));
+					},
+				}),
+			},
+				span({
+					"draggable": item ? "true" : "false",
+					"data-value": item ? `${item.grid_x},${item.grid_y}` : null,
+					class: "inventory-item emoji",
+					ondragstart: (e) => {
+						if (item) {
+							event.dataTransfer.setData('text/plain', event.target.dataset.value);
+							event.dataTransfer.effectAllowed = 'move';
+						} else {
+							event.preventDefault();
+						}
+					},
+				},
+					item ? item.icon : ""
+				)
+			))
 		);
-		el.firstElementChild.innerHTML = html;
-		return { el, html: el.outerHTML };
-	}
 
-	function initialize_paper(card) {
-		const initial_state = card.getAttribute("oceloti-inner-state");
-		const state = van.state(initial_state);
-
-		const toggle = button({
-			"oceloti-ref": "toggle",
-			style: `
-				position: absolute;
-				right: 6px;
-				bottom: 6px;
-			`,
-			onclick: handle_toggle
+		const inventory_launcher = div({
+			style: "position: relative;",
 		},
-			span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
+			button({
+				onclick: (e) => {
+					e.target.classList.toggle("selected");
+					show_inventory.val = !show_inventory.val;
+				}
+			},
+				"🎒 local bag (b)"
+			),
+			inventory_grid
 		);
 
-		// van.add(card, toggle);
+		van.add(hud, inventory_launcher);
 
-		const content = card.querySelector(`[oceloti-ref="content"]`)
+		van.add(hud, div({
+			style: "position: relative;",
+		},
+			button({
+				style: `
+					background: royalblue;
+					color: white;
+				`,
+			},
+				"☁️ drive bag"
+			),
+		));
 
-		content.addEventListener("mousedown", (e) => {
-			if (e.button !== 2) return;
-			window.oceloti_menu["paper_actions"] = [
-				button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
-			];
-		});
-
-		function handle_toggle() {
-			if (state.val === "read") {
-				state.val = "write";
-				card.setAttribute("oceloti-inner-state", "write");
-				card.setAttribute("oceloti-card-state", "active");
-				content.setAttribute("contenteditable", "");
-			} else {
-				state.val = "read"
-				card.setAttribute("oceloti-inner-state", "read");
-				card.setAttribute("oceloti-card-state", "idle");
-				content.removeAttribute("contenteditable");
-			}
+		return {
+			item_handlers,
+			register_item_handler
 		}
 	}
+});
+/* MODULE: modules/equipment/equipment.js */
+register_oceloti_module({
+	name: "equipment",
+	deps: ["van"],
+	init({ use_module, hud }) {
+		const van = use_module("van");
 
-	// @STEP: I think a better approach is for the inventory module to
-	//        export  a register hook so that we don't use "intentorydrop".
-	//        This way other modules can just register the card states
-	//        and initializers.
+		const { div, button, img } = van.tags;
 
-	window.addEventListener("inventorydrop", ({ detail: { item, pos } }) => {
-		if (item.renderer !== "notebook-paper")
-			return;
+		const slots = [
+			"📃"," ","🤚","✏️",
+		];
 
-		const note = ReadState({
-			x: pos ? pos.x : window.scrollX + window.innerWidth/2,
-			y: pos ? pos.y : window.scrollY + window.innerHeight/2,
-			w: item.width
+		const show_equipment = van.state(false);
+
+		const equipment_grid = div({
+			class: "equipment-grid",
+			style: () => `
+				display: ${show_equipment.val ? "grid" : "none"}
+			`
 		},
-			item.content
+			slots.map(slot => div({
+				"oceloti-menu": "equipment-slot",
+				class: "equipment-slot",
+				onmousedown: (e) => {
+					if (e.button !== 2) return;
+				},
+			},
+				div({ class: "equipment-item emoji" }, slot)
+			))
 		);
 
-		van.add(room, note.el);
-	});
-
-	window.addEventListener("carddrop", ({ detail: { card } }) => {
-		if (card.getAttribute("oceloti-card") !== "notebook-paper")
-			return;
-
-		initialize_paper(card);
-	});
-})();
-/* MODULE: modules/arena-cards/arena-cards.js */
-(async () => {
-	if (!van) {
-		console.error("The inventory module depends on van.js");
-		return;
-	};
-
-	const hud = document.getElementById("hud");
-	const room = document.querySelector("[oceloti-room]");
-	
-	if (!room || !hud) return;
-
-	const { dialog, form, fieldset, input, p, div, a, button } = van.tags;
-
-	const dialog_el = dialog({
-		"oceloti-dialog": "arena-token",
-		onclose: (e) => e.target.remove(),
-		style: `
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-		`,
-	},
-		form({
-			method: "dialog",
-			onsubmit: async (e) => {
-				e.preventDefault();
-				const form = new FormData(e.target);
-				const fields = {};
-				for (const [key, value] of form.entries()) {
-					fields[key] = value;
-				}
-				
-				const res = await arena_sign_in(fields.token);
-
-				const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
-
-				messages_el.innerHTML = "";
-				
-				if (res.status === "error") {
-					van.add(messages_el, div({
-						"class": "nugget nugget-error"
-					}, 
-						p(res.message)
-					));
-					return;
-				}
-
-				if (res.status === "success") {
-					van.add(messages_el, div({ 
-						"class": "nugget nugget-success"
-					},
-						p(res.message),
-						button({ onclick: () => dialog_el.close()}, 
-							"Close"
-						)
-					));
-				}
-			}
-		},
-			p({
-				style: "margin-bottom: 1rem;",
-			},
-				"Sign In to use Are.na blocks."
-			),
-			fieldset({
-				style: `
-					display: flex;
-					gap: 0.5rem;
-				`
-			},
-				input({
-					"name": "token",
-					"type": "text",
-					"required": "true",
-					"style": "width: 100%;",
-					"autocomplete": "off",
-					// @TODO: Fix this absurd bug... wtf.
-					onclick: (e) => e.target.focus()
-				}),
-				button({
-					style: `
-						width: fit-content;
-						white-space: nowrap;
-					`,
-					"type": "submit"
-				},
-					"add token"
-				)
-			)
-		),
-		div({
-			"oceloti-dialog-messages": ""
+		const equipment_launcher = div({
+			style: `
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				position: fixed;
+				left: 12px;
+				bottom: 12px;
+			`,
 		},
 			div({
-				class: "nugget"
+				style: "position: relative;"
 			},
-				p(
-					"To get your token visit: ",
-					a({
-						style: "margin-left: 8px;",
-						target: "_blank",
-						href: "https://arena-token-gen.vercel.app/"
-					},
-						"suna.garden/get-token"
-					)
+				button({
+					onclick: (e) => {
+						e.target.classList.toggle("selected");
+						show_equipment.val = !show_equipment.val;
+					}
+				},
+					"🔌 equipment (e)"
+				),
+				equipment_grid
+			),
+			div({
+				style: "position: relative;"
+			},
+				button({
+					onclick: (e) => {
+					}
+				},
+					"🧰 toolbox (T)"
 				),
 			)
-		)
-	);
+		);
 
-	van.add(hud, button({
-		style: `
-			background: black;
-			color: white;
-		`,
-		onclick: () => {
-			van.add(document.body, dialog_el);
-			dialog_el.showModal();
+		van.add(hud, equipment_launcher);
+	}	
+});
+/* MODULE: modules/arena-api/arena-api.js */
+register_oceloti_module({
+	name: "arena-api",
+	deps: [],
+	init() {
+		async function sign_in(token) {
+			if (!token) {
+				console.error("Can't sign in without token.");
+				return {
+					status: "error",
+					message: "Can't sign in without token."
+				};
+			}
+
+			try {
+				const user = await fetch_arena({
+					endpoint: "/me",
+					token
+				});
+				localStorage.setItem("ARENA_TOKEN", token);
+				return {
+					status: "success",
+					message: `Hello ${user.full_name}.`,
+					user
+				}
+			} catch(e) {
+				console.error("Failed to sign in with token:", token);
+				return {
+					status: "error",
+					message: "Bad token. Use a different token or generate again."
+				};
+			}
 		}
-	},
-		"** are.na bag"
-	));
-})();
+
+		async function query({
+			endpoint,
+			token,
+			params = "",
+			body = {}
+		}) {
+			const local_token = localStorage.getItem("ARENA_TOKEN");
+
+			const BASE_URL = 'https://api.are.na/v2';
+
+			const headers = { "Content-Type": "application/json" }
+
+			if (token || local_token) {
+				headers["Authorization"] = `Bearer ${token || local_token}`
+			}
+
+			const response = await fetch(`${BASE_URL}${endpoint}${params}`, {
+				method: "GET",
+				headers
+			});
+
+			if (!response.ok)
+				throw new Error('Network response was not ok');
+
+			return response.json();
+		}
+
+		return {
+			sign_in,
+			query
+		};
+	}
+});
+/* MODULE: modules/notebook/notebook.js */
+register_oceloti_module({
+	name: "notebook",
+	deps: ["inventory", "van"],
+	init({ use_module }) {
+		const van = use_module("van");
+		const { register_item_handler } = use_module("inventory");
+
+		register_item_handler({
+			icon: () => "🗒️",
+			name: "notebook-paper",
+			descriptor: ({ content, state }) => {
+				if (content) return "A piece of paper with text.";
+				else return "An empty piece of paper.";
+			},
+			initializer,
+			renderer
+		});
+
+		function renderer(item) {
+			switch(item.state) {
+				case "read":
+					return handle_read_state(item);
+			}
+		}
+
+		const { article, div, button, span } = van.tags;
+
+		function handle_read_state({ x, y, w, content }) {
+			const html = content.replaceAll("\n", "<br/>");
+			const el = article({
+				"oceloti-card": "notebook-paper",
+				"oceloti-inner-state": "read",
+				style: `
+					left: ${x}px;
+					top: ${y}px;
+					width: ${w}px;
+				`
+			},
+				div({
+					"oceloti-ref": "content"
+				})
+			);
+			el.firstElementChild.innerHTML = html;
+			return { el };
+		}
+
+		function initializer(card) {
+			const initial_state = card.getAttribute("oceloti-inner-state");
+			const state = van.state(initial_state);
+
+			const toggle = button({
+				"oceloti-ref": "toggle",
+				style: `
+					position: absolute;
+					right: 6px;
+					bottom: 6px;
+				`,
+				onclick: handle_toggle
+			},
+				span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
+			);
+
+			// van.add(card, toggle);
+
+			const content = card.querySelector(`[oceloti-ref="content"]`)
+
+			content.addEventListener("mousedown", (e) => {
+				if (e.button !== 2) return;
+				window.oceloti_menu["paper_actions"] = [
+					button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
+				];
+			});
+
+			function handle_toggle() {
+				if (state.val === "read") {
+					state.val = "write";
+					card.setAttribute("oceloti-inner-state", "write");
+					card.setAttribute("oceloti-card-state", "active");
+					content.setAttribute("contenteditable", "");
+				} else {
+					state.val = "read"
+					card.setAttribute("oceloti-inner-state", "read");
+					card.setAttribute("oceloti-card-state", "idle");
+					content.removeAttribute("contenteditable");
+				}
+			}
+		}
+	}
+});
+/* MODULE: modules/arena-cards/arena-cards.js */
+register_oceloti_module({
+	name: "arena-cards",
+	deps: ["van", "arena-api"],
+	init({ use_module, room, hud }) {
+		const van = use_module("van");
+		const { sign_in } = use_module("arena-api");
+
+		const { dialog, form, fieldset, input, p, div, a, button } = van.tags;
+
+		const dialog_el = dialog({
+			"oceloti-dialog": "arena-token",
+			onclose: (e) => e.target.remove(),
+			style: `
+				display: flex;
+				flex-direction: column;
+				gap: 1rem;
+			`,
+		},
+			form({
+				method: "dialog",
+				onsubmit: async (e) => {
+					e.preventDefault();
+					const form = new FormData(e.target);
+					const fields = {};
+					for (const [key, value] of form.entries()) {
+						fields[key] = value;
+					}
+					
+					const res = await sign_in(fields.token);
+
+					const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
+
+					messages_el.innerHTML = "";
+					
+					if (res.status === "error") {
+						van.add(messages_el, div({
+							"class": "nugget nugget-error"
+						}, 
+							p(res.message)
+						));
+						return;
+					}
+
+					if (res.status === "success") {
+						van.add(messages_el, div({ 
+							"class": "nugget nugget-success"
+						},
+							p(res.message),
+							button({ onclick: () => dialog_el.close()}, 
+								"Close"
+							)
+						));
+					}
+				}
+			},
+				p({
+					style: "margin-bottom: 1rem;",
+				},
+					"Sign In to use Are.na blocks."
+				),
+				fieldset({
+					style: `
+						display: flex;
+						gap: 0.5rem;
+					`
+				},
+					input({
+						"name": "token",
+						"type": "text",
+						"required": "true",
+						"style": "width: 100%;",
+						"autocomplete": "off",
+						// @TODO: Fix this absurd bug... wtf.
+						onclick: (e) => e.target.focus()
+					}),
+					button({
+						style: `
+							width: fit-content;
+							white-space: nowrap;
+						`,
+						"type": "submit"
+					},
+						"add token"
+					)
+				)
+			),
+			div({
+				"oceloti-dialog-messages": ""
+			},
+				div({
+					class: "nugget"
+				},
+					p(
+						"To get your token visit: ",
+						a({
+							style: "margin-left: 8px;",
+							target: "_blank",
+							href: "https://arena-token-gen.vercel.app/"
+						},
+							"suna.garden/get-token"
+						)
+					),
+				)
+			)
+		);
+
+		van.add(hud, button({
+			style: `
+				background: black;
+				color: white;
+			`,
+			onclick: () => {
+				van.add(document.body, dialog_el);
+				dialog_el.showModal();
+			}
+		},
+			"** are.na bag"
+		));
+	}
+});
 </script>
 </html>
