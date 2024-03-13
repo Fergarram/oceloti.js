@@ -903,8 +903,7 @@ register_oceloti_module({
 register_oceloti_module({
 	name: "dnd-manager",
 	deps: [],
-	init({ use_module, room }) {
-
+	init({ use_module, room, hud }) {
 		const dnd_handlers = [];
 		function register_dnd_handler({ for_type, on_drop }) {
 			dnd_handlers.push({ for_type, on_drop });
@@ -912,7 +911,10 @@ register_oceloti_module({
 
 		room.addEventListener("dragover", (e) => {
 			e.preventDefault();
-			// @TODO: Show custom UI for dropping something... We don't know what that something is.
+		});
+
+		room.addEventListener("dragleave", (e) => {
+			e.preventDefault();
 		});
 
 		room.addEventListener("drop", (drop_event) => {
@@ -1392,11 +1394,19 @@ register_oceloti_module({
 			} else {
 				attrs["ondragover"] = (e) => {
 					e.preventDefault();
-					// Loop through all slots to remove class???
-					// e.target.classList.toggle("dragover");
 					if (!e.dataTransfer.types.includes("oceloti/item")) {
 						e.dataTransfer.effectAllowed = "none";
+						return;
 					}
+					e.target.classList.add("dragover");
+				};
+				attrs["ondragleave"] = (e) => {
+					e.preventDefault();
+					if (!e.dataTransfer.types.includes("oceloti/item")) {
+						e.dataTransfer.effectAllowed = "none";
+						return;
+					}
+					e.target.classList.remove("dragover");
 				};
 				attrs["ondrop"] = (e) => {
 					e.preventDefault();
@@ -1411,17 +1421,14 @@ register_oceloti_module({
 				attrs,
 				span({
 					"draggable": slot ? "true" : "false",
+					style: !slot ? "display: none;" : "",
 					class: "inventory-item emoji",
 					ondragstart: (e) => {
-						if (slot) {
-							event.dataTransfer.setData('oceloti/item', JSON.stringify({
-								index,
-								...slot,
-							}));
-							event.dataTransfer.effectAllowed = 'move';
-						} else {
-							event.preventDefault();
-						}
+						e.dataTransfer.setData('oceloti/item', JSON.stringify({
+							index,
+							...slot,
+						}));
+						e.dataTransfer.effectAllowed = 'move';
 					},
 				},
 					slot ? slot.icon : ""

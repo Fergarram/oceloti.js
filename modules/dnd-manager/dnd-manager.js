@@ -1,8 +1,7 @@
 register_oceloti_module({
 	name: "dnd-manager",
 	deps: [],
-	init({ use_module, room }) {
-
+	init({ use_module, room, hud }) {
 		const dnd_handlers = [];
 		function register_dnd_handler({ for_type, on_drop }) {
 			dnd_handlers.push({ for_type, on_drop });
@@ -10,7 +9,10 @@ register_oceloti_module({
 
 		room.addEventListener("dragover", (e) => {
 			e.preventDefault();
-			// @TODO: Show custom UI for dropping something... We don't know what that something is.
+		});
+
+		room.addEventListener("dragleave", (e) => {
+			e.preventDefault();
 		});
 
 		room.addEventListener("drop", (drop_event) => {

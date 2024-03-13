@@ -125,11 +125,19 @@ register_oceloti_module({
 			} else {
 				attrs["ondragover"] = (e) => {
 					e.preventDefault();
-					// Loop through all slots to remove class???
-					// e.target.classList.toggle("dragover");
 					if (!e.dataTransfer.types.includes("oceloti/item")) {
 						e.dataTransfer.effectAllowed = "none";
+						return;
 					}
+					e.target.classList.add("dragover");
+				};
+				attrs["ondragleave"] = (e) => {
+					e.preventDefault();
+					if (!e.dataTransfer.types.includes("oceloti/item")) {
+						e.dataTransfer.effectAllowed = "none";
+						return;
+					}
+					e.target.classList.remove("dragover");
 				};
 				attrs["ondrop"] = (e) => {
 					e.preventDefault();
@@ -144,17 +152,14 @@ register_oceloti_module({
 				attrs,
 				span({
 					"draggable": slot ? "true" : "false",
+					style: !slot ? "display: none;" : "",
 					class: "inventory-item emoji",
 					ondragstart: (e) => {
-						if (slot) {
-							event.dataTransfer.setData('oceloti/item', JSON.stringify({
-								index,
-								...slot,
-							}));
-							event.dataTransfer.effectAllowed = 'move';
-						} else {
-							event.preventDefault();
-						}
+						e.dataTransfer.setData('oceloti/item', JSON.stringify({
+							index,
+							...slot,
+						}));
+						e.dataTransfer.effectAllowed = 'move';
 					},
 				},
 					slot ? slot.icon : ""
