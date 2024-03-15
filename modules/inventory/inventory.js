@@ -236,7 +236,12 @@ register_oceloti_module({
 							alert("Can't drop unknown item.");
 							break;
 						}
-						exports.drop_item_from_bag("local", item_ref.index, e.clientX, e.clientY);
+						exports.drop_item_from_bag(
+							"local",
+							item_ref.index,
+							window.scrollX + e.clientX,
+							window.scrollY + e.clientY,
+						);
 						break;
 					}
 					
