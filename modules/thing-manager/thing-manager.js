@@ -109,7 +109,7 @@ register_oceloti_module({
 			    floating_wrapper.style.left = "0";
 			    floating_wrapper.style.top = "0";
 			    floating_wrapper.style.willChange = "transform";
-			    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
+			    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
 			    floating_wrapper.innerHTML = thing_html;
 
 			    const inner_thing = floating_wrapper.firstElementChild;

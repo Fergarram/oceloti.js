@@ -98,6 +98,7 @@ fieldset {
 .is-panning *,
 .is-dragging * {
 	user-select: none;
+	-webkit-user-select: none;
 	cursor: var(--assets-cursors-grabbed-svg), grabbing !important;
 }
 
@@ -108,6 +109,7 @@ fieldset {
 
 .is-dragging * {
 	user-select: none;
+-webkit-user-select: none;
 	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }
 /* MODULE: modules/context-menu/context-menu.css */
@@ -197,6 +199,7 @@ fieldset {
 
 .inventory-item {
 	user-select: none;
+-webkit-user-select: none;
 	display: flex;
 	width: 100%;
 	height: 100%;
@@ -247,6 +250,7 @@ fieldset {
 
 .equipment-item {
 	user-select: none;
+-webkit-user-select: none;
 	display: flex;
 	width: 100%;
 	height: 100%;
@@ -273,6 +277,10 @@ fieldset {
 		drop-shadow(0 1rem 1rem rgba(0, 0, 0, 0.22));
 	--ease-curve-1:
 		cubic-bezier(0.16, 1, 0.3, 1);
+	
+	/*	Optimized for Safari */
+	--thing-thickness-1-fast: 0 1px 3px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.23);
+	--thing-elevated-1-fast: 0 1.25rem 3rem rgba(0, 0, 0, 0.30), 0 1rem 2rem rgba(0, 0, 0, 0.22);
 }
 
 html {
@@ -286,7 +294,8 @@ html {
 
 [oceloti-thing-state="elevated"] {
 	transform: scale(1.015);
-	filter: var(--thing-elevated-1) !important;
+/*	filter: var(--thing-elevated-1) !important;*/
+	box-shadow: var(--thing-elevated-1-fast) !important;
 }
 
 [oceloti-dialog] {
@@ -316,15 +325,17 @@ html {
 }
 
 .has-zoom #hud {
-	opacity: 0;
-	pointer-events: none;
-	user-select: none;
+/*	opacity: 0;*/
+/*	pointer-events: none;*/
+/*	user-select: none;*/
+/*-webkit-user-select: none;*/
 }
 
 .is-scrolling #hud {
 	opacity: 0;
 	pointer-events: none;
 	user-select: none;
+-webkit-user-select: none;
 }
 
 .button,
@@ -416,7 +427,8 @@ button .emoji {
 	background-position: 8px 8px;
 	image-rendering: pixelated;
 	line-height: 20px;
-	filter: var(--thing-thickness-1);
+/*	filter: var(--thing-thickness-1);*/
+	box-shadow: var(--thing-thickness-1-fast);
 }
 
 [oceloti-thing="notebook-paper"] [oceloti-ref="content"] {
@@ -432,6 +444,7 @@ button .emoji {
 
 [oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
 	user-select: none;
+-webkit-user-select: none;
 }
 
 </style>
@@ -722,6 +735,19 @@ register_oceloti_module({
 
 			if (!e.ctrlKey) return;
 
+
+			// @NOTE: alternative transform-based zoom sketch
+
+			// e.preventDefault();
+
+			// window.zoom = zoom - e.deltaY;
+			// console.log(window.zoom);
+			// room.style.willChange = "transform";
+			// room.style.transformOrigin = "top left";
+			// room.style.transform = `scale(${window.zoom / 100}) translateZ(0)`
+
+			// return;
+
 			const dir = e.deltaY > 0 ? -10 : 10;
 			let zoom = window.devicePixelRatio * 100;
 			zoom = Math.round(zoom + dir);
@@ -848,7 +874,7 @@ register_oceloti_module({
 			    floating_wrapper.style.left = "0";
 			    floating_wrapper.style.top = "0";
 			    floating_wrapper.style.willChange = "transform";
-			    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
+			    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
 			    floating_wrapper.innerHTML = thing_html;
 
 			    const inner_thing = floating_wrapper.firstElementChild;

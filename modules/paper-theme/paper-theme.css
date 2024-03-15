@@ -16,6 +16,10 @@
 		drop-shadow(0 1rem 1rem rgba(0, 0, 0, 0.22));
 	--ease-curve-1:
 		cubic-bezier(0.16, 1, 0.3, 1);
+	
+	/*	Optimized for Safari */
+	--thing-thickness-1-fast: 0 1px 3px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.23);
+	--thing-elevated-1-fast: 0 1.25rem 3rem rgba(0, 0, 0, 0.30), 0 1rem 2rem rgba(0, 0, 0, 0.22);
 }
 
 html {
@@ -29,7 +33,8 @@ html {
 
 [oceloti-thing-state="elevated"] {
 	transform: scale(1.015);
-	filter: var(--thing-elevated-1) !important;
+/*	filter: var(--thing-elevated-1) !important;*/
+	box-shadow: var(--thing-elevated-1-fast) !important;
 }
 
 [oceloti-dialog] {
@@ -59,15 +64,17 @@ html {
 }
 
 .has-zoom #hud {
-	opacity: 0;
-	pointer-events: none;
-	user-select: none;
+/*	opacity: 0;*/
+/*	pointer-events: none;*/
+/*	user-select: none;*/
+/*-webkit-user-select: none;*/
 }
 
 .is-scrolling #hud {
 	opacity: 0;
 	pointer-events: none;
 	user-select: none;
+-webkit-user-select: none;
 }
 
 .button,

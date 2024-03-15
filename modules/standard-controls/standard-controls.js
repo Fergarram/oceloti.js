@@ -110,6 +110,19 @@ register_oceloti_module({
 
 			if (!e.ctrlKey) return;
 
+
+			// @NOTE: alternative transform-based zoom sketch
+
+			// e.preventDefault();
+
+			// window.zoom = zoom - e.deltaY;
+			// console.log(window.zoom);
+			// room.style.willChange = "transform";
+			// room.style.transformOrigin = "top left";
+			// room.style.transform = `scale(${window.zoom / 100}) translateZ(0)`
+
+			// return;
+
 			const dir = e.deltaY > 0 ? -10 : 10;
 			let zoom = window.devicePixelRatio * 100;
 			zoom = Math.round(zoom + dir);

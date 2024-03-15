@@ -4,5 +4,6 @@
 
 .is-dragging * {
 	user-select: none;
+-webkit-user-select: none;
 	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }

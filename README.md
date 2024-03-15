@@ -7,10 +7,27 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
+- [ ] Improve the notebook thing module
+- [ ] Create an image thing module
+- [ ] Create a link thing module
+- [ ] Handle file dropping
+- [ ] Formalize local bag and actually save items on `localStorage`.
+
+The more I think about it the more I realize that I'm currently using the bag as an interface for storing known thing renderers. It doesn't actually drop it, it creates a copy.
+
+## UX Improv:
+- [ ] Work on mobile UI and controls. Touch events...
+- [ ] Add alternative transform-based zoom.
+      NOTE: Doing `window.scrollX + e.clientX` is not going to work anymore.
+      Ideally I should replace that behavior with a global variable that automatically calculates that for you based on zoom.
 - [ ] Create keyboard shortcuts module.
+- [ ] Add shadow performance option through equipment interface for thing-manager.
+
+## Bugs:
+- [ ] Inventory item invisible in Safari when dragging to room.
 
 ## Cool steps:
-- [ ] Assistant use case: "shift all things about 300px to the right and top"
+- [ ] Assistant use case: "shift everthing in the room about 300px to the right and top"
       An undo button would need to be implemented. The assistant has access to outerHTML and has context about the whole room setup.
 - [ ] Shadow modes: top-down, wall
  
