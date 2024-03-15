@@ -7,7 +7,8 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
-- [ ] Register room drop handlers, there will be a default, multiple handlers can coexist if manually configured.
+- [ ] Just look at @LAST.
+- [ ] Rename `card` concept to `room_object` or `thing`. I like "thing" better.
 - [ ] Create keyboard shortcuts module.
 
 ## Cool steps:

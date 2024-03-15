@@ -5,6 +5,16 @@ register_oceloti_module({
 		const card_query = document.querySelectorAll("[oceloti-card]");
 		const all_cards = Array.from(card_query);
 
+		const exports = {
+			thing_initializers: {},
+			add_thing_to_room(thing, initializer) {
+				const id = crypto.randomUUID();
+				exports.thing_initializers[id] = initializer;
+				thing.id = id;
+				room.appendChild(thing);
+			}
+		};
+
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
 		let delta_x = 0;
@@ -45,9 +55,10 @@ register_oceloti_module({
 
 		observer.observe(room, { childList: true });
 
-		window.addEventListener("load", () => {
-			all_cards.forEach(card_drop);
-		});
+		// @LAST: Uncomment to see chaos after saving room.
+		// window.addEventListener("load", () => {
+		// 	all_cards.forEach(card_drop);
+		// });
 
 		function initialize_card_state(card) {
 		    setTimeout(() => {
@@ -150,13 +161,15 @@ register_oceloti_module({
 
 		function card_drop(card) {
 			initialize_card_state(card);
-			const event = new CustomEvent("carddrop", { detail: { card } });
-			window.dispatchEvent(event);
+			exports.thing_initializers[card.id](card);
 		}
 
 		function card_lift(card) {
+			// @TODO: Remove this outdated event.
 			const event = new CustomEvent("cardlift", { detail: { card } });
 			window.dispatchEvent(event);
 		}
+
+		return exports;
 	}
 });

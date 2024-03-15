@@ -8,6 +8,7 @@
 	image-rendering: pixelated;
 	line-height: 20px;
 	filter: var(--card-thickness-1);
+	transform: translate(-50%, -50%);
 }
 
 [oceloti-card="notebook-paper"] [oceloti-ref="content"] {

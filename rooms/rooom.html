@@ -417,6 +417,7 @@ button .emoji {
 	image-rendering: pixelated;
 	line-height: 20px;
 	filter: var(--card-thickness-1);
+	transform: translate(-50%, -50%);
 }
 
 [oceloti-card="notebook-paper"] [oceloti-ref="content"] {
@@ -744,6 +745,16 @@ register_oceloti_module({
 		const card_query = document.querySelectorAll("[oceloti-card]");
 		const all_cards = Array.from(card_query);
 
+		const exports = {
+			thing_initializers: {},
+			add_thing_to_room(thing, initializer) {
+				const id = crypto.randomUUID();
+				exports.thing_initializers[id] = initializer;
+				thing.id = id;
+				room.appendChild(thing);
+			}
+		};
+
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
 		let delta_x = 0;
@@ -784,9 +795,10 @@ register_oceloti_module({
 
 		observer.observe(room, { childList: true });
 
-		window.addEventListener("load", () => {
-			all_cards.forEach(card_drop);
-		});
+		// @LAST: Uncomment to see chaos after saving room.
+		// window.addEventListener("load", () => {
+		// 	all_cards.forEach(card_drop);
+		// });
 
 		function initialize_card_state(card) {
 		    setTimeout(() => {
@@ -889,14 +901,16 @@ register_oceloti_module({
 
 		function card_drop(card) {
 			initialize_card_state(card);
-			const event = new CustomEvent("carddrop", { detail: { card } });
-			window.dispatchEvent(event);
+			exports.thing_initializers[card.id](card);
 		}
 
 		function card_lift(card) {
+			// @TODO: Remove this outdated event.
 			const event = new CustomEvent("cardlift", { detail: { card } });
 			window.dispatchEvent(event);
 		}
+
+		return exports;
 	}
 });
 /* MODULE: modules/dnd-manager/dnd-manager.js */
@@ -904,70 +918,57 @@ register_oceloti_module({
 	name: "dnd-manager",
 	deps: [],
 	init({ use_module, room, hud }) {
-		const dnd_handlers = [];
-		function register_dnd_handler({ for_type, on_drop }) {
-			dnd_handlers.push({ for_type, on_drop });
-		}
+		const exports = {
+			known_dnd_types: [],
+			drop_handlers: [],
+			register_dnd_type(invoking_module, type_name) {
+				if (exports.known_dnd_types.includes(type_name)) {
+					// @FIXME: I still need to decide how to handle multiple handlers for the same types.
+					//         I think it should be the room user who decides through a UI.
+					const existing_handler = exports.drop_handlers.find(h => h.dnd_types.includes(type_name));
+					console.warn(`The "${invoking_module}" module is trying to register a previously added dnd type "${type_name}" but "${existing_handler.invoking_module}" has already registered it.`);
+					return;
+				}
+				exports.known_dnd_types.push(type_name);
+			},
+			register_drop_handler({
+				invoking_module, dnd_types, callback
+			}) {
+				dnd_types.forEach(t => exports.register_dnd_type(invoking_module, t));
+				exports.drop_handlers.push({
+					invoking_module,
+					dnd_types,
+					callback,
+				});
+			}
+		};
 
 		room.addEventListener("dragover", (e) => {
 			e.preventDefault();
+
+			if (!e.dataTransfer.types.some(str => exports.known_dnd_types.includes(str))) {
+				e.dataTransfer.effectAllowed = "none";
+				return;
+			}
 		});
 
 		room.addEventListener("dragleave", (e) => {
 			e.preventDefault();
 		});
 
-		room.addEventListener("drop", (drop_event) => {
-			drop_event.preventDefault();
-			const files = drop_event.dataTransfer.files;
-			const is_link = drop_event.dataTransfer.types.find(t => t.includes("url")) !== undefined;
-			const text_data = drop_event.dataTransfer.getData("text/plain");
-			const is_oceloti_item = drop_event.dataTransfer.types.includes("oceloti/item");
+		room.addEventListener("drop", (event) => {
+			event.preventDefault();
 
-			// @NOTES:
-			// ------
-			// There are two main branching types: file / text
-			// The text branch could be anything from link to plain text to internal dnd type.
-			// If file, types get more predictable.
+			const matching_handlers = exports.drop_handlers.filter(({ dnd_types, handler }) => {
+				return event.dataTransfer.types.some(t => exports.known_dnd_types.includes(t));
+			});
 
-			if (files.length === 0) {
-				console.log("is link?", is_link); // @TODO: use link to see if it's an image.
-				console.log("text data", text_data);
+			if (matching_handlers.length === 0) return;
 
-				// @STEP 1: Handle known text_data type for cards.
-
-			} else if (files.length > 0) {
-				for (let file of files) {
-					
-					// @STEP 2: Determine file dnd type
-
-					// @STEP 3: Once we know the type, filter handlers to match with for_type.
-					//          It's possible there are multiple handlers for a single type.
-					//          In that case the user should be asked to select one (optionally select default).
-
-					if (file.type.startsWith("image/")) {
-						const reader = new FileReader();
-						reader.onload = (e) => {
-							const img = new Image();
-							img.onload = () => {
-								const image_card = document.createElement("figure");
-								image_card.setAttribute("oceloti-card", "");
-								image_card.classList.add("paper");
-								image_card.style.left = `${window.scrollX + drop_event.clientX - (img.naturalWidth / 2)}px`;
-								image_card.style.top = `${window.scrollY + drop_event.clientY - (img.naturalHeight / 2)}px`;
-								image_card.style.width = `${img.naturalWidth}px`;
-								image_card.style.height = `${img.naturalHeight}px`;
-								image_card.appendChild(img);
-								room.appendChild(image_card);
-							};
-							img.src = e.target.result;
-							img.setAttribute("draggable", "false");
-						};
-						reader.readAsDataURL(file);
-					}
-				}
-			}
+			matching_handlers[0].callback(event);
 		});
+
+		return exports;
 	}
 });
 /* MODULE: modules/van/van.js */
@@ -1269,22 +1270,86 @@ register_oceloti_module({
 /* MODULE: modules/inventory/inventory.js */
 register_oceloti_module({
 	name: "inventory",
-	deps: ["van", "context-menu"],
-	init({ use_module, hud }) {
+	deps: ["van", "context-menu", "dnd-manager", "card-manager"],
+	init({ use_module, hud, room }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
+		const { register_drop_handler } = use_module("dnd-manager");
+		const { add_thing_to_room } = use_module("card-manager");
+
+		const exports = {
+			item_handlers: [],
+			register_item_handler({ name, icon, description, initializer, renderer }) {
+				exports.item_handlers.push({
+					name, // Handler name.
+					icon, // Function that returns icon.
+					description, // Function that generates item description.
+					initializer, // Function that takes card element and initializes UI.
+					renderer, // Function that takes item and returns HTMLElement node.
+				});
+			},
+			add_item_to_bag(bag, item, index) {
+				const compatible_handlers = exports.item_handlers.filter(h => h.name === item.handler);
+				if (compatible_handlers.length === 0) {
+					const slots_copy = [...slots.val];
+					slots_copy[index] = {
+						unknown: true,
+		  				icon: "❓",
+		  				description: `Unknown item, requires "${item.handler}" handler.`,
+		  				data: item
+		  			};
+		  			slots.val = slots_copy;
+		  			return;
+				}
+
+				// @TODO: Have a way to select or configure a default handler.
+				const { icon, description, initializer, renderer } = compatible_handlers[0]
+				const slots_copy = [...slots.val];
+				slots_copy[index] = {
+					unknown: false,
+	  				icon: icon(),
+	  				description: description(item),
+	  				initializer,
+	  				renderer,
+	  				data: item
+	  			};
+	  			slots.val = slots_copy;
+			},
+			move_item_in_bag(from, to) {
+				const slots_copy = [...slots.val];
+				const item = { ...slots.val[from] };
+				slots_copy[to] = item;
+				slots_copy[from] = null;
+		  		slots.val = slots_copy;
+			},
+			drop_item_from_bag(bag, index, x, y) {
+				const { renderer, initializer, data } = { ...slots.val[index] };
+				add_thing_to_room(
+					renderer({ ...data, x, y }),
+					(thing) => {
+						initializer(thing);
+						thing.setAttribute("oceloti-menu", "card-menu");
+						thing.addEventListener("mousedown", (e) => {
+							if (e.button !== 2) return;
+							add_menu("inventory_actions", [
+								button({
+									onclick: () => console.log("pack")
+								},
+									"🎒 Put away"
+								),
+								button({
+									onclick: () => card.remove()
+								},
+									"🗑️ Trash card"
+								),
+							]);
+						});
+					}
+				);
+			}
+		};
 
 		const item_handlers = [];
-
-		function register_item_handler({ name, icon, description, initializer, renderer }) {
-			item_handlers.push({
-				name, // Handler name.
-				icon, // Function that returns icon.
-				description, // Function that generates item description.
-				initializer, // Function that takes card element and initializes UI.
-				renderer, // Function that takes item and returns HTMLElement node.
-			});
-		}
 
 		const slots = van.state([
 			null,null,null,
@@ -1294,61 +1359,6 @@ register_oceloti_module({
 			null,null,null,
 			null,null,null,
 		]);
-
-		function move_item_in_bag(from, to) {
-			const slots_copy = [...slots.val];
-			const item = { ...slots.val[from] };
-			slots_copy[to] = item;
-			slots_copy[from] = null;
-	  		slots.val = slots_copy;
-		}
-
-		function add_item_to_bag(bag, item, index) {
-			const compatible_handlers = item_handlers.filter(h => h.name === item.handler);
-			if (compatible_handlers.length === 0) {
-				const slots_copy = [...slots.val];
-				slots_copy[index] = {
-	  				icon: "❓",
-	  				description: `Unknown item, requires "${item.handler}" handler.`,
-	  				data: item
-	  			};
-	  			slots.val = slots_copy;
-	  			return;
-			}
-
-			// @TODO: Have a way to select or configure a default handler.
-			const { icon, description, initializer, renderer } = compatible_handlers[0]
-			const slots_copy = [...slots.val];
-			slots_copy[index] = {
-  				icon: icon(),
-  				description: description(item),
-  				initializer,
-  				renderer,
-  				data: item
-  			};
-  			slots.val = slots_copy;
-		}
-
-		// @STEP: Register a dnd handler so that whenever an item or known drop type is dropped we can take care of that from here.
-
-		window.addEventListener("carddrop", ({ detail: { card } }) => {
-			card.setAttribute("oceloti-menu", "card-menu");
-			card.addEventListener("mousedown", (e) => {
-				if (e.button !== 2) return;
-				add_menu("inventory_actions", [
-					button({
-						onclick: () => console.log("pack")
-					},
-						"🎒 Put away"
-					),
-					button({
-						onclick: () => card.remove()
-					},
-						"🗑️ Trash card"
-					),
-				]);
-			});
-		});
 
 		const { div, button, img, ul, li, span } = van.tags;
 
@@ -1367,9 +1377,13 @@ register_oceloti_module({
 					add_menu("inventory_item", [
 						button({
 							onclick: () => {
-								// @STEP: Use item renderer to add element node to room.
-								// const event = new CustomEvent("inventorydrop", { detail: { item } });
-								// window.dispatchEvent(event);
+								console.log(slot)
+								exports.drop_item_from_bag(
+									"local",
+									index, 
+									window.scrollX + window.innerWidth / 2,
+									window.scrollY + window.innerHeight / 2
+								);
 							}
 						},
 							"⤵️ Drop"
@@ -1413,7 +1427,7 @@ register_oceloti_module({
 					if (e.dataTransfer.types.includes("oceloti/item")) {
 						const slot = JSON.parse(e.dataTransfer.getData("oceloti/item"));
 						const to = Number(e.currentTarget.getAttribute("index"));
-						move_item_in_bag(slot.index, to);
+						exports.move_item_in_bag(slot.index, to);
 					}
 				};
 			}
@@ -1474,11 +1488,51 @@ register_oceloti_module({
 			),
 		));
 
-		return {
-			item_handlers,
-			register_item_handler,
-			add_item_to_bag
-		}
+		register_drop_handler({
+			invoking_module: "inventory",
+			dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "Files"],
+			callback: async (e) => {
+				const files = e.dataTransfer.files;
+				const types = e.dataTransfer.types;
+
+				if (files.length > 0) {
+					for (let file of files) {
+						// @FIXME: Handle files
+						console.log(file.type);
+					}
+					return;
+				}
+
+				for (const type of types) {
+					if (type === "oceloti/item") {
+						const item_ref = JSON.parse(e.dataTransfer.getData("oceloti/item"));
+						if (item_ref.unknown) {
+							alert("Can't drop unknown item.");
+							break;
+						}
+						exports.drop_item_from_bag("local", item_ref.index, e.clientX, e.clientY);
+						break;
+					}
+					
+					if (type.includes("url")) {
+						// @FIXME: Handle links and image links
+						const image_type = types.find(t => t.includes("image"));
+						const alt_type = types.find(t => t === "text/plain");
+						const url = e.dataTransfer.getData(alt_type);
+						console.log(image_type ? "image" : "link", url);
+						break;
+					}
+
+					if (type === "text/plain") {
+						// @FIXME: Handle text
+						console.log("text");
+						break;
+					}
+				}
+			}
+		});
+
+		return exports;
 	}
 });
 /* MODULE: modules/equipment/equipment.js */
@@ -1678,7 +1732,7 @@ register_oceloti_module({
 
 		const { article, div, button, span } = van.tags;
 
-		function handle_read_state({ x, y, w, content }) {
+		function handle_read_state({ x, y, width, content }) {
 			const html = content.replaceAll("\n", "<br/>");
 			const el = article({
 				"oceloti-card": "notebook-paper",
@@ -1686,7 +1740,7 @@ register_oceloti_module({
 				style: `
 					left: ${x}px;
 					top: ${y}px;
-					width: ${w}px;
+					width: ${width}px;
 				`
 			},
 				div({
@@ -1694,7 +1748,7 @@ register_oceloti_module({
 				})
 			);
 			el.firstElementChild.innerHTML = html;
-			return { el };
+			return el;
 		}
 
 		function initializer(card) {

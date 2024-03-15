@@ -57,7 +57,7 @@ register_oceloti_module({
 
 		const { article, div, button, span } = van.tags;
 
-		function handle_read_state({ x, y, w, content }) {
+		function handle_read_state({ x, y, width, content }) {
 			const html = content.replaceAll("\n", "<br/>");
 			const el = article({
 				"oceloti-card": "notebook-paper",
@@ -65,7 +65,7 @@ register_oceloti_module({
 				style: `
 					left: ${x}px;
 					top: ${y}px;
-					width: ${w}px;
+					width: ${width}px;
 				`
 			},
 				div({
@@ -73,7 +73,7 @@ register_oceloti_module({
 				})
 			);
 			el.firstElementChild.innerHTML = html;
-			return { el };
+			return el;
 		}
 
 		function initializer(card) {

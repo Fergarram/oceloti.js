@@ -2,69 +2,56 @@ register_oceloti_module({
 	name: "dnd-manager",
 	deps: [],
 	init({ use_module, room, hud }) {
-		const dnd_handlers = [];
-		function register_dnd_handler({ for_type, on_drop }) {
-			dnd_handlers.push({ for_type, on_drop });
-		}
+		const exports = {
+			known_dnd_types: [],
+			drop_handlers: [],
+			register_dnd_type(invoking_module, type_name) {
+				if (exports.known_dnd_types.includes(type_name)) {
+					// @FIXME: I still need to decide how to handle multiple handlers for the same types.
+					//         I think it should be the room user who decides through a UI.
+					const existing_handler = exports.drop_handlers.find(h => h.dnd_types.includes(type_name));
+					console.warn(`The "${invoking_module}" module is trying to register a previously added dnd type "${type_name}" but "${existing_handler.invoking_module}" has already registered it.`);
+					return;
+				}
+				exports.known_dnd_types.push(type_name);
+			},
+			register_drop_handler({
+				invoking_module, dnd_types, callback
+			}) {
+				dnd_types.forEach(t => exports.register_dnd_type(invoking_module, t));
+				exports.drop_handlers.push({
+					invoking_module,
+					dnd_types,
+					callback,
+				});
+			}
+		};
 
 		room.addEventListener("dragover", (e) => {
 			e.preventDefault();
+
+			if (!e.dataTransfer.types.some(str => exports.known_dnd_types.includes(str))) {
+				e.dataTransfer.effectAllowed = "none";
+				return;
+			}
 		});
 
 		room.addEventListener("dragleave", (e) => {
 			e.preventDefault();
 		});
 
-		room.addEventListener("drop", (drop_event) => {
-			drop_event.preventDefault();
-			const files = drop_event.dataTransfer.files;
-			const is_link = drop_event.dataTransfer.types.find(t => t.includes("url")) !== undefined;
-			const text_data = drop_event.dataTransfer.getData("text/plain");
-			const is_oceloti_item = drop_event.dataTransfer.types.includes("oceloti/item");
+		room.addEventListener("drop", (event) => {
+			event.preventDefault();
 
-			// @NOTES:
-			// ------
-			// There are two main branching types: file / text
-			// The text branch could be anything from link to plain text to internal dnd type.
-			// If file, types get more predictable.
+			const matching_handlers = exports.drop_handlers.filter(({ dnd_types, handler }) => {
+				return event.dataTransfer.types.some(t => exports.known_dnd_types.includes(t));
+			});
 
-			if (files.length === 0) {
-				console.log("is link?", is_link); // @TODO: use link to see if it's an image.
-				console.log("text data", text_data);
+			if (matching_handlers.length === 0) return;
 
-				// @STEP 1: Handle known text_data type for cards.
-
-			} else if (files.length > 0) {
-				for (let file of files) {
-					
-					// @STEP 2: Determine file dnd type
-
-					// @STEP 3: Once we know the type, filter handlers to match with for_type.
-					//          It's possible there are multiple handlers for a single type.
-					//          In that case the user should be asked to select one (optionally select default).
-
-					if (file.type.startsWith("image/")) {
-						const reader = new FileReader();
-						reader.onload = (e) => {
-							const img = new Image();
-							img.onload = () => {
-								const image_card = document.createElement("figure");
-								image_card.setAttribute("oceloti-card", "");
-								image_card.classList.add("paper");
-								image_card.style.left = `${window.scrollX + drop_event.clientX - (img.naturalWidth / 2)}px`;
-								image_card.style.top = `${window.scrollY + drop_event.clientY - (img.naturalHeight / 2)}px`;
-								image_card.style.width = `${img.naturalWidth}px`;
-								image_card.style.height = `${img.naturalHeight}px`;
-								image_card.appendChild(img);
-								room.appendChild(image_card);
-							};
-							img.src = e.target.result;
-							img.setAttribute("draggable", "false");
-						};
-						reader.readAsDataURL(file);
-					}
-				}
-			}
+			matching_handlers[0].callback(event);
 		});
+
+		return exports;
 	}
 });
