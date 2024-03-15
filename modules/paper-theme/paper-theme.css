@@ -1,17 +1,17 @@
 :root {
-	--card-thickness-1:
+	--thing-thickness-1:
 		drop-shadow(0 0 1px rgba(0, 0, 0, 0.5))
 		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.23));
-	--card-thickness-2:
+	--thing-thickness-2:
 		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))
 		drop-shadow(0 1px 3px rgba(0, 0, 0, 0.23));
-	--card-thickness-3:
+	--thing-thickness-3:
 		drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5))
 		drop-shadow(0 1px 4px rgba(0, 0, 0, 0.23));
-	--card-elevated-1:
+	--thing-elevated-1:
 		drop-shadow(0 1.25rem 3rem rgba(0, 0, 0, 0.30))
 		drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.22));
-	--card-elevated-2:
+	--thing-elevated-2:
 		drop-shadow(0 1.25rem 1.5rem rgba(0, 0, 0, 0.30))
 		drop-shadow(0 1rem 1rem rgba(0, 0, 0, 0.22));
 	--ease-curve-1:
@@ -23,13 +23,13 @@ html {
 	font-family: monospace;
 }
 
-[oceloti-card] {
+[oceloti-thing] {
 	transition: filter, transform var(--ease-curve-1) 300ms;
 }
 
-[oceloti-card-state="elevated"] {
+[oceloti-thing-state="elevated"] {
 	transform: scale(1.015);
-	filter: var(--card-elevated-1) !important;
+	filter: var(--thing-elevated-1) !important;
 }
 
 [oceloti-dialog] {

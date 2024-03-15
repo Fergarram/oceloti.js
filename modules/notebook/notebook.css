@@ -1,4 +1,4 @@
-[oceloti-card="notebook-paper"] {
+[oceloti-thing="notebook-paper"] {
 	height: fit-content;
 	padding: 8px 12px;
 	background-image: var(--assets-grid1-png);
@@ -7,21 +7,20 @@
 	background-position: 8px 8px;
 	image-rendering: pixelated;
 	line-height: 20px;
-	filter: var(--card-thickness-1);
-	transform: translate(-50%, -50%);
+	filter: var(--thing-thickness-1);
 }
 
-[oceloti-card="notebook-paper"] [oceloti-ref="content"] {
+[oceloti-thing="notebook-paper"] [oceloti-ref="content"] {
 	min-height: 400px;
 	height: 100%;
 	word-wrap: break-word;
 	overflow: hidden;
 }
 
-[oceloti-card="notebook-paper"] [oceloti-ref="content"]:focus {
+[oceloti-thing="notebook-paper"] [oceloti-ref="content"]:focus {
 	outline: none;
 }
 
-[oceloti-card="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
+[oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
 	user-select: none;
 }

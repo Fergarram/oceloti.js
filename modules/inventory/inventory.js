@@ -1,11 +1,11 @@
 register_oceloti_module({
 	name: "inventory",
-	deps: ["van", "context-menu", "dnd-manager", "card-manager"],
+	deps: ["van", "context-menu", "dnd-manager", "thing-manager"],
 	init({ use_module, hud, room }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_drop_handler } = use_module("dnd-manager");
-		const { add_thing_to_room } = use_module("card-manager");
+		const { add_thing_to_room, register_thing_initializer } = use_module("thing-manager");
 
 		const exports = {
 			item_handlers: [],
@@ -14,8 +14,27 @@ register_oceloti_module({
 					name, // Handler name.
 					icon, // Function that returns icon.
 					description, // Function that generates item description.
-					initializer, // Function that takes card element and initializes UI.
+					initializer, // Function that takes thing element and initializes UI.
 					renderer, // Function that takes item and returns HTMLElement node.
+				});
+				register_thing_initializer(name, (thing) => {
+					initializer(thing);
+					thing.setAttribute("oceloti-menu", "thing-menu");
+					thing.addEventListener("mousedown", (e) => {
+						if (e.button !== 2) return;
+						add_menu("inventory_actions", [
+							button({
+								onclick: () => console.log("pack")
+							},
+								"🎒 Put away"
+							),
+							button({
+								onclick: () => thing.remove()
+							},
+								"🗑️ Trash thing"
+							),
+						]);
+					});
 				});
 			},
 			add_item_to_bag(bag, item, index) {
@@ -54,32 +73,9 @@ register_oceloti_module({
 			},
 			drop_item_from_bag(bag, index, x, y) {
 				const { renderer, initializer, data } = { ...slots.val[index] };
-				add_thing_to_room(
-					renderer({ ...data, x, y }),
-					(thing) => {
-						initializer(thing);
-						thing.setAttribute("oceloti-menu", "card-menu");
-						thing.addEventListener("mousedown", (e) => {
-							if (e.button !== 2) return;
-							add_menu("inventory_actions", [
-								button({
-									onclick: () => console.log("pack")
-								},
-									"🎒 Put away"
-								),
-								button({
-									onclick: () => card.remove()
-								},
-									"🗑️ Trash card"
-								),
-							]);
-						});
-					}
-				);
+				van.add(room, renderer({ ...data, x, y }));
 			}
 		};
-
-		const item_handlers = [];
 
 		const slots = van.state([
 			null,null,null,

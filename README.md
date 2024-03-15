@@ -7,12 +7,10 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
-- [ ] Just look at @LAST.
-- [ ] Rename `card` concept to `room_object` or `thing`. I like "thing" better.
 - [ ] Create keyboard shortcuts module.
 
 ## Cool steps:
-- [ ] Assistant use case: "shift all cards about 300px to the right and top"
+- [ ] Assistant use case: "shift all things about 300px to the right and top"
       An undo button would need to be implemented. The assistant has access to outerHTML and has context about the whole room setup.
 - [ ] Shadow modes: top-down, wall
  

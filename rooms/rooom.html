@@ -13,7 +13,7 @@
 		css-reset
 		oceloti
 		standard-controls
-		card-manager
+		thing-manager
 		context-menu
 		inventory
 		equipment
@@ -69,7 +69,7 @@ fieldset {
 	overflow: hidden;
 }
 
-[oceloti-card] {
+[oceloti-thing] {
 	position: absolute;
 }
 
@@ -101,8 +101,8 @@ fieldset {
 	cursor: var(--assets-cursors-grabbed-svg), grabbing !important;
 }
 
-/* MODULE: modules/card-manager/card-manager.css */
-[oceloti-card-state="idle"] {
+/* MODULE: modules/thing-manager/thing-manager.css */
+[oceloti-thing-state="idle"] {
 	cursor: var(--assets-cursors-grab-svg), grab;
 }
 
@@ -256,19 +256,19 @@ fieldset {
 }
 /* MODULE: modules/paper-theme/paper-theme.css */
 :root {
-	--card-thickness-1:
+	--thing-thickness-1:
 		drop-shadow(0 0 1px rgba(0, 0, 0, 0.5))
 		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.23));
-	--card-thickness-2:
+	--thing-thickness-2:
 		drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))
 		drop-shadow(0 1px 3px rgba(0, 0, 0, 0.23));
-	--card-thickness-3:
+	--thing-thickness-3:
 		drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5))
 		drop-shadow(0 1px 4px rgba(0, 0, 0, 0.23));
-	--card-elevated-1:
+	--thing-elevated-1:
 		drop-shadow(0 1.25rem 3rem rgba(0, 0, 0, 0.30))
 		drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.22));
-	--card-elevated-2:
+	--thing-elevated-2:
 		drop-shadow(0 1.25rem 1.5rem rgba(0, 0, 0, 0.30))
 		drop-shadow(0 1rem 1rem rgba(0, 0, 0, 0.22));
 	--ease-curve-1:
@@ -280,13 +280,13 @@ html {
 	font-family: monospace;
 }
 
-[oceloti-card] {
+[oceloti-thing] {
 	transition: filter, transform var(--ease-curve-1) 300ms;
 }
 
-[oceloti-card-state="elevated"] {
+[oceloti-thing-state="elevated"] {
 	transform: scale(1.015);
-	filter: var(--card-elevated-1) !important;
+	filter: var(--thing-elevated-1) !important;
 }
 
 [oceloti-dialog] {
@@ -407,7 +407,7 @@ button .emoji {
 	font-family: "Noto Color Emoji", sans-serif;
 }
 /* MODULE: modules/notebook/notebook.css */
-[oceloti-card="notebook-paper"] {
+[oceloti-thing="notebook-paper"] {
 	height: fit-content;
 	padding: 8px 12px;
 	background-image: var(--assets-grid1-png);
@@ -416,22 +416,21 @@ button .emoji {
 	background-position: 8px 8px;
 	image-rendering: pixelated;
 	line-height: 20px;
-	filter: var(--card-thickness-1);
-	transform: translate(-50%, -50%);
+	filter: var(--thing-thickness-1);
 }
 
-[oceloti-card="notebook-paper"] [oceloti-ref="content"] {
+[oceloti-thing="notebook-paper"] [oceloti-ref="content"] {
 	min-height: 400px;
 	height: 100%;
 	word-wrap: break-word;
 	overflow: hidden;
 }
 
-[oceloti-card="notebook-paper"] [oceloti-ref="content"]:focus {
+[oceloti-thing="notebook-paper"] [oceloti-ref="content"]:focus {
 	outline: none;
 }
 
-[oceloti-card="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
+[oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
 	user-select: none;
 }
 
@@ -542,7 +541,7 @@ button .emoji {
 <script oceloti-modules="
 	oceloti
 	standard-controls
-	card-manager
+	thing-manager
 	dnd-manager
 	van
 	context-menu
@@ -737,21 +736,18 @@ register_oceloti_module({
 		}
 	}
 });
-/* MODULE: modules/card-manager/card-manager.js */
+/* MODULE: modules/thing-manager/thing-manager.js */
 register_oceloti_module({
-	name: "card-manager",
+	name: "thing-manager",
 	deps: [],
 	init({ use_module, room, hud }) {
-		const card_query = document.querySelectorAll("[oceloti-card]");
-		const all_cards = Array.from(card_query);
+		const thing_query = document.querySelectorAll("[oceloti-thing]");
+		const all_things = Array.from(thing_query);
 
 		const exports = {
 			thing_initializers: {},
-			add_thing_to_room(thing, initializer) {
-				const id = crypto.randomUUID();
-				exports.thing_initializers[id] = initializer;
-				thing.id = id;
-				room.appendChild(thing);
+			register_thing_initializer(thing_type, initializer) {
+				exports.thing_initializers[thing_type] = initializer;
 			}
 		};
 
@@ -759,7 +755,7 @@ register_oceloti_module({
 		let last_mouse_y = 0;
 		let delta_x = 0;
 		let delta_y = 0;
-		let dragged_card = null;
+		let dragged_thing = null;
 		let dragging_x = 0;
 		let dragging_y = 0;
 
@@ -769,11 +765,11 @@ register_oceloti_module({
 					if (mutation.addedNodes.length > 0) {
 						mutation.addedNodes.forEach((node) => {
 							if (
-								node.id !== "oceloti-floating-card" &&
-								node.getAttribute("oceloti-card-state") !== "elevated" &&
-								node.hasAttribute("oceloti-card")
+								node.id !== "oceloti-floating-thing" &&
+								node.getAttribute("oceloti-thing-state") !== "elevated" &&
+								node.hasAttribute("oceloti-thing")
 							) {
-								card_drop(node);
+								place_thing(node);
 							}
 						});
 					}
@@ -781,11 +777,11 @@ register_oceloti_module({
 					if (mutation.removedNodes.length > 0) {
 						mutation.removedNodes.forEach((node) => {
 							if (
-								node.id !== "oceloti-floating-card" &&
-								node.getAttribute("oceloti-card-state") !== "elevated" &&
-								node.hasAttribute("oceloti-card")
+								node.id !== "oceloti-floating-thing" &&
+								node.getAttribute("oceloti-thing-state") !== "elevated" &&
+								node.hasAttribute("oceloti-thing")
 							) {
-								card_lift(node);
+								lift_thing(node);
 							}
 						});
 					}
@@ -795,26 +791,27 @@ register_oceloti_module({
 
 		observer.observe(room, { childList: true });
 
-		// @LAST: Uncomment to see chaos after saving room.
-		// window.addEventListener("load", () => {
-		// 	all_cards.forEach(card_drop);
-		// });
+		window.addEventListener("load", () => {
+			all_things.forEach((thing) => place_thing(thing, true));
+		});
 
-		function initialize_card_state(card) {
-		    setTimeout(() => {
-		    	card.setAttribute("oceloti-card-state", "idle");
-			    card.style.removeProperty("will-change");
-			    card.style.removeProperty("pointer-events");
-		    }, 0);
+		function initialize_thing_state(thing, first_mount = false) {
+			if (!first_mount) {
+			    setTimeout(() => {
+			    	thing.setAttribute("oceloti-thing-state", "idle");
+				    thing.style.removeProperty("will-change");
+				    thing.style.removeProperty("pointer-events");
+			    }, 0);
+			}
 
-			card.addEventListener("mousedown", handle_mousedown);
+			thing.addEventListener("mousedown", handle_mousedown);
 
 			function handle_mousedown(e) {
 			    if (!e.target) return;
-			    if (dragged_card !== null) return;
+			    if (dragged_thing !== null) return;
 			    const target = e.target;
 			    if (
-			        card.getAttribute("oceloti-card-state") !== "idle" ||
+			        thing.getAttribute("oceloti-thing-state") !== "idle" ||
 			        target.tagName === "A" ||
 			        target.tagName === "BUTTON" ||
 			        target.tagName === "INPUT" ||
@@ -830,36 +827,36 @@ register_oceloti_module({
 			    if (e.button !== 0) return;
 
 			    document.body.classList.toggle("is-dragging");
-			    let x = Number(card.style.left.replace("px", ""));
-		    	let y = Number(card.style.top.replace("px", ""));
+			    let x = Number(thing.style.left.replace("px", ""));
+		    	let y = Number(thing.style.top.replace("px", ""));
 		    	dragging_x = x;
 		    	dragging_y = y;
 
 			    last_mouse_x = e.clientX;
 			    last_mouse_y = e.clientY;
 
-			    card.style.willChange = "filter, transform";
-			    card.style.pointerEvents = "none";
-			    const card_html = card.outerHTML;
-			    card.remove();
+			    thing.style.willChange = "filter, transform";
+			    thing.style.pointerEvents = "none";
+			    const thing_html = thing.outerHTML;
+			    thing.remove();
 
 			    const floating_wrapper = document.createElement("div");
 
-			    floating_wrapper.id = "oceloti-floating-card";
+			    floating_wrapper.id = "oceloti-floating-thing";
 			    floating_wrapper.style.pointerEvents = "none";
 			    floating_wrapper.style.position = "absolute";
 			    floating_wrapper.style.left = "0";
 			    floating_wrapper.style.top = "0";
 			    floating_wrapper.style.willChange = "transform";
 			    floating_wrapper.style.transform = `translate(${x}px, ${y}px)`;
-			    floating_wrapper.innerHTML = card_html;
+			    floating_wrapper.innerHTML = thing_html;
 
-			    const inner_card = floating_wrapper.firstElementChild;
-			    inner_card.style.left = "";
-			    inner_card.style.top = "";
+			    const inner_thing = floating_wrapper.firstElementChild;
+			    inner_thing.style.left = "";
+			    inner_thing.style.top = "";
 
 			    room.appendChild(floating_wrapper);
-			    dragged_card = inner_card;
+			    dragged_thing = inner_thing;
 
 			    window.addEventListener("mousemove", handle_mousemove);
 			    window.addEventListener("mouseup", handle_mouseup);
@@ -874,40 +871,43 @@ register_oceloti_module({
 		    last_mouse_x = e.clientX;
 		    last_mouse_y = e.clientY;
 
-		    if (dragged_card) {
-		    	dragged_card.setAttribute("oceloti-card-state", "elevated");
+		    if (dragged_thing) {
+		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
 		    	dragging_x = dragging_x - delta_x;
 		    	dragging_y = dragging_y - delta_y;
-		    	dragged_card.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
+		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
 		    }
 		}
 
 		function handle_mouseup(e) {
 		    if (e.button !== 0) return;
 			document.body.classList.toggle("is-dragging");
-		    const wrapper = dragged_card.parentNode;
-		    wrapper.after(dragged_card);
+		    const wrapper = dragged_thing.parentNode;
+		    wrapper.after(dragged_thing);
 
-		    dragged_card.style.left = `${dragging_x}px`;
-		    dragged_card.style.top = `${dragging_y}px`;
-		    card_drop(dragged_card);
+		    dragged_thing.style.left = `${dragging_x}px`;
+		    dragged_thing.style.top = `${dragging_y}px`;
+		    place_thing(dragged_thing);
 
 		    wrapper.remove();
-		    dragged_card = null;
+		    dragged_thing = null;
 
 		    window.removeEventListener("mousemove", handle_mousemove);
 		    window.removeEventListener("mouseup", handle_mouseup);
 		}
 
-		function card_drop(card) {
-			initialize_card_state(card);
-			exports.thing_initializers[card.id](card);
+		function place_thing(thing, first_mount = false) {
+			initialize_thing_state(thing, first_mount);
+			if (
+				exports.thing_initializers &&
+				exports.thing_initializers[thing.getAttribute("oceloti-thing")]
+			) {
+				exports.thing_initializers[thing.getAttribute("oceloti-thing")](thing);
+			}
 		}
 
-		function card_lift(card) {
-			// @TODO: Remove this outdated event.
-			const event = new CustomEvent("cardlift", { detail: { card } });
-			window.dispatchEvent(event);
+		function lift_thing(thing) {
+			console.log("removed thing:", thing)
 		}
 
 		return exports;
@@ -1270,12 +1270,12 @@ register_oceloti_module({
 /* MODULE: modules/inventory/inventory.js */
 register_oceloti_module({
 	name: "inventory",
-	deps: ["van", "context-menu", "dnd-manager", "card-manager"],
+	deps: ["van", "context-menu", "dnd-manager", "thing-manager"],
 	init({ use_module, hud, room }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_drop_handler } = use_module("dnd-manager");
-		const { add_thing_to_room } = use_module("card-manager");
+		const { add_thing_to_room, register_thing_initializer } = use_module("thing-manager");
 
 		const exports = {
 			item_handlers: [],
@@ -1284,8 +1284,27 @@ register_oceloti_module({
 					name, // Handler name.
 					icon, // Function that returns icon.
 					description, // Function that generates item description.
-					initializer, // Function that takes card element and initializes UI.
+					initializer, // Function that takes thing element and initializes UI.
 					renderer, // Function that takes item and returns HTMLElement node.
+				});
+				register_thing_initializer(name, (thing) => {
+					initializer(thing);
+					thing.setAttribute("oceloti-menu", "thing-menu");
+					thing.addEventListener("mousedown", (e) => {
+						if (e.button !== 2) return;
+						add_menu("inventory_actions", [
+							button({
+								onclick: () => console.log("pack")
+							},
+								"🎒 Put away"
+							),
+							button({
+								onclick: () => thing.remove()
+							},
+								"🗑️ Trash thing"
+							),
+						]);
+					});
 				});
 			},
 			add_item_to_bag(bag, item, index) {
@@ -1324,32 +1343,9 @@ register_oceloti_module({
 			},
 			drop_item_from_bag(bag, index, x, y) {
 				const { renderer, initializer, data } = { ...slots.val[index] };
-				add_thing_to_room(
-					renderer({ ...data, x, y }),
-					(thing) => {
-						initializer(thing);
-						thing.setAttribute("oceloti-menu", "card-menu");
-						thing.addEventListener("mousedown", (e) => {
-							if (e.button !== 2) return;
-							add_menu("inventory_actions", [
-								button({
-									onclick: () => console.log("pack")
-								},
-									"🎒 Put away"
-								),
-								button({
-									onclick: () => card.remove()
-								},
-									"🗑️ Trash card"
-								),
-							]);
-						});
-					}
-				);
+				van.add(room, renderer({ ...data, x, y }));
 			}
 		};
-
-		const item_handlers = [];
 
 		const slots = van.state([
 			null,null,null,
@@ -1681,6 +1677,17 @@ register_oceloti_module({
 		const { add_menu } = use_module("context-menu");
 		const { register_item_handler, add_item_to_bag } = use_module("inventory");
 
+		register_item_handler({
+			icon: () => "🗒️",
+			name: "notebook-paper",
+			description: ({ content, state }) => {
+				if (content) return "A piece of paper with text.";
+				else return "An empty piece of paper.";
+			},
+			initializer,
+			renderer
+		});
+
 		// @DEBUG
 		window.addEventListener("load", () => {
 			const items = [
@@ -1712,17 +1719,6 @@ register_oceloti_module({
 			});
 		});
 
-		register_item_handler({
-			icon: () => "🗒️",
-			name: "notebook-paper",
-			description: ({ content, state }) => {
-				if (content) return "A piece of paper with text.";
-				else return "An empty piece of paper.";
-			},
-			initializer,
-			renderer
-		});
-
 		function renderer(item) {
 			switch(item.state) {
 				case "read":
@@ -1735,11 +1731,11 @@ register_oceloti_module({
 		function handle_read_state({ x, y, width, content }) {
 			const html = content.replaceAll("\n", "<br/>");
 			const el = article({
-				"oceloti-card": "notebook-paper",
+				"oceloti-thing": "notebook-paper",
 				"oceloti-inner-state": "read",
 				style: `
-					left: ${x}px;
-					top: ${y}px;
+					left: ${x - (width / 2)}px;
+					top: ${y - 140}px;
 					width: ${width}px;
 				`
 			},
@@ -1751,8 +1747,8 @@ register_oceloti_module({
 			return el;
 		}
 
-		function initializer(card) {
-			const initial_state = card.getAttribute("oceloti-inner-state");
+		function initializer(thing) {
+			const initial_state = thing.getAttribute("oceloti-inner-state");
 			const state = van.state(initial_state);
 
 			const toggle = button({
@@ -1767,9 +1763,9 @@ register_oceloti_module({
 				span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
 			);
 
-			// van.add(card, toggle);
+			// van.add(thing, toggle);
 
-			const content = card.querySelector(`[oceloti-ref="content"]`)
+			const content = thing.querySelector(`[oceloti-ref="content"]`)
 
 			content.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
@@ -1781,13 +1777,13 @@ register_oceloti_module({
 			function handle_toggle() {
 				if (state.val === "read") {
 					state.val = "write";
-					card.setAttribute("oceloti-inner-state", "write");
-					card.setAttribute("oceloti-card-state", "active");
+					thing.setAttribute("oceloti-inner-state", "write");
+					thing.setAttribute("oceloti-thing-state", "active");
 					content.setAttribute("contenteditable", "");
 				} else {
 					state.val = "read"
-					card.setAttribute("oceloti-inner-state", "read");
-					card.setAttribute("oceloti-card-state", "idle");
+					thing.setAttribute("oceloti-inner-state", "read");
+					thing.setAttribute("oceloti-thing-state", "idle");
 					content.removeAttribute("contenteditable");
 				}
 			}
