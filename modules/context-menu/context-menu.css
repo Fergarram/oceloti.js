@@ -1,4 +1,4 @@
-#oceloti-menu {
+#oceloti-context-menu {
 	position: fixed;
 	display: flex;
 	flex-direction: column;
@@ -13,27 +13,27 @@
 	z-index: 9999999;
 }
 
-#oceloti-menu .separator {
+#oceloti-context-menu .separator {
 	width: 100%;
 	border-bottom: 1px solid silver;
 }
 
 
-#oceloti-menu .separator:first-child {
+#oceloti-context-menu .separator:first-child {
 	display: none;
 }
 
-#oceloti-menu button {
+#oceloti-context-menu button {
 	white-space: nowrap;
 	width: 100%;
 	filter: none;
 	border-radius: 2px;
 }
 
-#oceloti-menu button:hover {
+#oceloti-context-menu button:hover {
 	background-color: silver;
 }
 
-#oceloti-menu button:active {
+#oceloti-context-menu button:active {
 	background-color: silver;
 }

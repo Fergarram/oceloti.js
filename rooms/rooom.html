@@ -111,7 +111,7 @@ fieldset {
 	cursor: var(--assets-cursors-grabbed-svg), grabbing;
 }
 /* MODULE: modules/context-menu/context-menu.css */
-#oceloti-menu {
+#oceloti-context-menu {
 	position: fixed;
 	display: flex;
 	flex-direction: column;
@@ -126,28 +126,28 @@ fieldset {
 	z-index: 9999999;
 }
 
-#oceloti-menu .separator {
+#oceloti-context-menu .separator {
 	width: 100%;
 	border-bottom: 1px solid silver;
 }
 
 
-#oceloti-menu .separator:first-child {
+#oceloti-context-menu .separator:first-child {
 	display: none;
 }
 
-#oceloti-menu button {
+#oceloti-context-menu button {
 	white-space: nowrap;
 	width: 100%;
 	filter: none;
 	border-radius: 2px;
 }
 
-#oceloti-menu button:hover {
+#oceloti-context-menu button:hover {
 	background-color: silver;
 }
 
-#oceloti-menu button:active {
+#oceloti-context-menu button:active {
 	background-color: silver;
 }
 /* MODULE: modules/inventory/inventory.css */
@@ -1132,7 +1132,7 @@ register_oceloti_module({
 
 		    e.preventDefault();
 
-		    let menu = document.getElementById("oceloti-menu");
+		    let menu = document.getElementById("oceloti-context-menu");
 
 		    function close_menu(clean = false) {
 				if (menu) menu.remove();
@@ -1150,8 +1150,8 @@ register_oceloti_module({
 			}
 
 			if (
-		    	e.target.id === "oceloti-menu" ||
-		    	e.target.parentNode.id === "oceloti-menu"
+		    	e.target.id === "oceloti-context-menu" ||
+		    	e.target.parentNode.id === "oceloti-context-menu"
 		    ) {
 		    	close_menu();
 		    	return;
@@ -1161,7 +1161,7 @@ register_oceloti_module({
 
 	    	const { div, button } = van.tags;
 		    menu = div({
-		    	id: "oceloti-menu",
+		    	id: "oceloti-context-menu",
 		    	style: () => `
 		    		left: ${e.clientX}px;
 		    		top: ${e.clientY}px;

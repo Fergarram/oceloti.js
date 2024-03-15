@@ -31,7 +31,7 @@ register_oceloti_module({
 
 		    e.preventDefault();
 
-		    let menu = document.getElementById("oceloti-menu");
+		    let menu = document.getElementById("oceloti-context-menu");
 
 		    function close_menu(clean = false) {
 				if (menu) menu.remove();
@@ -49,8 +49,8 @@ register_oceloti_module({
 			}
 
 			if (
-		    	e.target.id === "oceloti-menu" ||
-		    	e.target.parentNode.id === "oceloti-menu"
+		    	e.target.id === "oceloti-context-menu" ||
+		    	e.target.parentNode.id === "oceloti-context-menu"
 		    ) {
 		    	close_menu();
 		    	return;
@@ -60,7 +60,7 @@ register_oceloti_module({
 
 	    	const { div, button } = van.tags;
 		    menu = div({
-		    	id: "oceloti-menu",
+		    	id: "oceloti-context-menu",
 		    	style: () => `
 		    		left: ${e.clientX}px;
 		    		top: ${e.clientY}px;
