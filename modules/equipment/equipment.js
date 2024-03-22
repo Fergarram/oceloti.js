@@ -7,7 +7,7 @@ register_oceloti_module({
 		const { div, button, img } = van.tags;
 
 		const slots = [
-			"📃"," ","🤚","✏️",
+			"🔍","","🤚","✏️","🪄"," ", " ", " "
 		];
 
 		const show_equipment = van.state(false);
@@ -44,8 +44,7 @@ register_oceloti_module({
 			},
 				button({
 					onclick: (e) => {
-						e.target.classList.toggle("selected");
-						show_equipment.val = !show_equipment.val;
+						
 					}
 				},
 					"🔌 equipment (e)"
@@ -57,9 +56,21 @@ register_oceloti_module({
 			},
 				button({
 					onclick: (e) => {
+						e.target.classList.toggle("selected");
+						show_equipment.val = !show_equipment.val;
 					}
 				},
-					"🧰 toolbox (T)"
+					"🖱️ cursors (c)"
+				),
+			),
+			div({
+				style: "position: relative;"
+			},
+				button({
+					onclick: (e) => {
+					}
+				},
+					"📔 item handbook (h)"
 				),
 			)
 		);

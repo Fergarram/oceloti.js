@@ -7,13 +7,15 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
+- [ ] Check @LAST.
+- [ ] Items in bag are finite.
+- [ ] Formalize local bag and actually save items on `localStorage`.
+- [ ] Handle file dropping (depends on image, etc item modules)
+
+## Items
 - [ ] Improve the notebook thing module
 - [ ] Create an image thing module
 - [ ] Create a link thing module
-- [ ] Handle file dropping
-- [ ] Formalize local bag and actually save items on `localStorage`.
-
-The more I think about it the more I realize that I'm currently using the bag as an interface for storing known thing renderers. It doesn't actually drop it, it creates a copy.
 
 ## UX Improv:
 - [ ] Work on mobile UI and controls. Touch events...

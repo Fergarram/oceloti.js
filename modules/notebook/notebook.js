@@ -17,37 +17,6 @@ register_oceloti_module({
 			renderer
 		});
 
-		// @DEBUG
-		window.addEventListener("load", () => {
-			const items = [
-				{
-					handler: "notebook-paper",
-					width: 300,
-					height: 400,
-					state: "read",
-					content: ""
-				},
-				{
-					handler: "pdf-reader",
-					width: 300,
-					height: 400,
-					state: "read",
-					content: ""
-				},
-				{
-					handler: "notebook-paper",
-					width: 300,
-					height: 400,
-					state: "read",
-					content: "Hello world"
-				},
-			];
-
-			items.forEach((item, index) => {
-				add_item_to_bag("local", item, index);
-			});
-		});
-
 		function renderer(item) {
 			switch(item.state) {
 				case "read":
