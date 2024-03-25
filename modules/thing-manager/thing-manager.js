@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "thing-manager",
 	deps: [],
-	init({ use_module, room, hud }) {
+	init({ use_module, room, room_name, hud, next_loop }) {
 		const exports = {
 			thing_initializers: {},
 			register_thing_initializer(thing_type, initializer) {
@@ -47,28 +47,26 @@ register_oceloti_module({
 			}
 		});
 
-		const room_snapshot = localStorage.getItem("OCELOTI_ROOM_SNAPSHOT");
+		const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
 		if (room_snapshot) {
 			room.innerHTML = room_snapshot;
 		}
 
 		observer.observe(room, { childList: true });
 
-		window.addEventListener("load", () => {
-			setTimeout(() => {
-				const thing_query = document.querySelectorAll("[oceloti-thing]");
-				const all_things = Array.from(thing_query);
-				all_things.forEach((thing) => place_thing(thing, true));
-			}, 0);
+		window.addEventListener("load", async () => {
+			await next_loop();
+			const thing_query = document.querySelectorAll("[oceloti-thing]");
+			const all_things = Array.from(thing_query);
+			all_things.forEach((thing) => place_thing(thing, true));
 		});
 
-		function initialize_thing_state(thing, first_mount = false) {
+		async function initialize_thing_state(thing, first_mount = false) {
 			if (!first_mount) {
-			    setTimeout(() => {
-			    	thing.setAttribute("oceloti-thing-state", "idle");
-				    thing.style.removeProperty("will-change");
-				    thing.style.removeProperty("pointer-events");
-			    }, 0);
+			    await next_loop();
+		    	thing.setAttribute("oceloti-thing-state", "idle");
+			    thing.style.removeProperty("will-change");
+			    thing.style.removeProperty("pointer-events");
 			}
 
 			thing.addEventListener("mousedown", handle_mousedown);
@@ -163,7 +161,7 @@ register_oceloti_module({
 		    window.removeEventListener("mouseup", handle_mouseup);
 		}
 
-		function place_thing(thing, first_mount = false) {
+		async function place_thing(thing, first_mount = false) {
 			initialize_thing_state(thing, first_mount);
 			const thing_name = thing.getAttribute("oceloti-thing");
 			if (
@@ -175,16 +173,14 @@ register_oceloti_module({
 
 			
 			if (!first_mount) {
-				setTimeout(() => {
-					localStorage.setItem("OCELOTI_ROOM_SNAPSHOT", room.innerHTML);
-				}, 0);
+				await next_loop();
+				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			}
 		}
 
-		function lift_thing(thing) {
-			setTimeout(() => {
-				localStorage.setItem("OCELOTI_ROOM_SNAPSHOT", room.innerHTML);
-			}, 0);
+		async function lift_thing(thing) {
+			await next_loop();
+			localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 		}
 
 		return exports;

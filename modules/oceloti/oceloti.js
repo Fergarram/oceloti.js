@@ -1,7 +1,17 @@
 {
+	const room = document.querySelector("[oceloti-room]");
+	if (!room) throw new Error("Oceloti will not work. Room element is missing.");
+	
+	const room_name = room.getAttribute("oceloti-room");
+	if (!room_name) throw new Error("Room requires a name.");
+
+	const hud = document.getElementById("hud");
+	if (!hud) throw new Error("Oceloti will not work. HUD element is required.");
+
 	const oceloti = {
-		room: document.querySelector("[oceloti-room]"),
-		hud: document.getElementById("hud"),
+		room,
+		room_name,
+		hud,
 		css_modules: document.querySelector("style[oceloti-modules]")
 			.getAttribute("oceloti-modules").trim().split(/\s+/),
 		css_assets:  document.querySelector("style[oceloti-assets]")
@@ -24,8 +34,12 @@
 	    return Array.from({ length }, () => val);
 	};
 
+	oceloti.utils.next_loop = function() {
+		return new Promise((resolve) => setTimeout(resolve, 0));
+	};
+
 	window.register_oceloti_module = function({ name, deps, init }) {
-		if (!oceloti || !oceloti.room || !oceloti.hud) {
+		if (!oceloti || !oceloti.room || !oceloti.hud || !oceloti.room_name) {
 			throw new Error("Oceloti was not setup correctly:", oceloti);
 		}
 
@@ -50,9 +64,10 @@
 		});
 
 		oceloti.active_modules[name] = init({
-			room: oceloti.room,
-			hud: oceloti.hud,
-			utils: oceloti.utils,
+			...oceloti.utils,
+			room,
+			room_name,
+			hud,
 			use_module(mod) {
 				return oceloti.active_modules[mod];
 			},

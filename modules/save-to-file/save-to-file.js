@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "save-to-file",
 	deps: ["van"],
-	init({ use_module, hud }) {
+	init({ use_module, hud, next_loop }) {
 
 		const van = use_module("van");
 
@@ -22,7 +22,7 @@ register_oceloti_module({
 			}
 		}
 
-		function save() {
+		async function save() {
 			let dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
 
 			if (hud) {
@@ -49,17 +49,16 @@ register_oceloti_module({
 			);
 
 			van.add(document.body, dialog_el)
+
+			await next_loop();
 			
-			setTimeout(() => {
-				const blob = new Blob([dom_content], { type: 'text/html' });
-				const url = URL.createObjectURL(blob);
-				const dialog_el = document.querySelector(`[oceloti-dialog="save-to-file"]`);
-				const link_el = dialog_el.querySelector("a");
-				link_el.href = url;
-				link_el.download = `${document.title}.html`;
-				
-				dialog_el.showModal();
-			}, 0);
+			const blob = new Blob([dom_content], { type: 'text/html' });
+			const url = URL.createObjectURL(blob);
+			const link_el = dialog_el.querySelector("a");
+			link_el.href = url;
+			link_el.download = `${document.title}.html`;
+			
+			dialog_el.showModal();
 		}
 	}
 });

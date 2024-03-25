@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "context-menu",
 	deps: ["van"],
-	init({ use_module, hud, utils: { are_dialogs_open } }) {
+	init({ use_module, hud, are_dialogs_open }) {
 		const self = {
 			menu: {}
 		};

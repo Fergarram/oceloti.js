@@ -1,6 +1,7 @@
 [oceloti-thing="notebook-paper"] {
 	height: fit-content;
 	padding: 8px 12px;
+	padding-left: 24px;
 	background-image: var(--assets-grid1-png);
 	background-color: #f9f7ee;
 	background-size: 20px;
@@ -9,6 +10,28 @@
 	line-height: 20px;
 /*	filter: var(--thing-thickness-1);*/
 	box-shadow: var(--thing-thickness-1-fast);
+}
+
+[oceloti-thing="notebook-paper"]::before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 16px;
+	width: 1px;
+	height: 100%;
+	background: #ffbfbf;
+}
+
+[oceloti-thing="notebook-paper"]::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 18px;
+	width: 1px;
+	height: 100%;
+	background: #ffbfbf;
 }
 
 [oceloti-thing="notebook-paper"] [oceloti-ref="content"] {

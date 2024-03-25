@@ -1,7 +1,7 @@
 register_oceloti_module({
-	name: "notebook",
+	name: "notebook-paper",
 	deps: ["inventory", "van", "context-menu"],
-	init({ use_module }) {
+	init({ use_module, room, room_name, next_loop }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_item_handler } = use_module("inventory");
@@ -32,14 +32,14 @@ register_oceloti_module({
 				width: thing.offsetWidth,
 				height: thing.offsetHeight,
 				state: "read",
-				content: content.innerText,
+				content: content.outerHTML,
 			};
 		}
 
 		const { article, div, button, span } = van.tags;
 
 		function handle_read_state({ x, y, width, content }) {
-			const html = content.replaceAll("\n", "<br/>");
+			const html = content;
 			const el = article({
 				"oceloti-thing": "notebook-paper",
 				"oceloti-inner-state": "read",
@@ -51,9 +51,12 @@ register_oceloti_module({
 			},
 				div({
 					"oceloti-ref": "content"
+				}),
+				div({
+					class: "decor",
 				})
 			);
-			el.firstElementChild.innerHTML = html;
+			el.firstElementChild.outerHTML = html;
 			return el;
 		}
 
@@ -82,6 +85,11 @@ register_oceloti_module({
 				add_menu("paper_actions", [
 					button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
 				]);
+			});
+
+			content.addEventListener("keydown", async (e) => {
+				await next_loop();
+				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			});
 
 			function handle_toggle() {

@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "inventory",
 	deps: ["van", "context-menu", "thing-manager", "dnd-manager"],
-	init({ use_module, hud, room, utils: { repeat } }) {
+	init({ use_module, hud, room, repeat }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_drop_handler } = use_module("dnd-manager");
@@ -43,7 +43,15 @@ register_oceloti_module({
 								"🎒 Put away"
 							),
 							button({
-								onclick: () => {}
+								onclick: () => {
+									const copy = thing.cloneNode(true);
+									if (copy.id) {
+										copy.id = copy.id + crypto.randomUUID();
+									}
+									copy.style.left = `${Number(copy.style.left.replace("px", "")) + 80}px`;
+									copy.style.top = `${Number(copy.style.top.replace("px", "")) + 80}px`;
+									van.add(room, copy);
+								}
 							},
 								"🖨 Make copy"
 							),

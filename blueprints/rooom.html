@@ -18,7 +18,7 @@
 		equipment
 		local-bag
 		paper-theme
-		notebook
+		notebook-paper
 	">/* STYLE MODULES */</style>
 	<style oceloti-assets="*">
 		/* STATIC ASSETS */
@@ -27,6 +27,7 @@
 		#entrance {
 			position: relative;
 			width: 100vw;
+			max-width: 1920px;
 			height: auto;
 			display: flex;
 			flex-direction: column;
@@ -37,18 +38,26 @@
 			padding-left: 1rem;
 			padding-right: 1rem;
 			transition: opacity var(--ease-curve-1) 150ms;
+			z-index: 1000;
+			height: 100vh;
+			max-height: 1920px;
+			background: rgba(50, 50, 50, 0.1);
+			backdrop-filter: blur(15px);
+			border: 1px solid rgba(255,255,255,0.15);
+			border-radius: 3px;
+			filter: var(--thing-thickness-1);
 		}
 		
 		#entrance h1 {
 			font-size: 4rem;
-			filter: drop-shadow(2px 2px black);
+/*			filter: drop-shadow(2px 2px black);*/
 		}
 
 		#entrance h2 {
 			margin-top: 2rem;
 			font-size: 1.5rem;
 			font-weight: semibold;
-			filter: drop-shadow(2px 2px black);
+/*			filter: drop-shadow(2px 2px black);*/
 		}
 
 		#entrance p {
@@ -56,7 +65,7 @@
 			line-height: 1.35;
 			max-width: 28em;
 			text-align: center;
-			filter: drop-shadow(2px 2px black);
+/*			filter: drop-shadow(2px 2px black);*/
 		}
 
 		#entrance a:not(.button) {
@@ -73,25 +82,17 @@
 			max-width: 28em;
 		}
 	</style>
-	<script>
-		window.addEventListener("load", () => {
-			const entrance = document.getElementById("entrance");
-			const rect = entrance.getBoundingClientRect();
-			entrance.style.width = `${rect.width}px`;
-			entrance.style.height = `${rect.height}px`;
-		});
-	</script>
 </head>
 <body>
 	<div id="hud"></div>
 	<main
-		oceloti-room=""
+		oceloti-room="notes"
 		style="
 			width: 8000px;
 			height: 8000px;
 			background-color: white;
-			background-image: var(--assets-grid2-png);
-			background-size: 128px;
+			background-image: var(--assets-wood-png);
+			background-size: 256px;
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
@@ -121,7 +122,7 @@
 	equipment
 	local-bag
 	arena-api
-	notebook
+	notebook-paper
 	arena-cards
 ">/* SCRIPT MODULES */</script>
 </html>

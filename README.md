@@ -8,7 +8,6 @@ When running the `build.js` script, it will generate the built `room` and replac
 
 ## Next steps:
 - [ ] Handle file dropping (depends on image, etc item modules)
-- [ ] Improve the notebook thing module
 - [ ] Create an image thing module
 - [ ] Create a link thing module
 

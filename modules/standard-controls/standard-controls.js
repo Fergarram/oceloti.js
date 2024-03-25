@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "standard-controls",
 	deps: [],
-	init({ use_module, room, utils: { are_dialogs_open } }) {
+	init({ use_module, room, are_dialogs_open }) {
 		let room_width = room.offsetWidth;
 		let room_height = room.offsetHeight;
 

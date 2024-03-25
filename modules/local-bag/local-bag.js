@@ -51,7 +51,9 @@ register_oceloti_module({
 						),
 						button(
 							{
-								onclick: () => {},
+								onclick: () => {
+									// @TODO: Implement stackable items
+								},
 							},
 							"🖨️ copy",
 						),
