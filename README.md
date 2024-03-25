@@ -7,12 +7,7 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
-- [ ] Check @LAST.
-- [ ] Items in bag are finite.
-- [ ] Formalize local bag and actually save items on `localStorage`.
 - [ ] Handle file dropping (depends on image, etc item modules)
-
-## Items
 - [ ] Improve the notebook thing module
 - [ ] Create an image thing module
 - [ ] Create a link thing module

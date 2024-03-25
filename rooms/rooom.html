@@ -46,7 +46,7 @@ fieldset {
 
 /* MODULE: modules/oceloti/oceloti.css */
 [oceloti-reset] {
-	scroll-behavior: smooth;
+/*	scroll-behavior: smooth;*/
 }
 
 [oceloti-reset="black"] {
@@ -546,8 +546,6 @@ button .emoji {
 			<p>
 				This tool was made using <a href="https://github.com/Fergarram/oceloti.js">Oceloti.js</a>, a webroom framework that I created after prototyping a lot of infinite canvas tools. 
 			</p>
-			<figure style="width: 150px; height: 97px;">
-				<img src="data:image/gif;base64,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" draggable="false"></figure>
 		</section>
 	</main>
 </body>
@@ -586,7 +584,11 @@ button .emoji {
 	oceloti.utils.are_dialogs_open = function() {
 		const dialogs = document.querySelectorAll('dialog');
 		return Array.from(dialogs).some(dialog => dialog.open);
-	}
+	};
+
+	oceloti.utils.repeat = function(length, val) {
+	    return Array.from({ length }, () => val);
+	};
 
 	window.register_oceloti_module = function({ name, deps, init }) {
 		if (!oceloti || !oceloti.room || !oceloti.hud) {
@@ -768,9 +770,6 @@ register_oceloti_module({
 	name: "thing-manager",
 	deps: [],
 	init({ use_module, room, hud }) {
-		const thing_query = document.querySelectorAll("[oceloti-thing]");
-		const all_things = Array.from(thing_query);
-
 		const exports = {
 			thing_initializers: {},
 			register_thing_initializer(thing_type, initializer) {
@@ -816,10 +815,19 @@ register_oceloti_module({
 			}
 		});
 
+		const room_snapshot = localStorage.getItem("OCELOTI_ROOM_SNAPSHOT");
+		if (room_snapshot) {
+			room.innerHTML = room_snapshot;
+		}
+
 		observer.observe(room, { childList: true });
 
 		window.addEventListener("load", () => {
-			all_things.forEach((thing) => place_thing(thing, true));
+			setTimeout(() => {
+				const thing_query = document.querySelectorAll("[oceloti-thing]");
+				const all_things = Array.from(thing_query);
+				all_things.forEach((thing) => place_thing(thing, true));
+			}, 0);
 		});
 
 		function initialize_thing_state(thing, first_mount = false) {
@@ -925,16 +933,26 @@ register_oceloti_module({
 
 		function place_thing(thing, first_mount = false) {
 			initialize_thing_state(thing, first_mount);
+			const thing_name = thing.getAttribute("oceloti-thing");
 			if (
 				exports.thing_initializers &&
-				exports.thing_initializers[thing.getAttribute("oceloti-thing")]
+				exports.thing_initializers[thing_name]
 			) {
-				exports.thing_initializers[thing.getAttribute("oceloti-thing")](thing);
+				exports.thing_initializers[thing_name](thing);
+			}
+
+			
+			if (!first_mount) {
+				setTimeout(() => {
+					localStorage.setItem("OCELOTI_ROOM_SNAPSHOT", room.innerHTML);
+				}, 0);
 			}
 		}
 
 		function lift_thing(thing) {
-			console.log("removed thing:", thing)
+			setTimeout(() => {
+				localStorage.setItem("OCELOTI_ROOM_SNAPSHOT", room.innerHTML);
+			}, 0);
 		}
 
 		return exports;
@@ -1298,7 +1316,7 @@ register_oceloti_module({
 register_oceloti_module({
 	name: "inventory",
 	deps: ["van", "context-menu", "thing-manager", "dnd-manager"],
-	init({ use_module, hud, room }) {
+	init({ use_module, hud, room, utils: { repeat } }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_drop_handler } = use_module("dnd-manager");
@@ -1307,21 +1325,43 @@ register_oceloti_module({
 
 		const exports = {
 			item_handlers: [],
-			register_item_handler({ name, icon, description, initializer, renderer }) {
+			bags: {},
+			register_item_handler({ name, icon, description, initializer, encoder, renderer }) {
 				exports.item_handlers.push({
 					name, // Handler name.
 					icon, // Function that returns icon.
 					description, // Function that generates item description.
 					initializer, // Function that takes thing element and initializes UI.
+					encoder, // Function that takes a thing element and returns an item object.
 					renderer, // Function that takes item and returns HTMLElement node.
 				});
 				register_thing_initializer(name, (thing) => {
 					initializer(thing);
 					thing.setAttribute("oceloti-menu", "thing-menu");
 					thing.addEventListener("mousedown", (e) => {
-						console.log(e);
 						if (e.button !== 2) return;
 						add_menu("inventory_actions", [
+							button({
+								onclick: () => {
+									const handler = thing.getAttribute("oceloti-thing");
+									const compatible_handlers = exports.item_handlers.filter(h => h.name === handler);
+									if (compatible_handlers.length === 0) {
+										throw new Error(`Could not find registered handlers for "${handler}" but there should have been at least one.`);
+									}
+
+									const { encoder } = compatible_handlers[0];
+									if (exports.add_item_to_bag("local-bag", encoder(thing))) {									
+										thing.remove();
+									}
+								}
+							},
+								"🎒 Put away"
+							),
+							button({
+								onclick: () => {}
+							},
+								"🖨 Make copy"
+							),
 							button({
 								onclick: () => thing.remove()
 							},
@@ -1331,7 +1371,55 @@ register_oceloti_module({
 					});
 				});
 			},
-			add_item_to_bag(bag, item, index) {
+			create_new_bag(id, length) {
+				const ids = Object.keys(exports.bags);
+				if (ids.includes(id)) {
+					console.error(`Bag with "${id}" id already exists.`);
+					return;
+				}
+
+				exports.bags[id] = van.state(repeat(length, null));
+				return exports.bags[id];
+			},
+			watch_bag(bag_id, callback) {
+				if (!exports.bags[bag_id]) {
+					console.warn(`Bag with id "${bag_id}" was not found.`);
+					return;
+				}
+
+				const bag = exports.bags[bag_id];
+				van.derive(() => callback(bag.val));
+			},
+			add_item_to_bag(bag_id, item, index = -1) {
+				if (!exports.bags[bag_id]) {
+					console.warn(`Bag with id "${bag_id}" was not found.`);
+					return null;
+				}
+
+				const bag = exports.bags[bag_id];
+
+				if (index === -1) {
+					for (let i = 0; i < bag.val.length; i++) {
+						if (bag.val[i] === null) {
+							index = i;
+							break;
+						}
+					}
+				} else if (index !== -1 && bag.val[index] !== null) {
+					index = -1;
+					for (let i = 0; i < bag.val.length; i++) {
+						if (bag.val[i] === null) {
+							index = i;
+							break;
+						}
+					}
+				}
+
+				if (index === -1) {
+					alert("Bag is full.");
+					return null;
+				}
+
 				const compatible_handlers = exports.item_handlers.filter(h => h.name === item.handler);
 				if (compatible_handlers.length === 0) {
 					const bag_copy = [...bag.val];
@@ -1342,7 +1430,7 @@ register_oceloti_module({
 		  				data: item
 		  			};
 		  			bag.val = bag_copy;
-		  			return;
+		  			return index;
 				}
 
 				// @TODO: Have a way to select or configure a default handler.
@@ -1357,17 +1445,49 @@ register_oceloti_module({
 	  				data: item
 	  			};
 	  			bag.val = bag_copy;
+	  			return index;
 			},
-			move_item_in_bag(bag, from, to) {
+			move_item_in_bag(bag_id, from, to) {
+				if (!exports.bags[bag_id]) {
+					throw new Error(`Bag with id "${bag_id}" was not found.`);
+					return;
+				}
+
+				const bag = exports.bags[bag_id];
 				const bag_copy = [...bag.val];
 				const item = { ...bag.val[from] };
 				bag_copy[to] = item;
 				bag_copy[from] = null;
 		  		bag.val = bag_copy;
 			},
-			drop_item_from_bag(bag, index, x, y) {
+			drop_item_from_bag(bag_id, index, x, y) {
+				if (!exports.bags[bag_id]) {
+					throw new Error(`Bag with id "${bag_id}" was not found.`);
+					return;
+				}
+
+				const bag = exports.bags[bag_id];
+				if (bag.val[index].unknown) {
+					alert("Can't drop unknown item.");
+					return;
+				}
+
+				const bag_copy = [...bag.val];
 				const { renderer, initializer, data } = { ...bag.val[index] };
 				van.add(room, renderer({ ...data, x, y }));
+				bag_copy[index] = null;
+				bag.val = bag_copy;
+			},
+			trash_item_from_bag(bag_id, index) {
+				if (!exports.bags[bag_id]) {
+					throw new Error(`Bag with id "${bag_id}" was not found.`);
+					return;
+				}
+
+				const bag = exports.bags[bag_id];
+				const bag_copy = [...bag.val];
+				bag_copy[index] = null;
+				bag.val = bag_copy;
 			}
 		};
 
@@ -1386,36 +1506,38 @@ register_oceloti_module({
 					return;
 				}
 
+				let found_type = null;
+
 				for (const type of types) {
-					if (type === "oceloti/item") {
+					if (!found_type && type === "oceloti/item") {
 						const item_ref = JSON.parse(e.dataTransfer.getData("oceloti/item"));
-						if (item_ref.unknown) {
-							console.log(item_ref);
-							alert("Can't drop unknown item.");
-							break;
-						}
-						// @LAST: item_ref should have a bag reference.
-						console.log(item_ref)
-						// drop_item_from_bag(
-						// 	slots,
-						// 	item_ref.index,
-						// 	window.scrollX + e.clientX,
-						// 	window.scrollY + e.clientY,
-						// );
+						exports.drop_item_from_bag(
+							item_ref.bag_id,
+							item_ref.index,
+							window.scrollX + e.clientX,
+							window.scrollY + e.clientY,
+						);
+						found_type = "oceloti/item";
 						break;
 					}
-					
-					if (type.includes("url")) {
+				}
+
+				for (const type of types) {
+					if (!found_type && (type.includes("url") || type.includes("uri"))) {
 						// @FIXME: Handle links and image links
 						const image_type = types.find(t => t.includes("image"));
 						const alt_type = types.find(t => t === "text/plain");
 						const url = e.dataTransfer.getData(alt_type);
-						console.log(image_type ? "image" : "link", url);
+						found_type = image_type ? "image" : "link";
+						console.log(found_type, url);
 						break;
 					}
+				}
 
-					if (type === "text/plain") {
+				for (const type of types) {
+					if (!found_type && type === "text/plain") {
 						// @FIXME: Handle text
+						found_type = "text";
 						console.log("text");
 						break;
 					}
@@ -1511,21 +1633,21 @@ register_oceloti_module({
 register_oceloti_module({
 	name: "local-bag",
 	deps: ["van", "context-menu", "inventory"],
-	init({ use_module, hud, room }) {
+	init({ use_module, hud }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
-		const { drop_item_from_bag, add_item_to_bag, move_item_in_bag } = use_module("inventory");
+		const {
+			drop_item_from_bag,
+			add_item_to_bag,
+			move_item_in_bag,
+			trash_item_from_bag,
+			create_new_bag,
+			watch_bag,
+		} = use_module("inventory");
+		
+		const slots = create_new_bag("local-bag", 18);
 
-		const slots = van.state([
-			null,null,null,
-			null,null,null,
-			null,null,null,
-			null,null,null,
-			null,null,null,
-			null,null,null,
-		]);
-
-		const { div, button, img, ul, li, span } = van.tags;
+		const { div, button, ul, li, span } = van.tags;
 
 		const show_inventory = van.state(false);
 
@@ -1540,36 +1662,41 @@ register_oceloti_module({
 				attrs["onmousedown"] = (e) => {
 					if (e.button !== 2) return;
 					add_menu("inventory_item", [
-						button({
-							onclick: () => {
-								console.log(slot)
-								drop_item_from_bag(
-									slots,
-									index, 
-									window.scrollX + window.innerWidth / 2,
-									window.scrollY + window.innerHeight / 2
-								);
-							}
-						},
-							"⤵️ Drop"
+						button(
+							{
+								onclick: () => {
+									drop_item_from_bag(
+										"local-bag",
+										index,
+										window.scrollX + window.innerWidth / 2,
+										window.scrollY + window.innerHeight / 2,
+									);
+								},
+							},
+							"⤵️ Drop",
 						),
-						button({
-							onclick: () => {}
-						},
-							"🔍 inspect"
+						button(
+							{
+								onclick: () => {},
+							},
+							"🔍 inspect",
 						),
-						button({
-							onclick: () => {}
-						},
-							"🖨️ copy"
+						button(
+							{
+								onclick: () => {},
+							},
+							"🖨️ copy",
 						),
-						button({
-							onclick: () => {}
-						},
-							"🗑️ Trash"
-						)
+						button(
+							{
+								onclick: () => {
+									trash_item_from_bag("local-bag", index);
+								},
+							},
+							"🗑️ Trash",
+						),
 					]);
-				}
+				};
 			} else {
 				attrs["ondragover"] = (e) => {
 					e.preventDefault();
@@ -1590,101 +1717,109 @@ register_oceloti_module({
 				attrs["ondrop"] = (e) => {
 					e.preventDefault();
 					if (e.dataTransfer.types.includes("oceloti/item")) {
-						const slot = JSON.parse(e.dataTransfer.getData("oceloti/item"));
-						const to = Number(e.currentTarget.getAttribute("index"));
-						move_item_in_bag(slots, slot.index, to);
+						const slot = JSON.parse(
+							e.dataTransfer.getData("oceloti/item"),
+						);
+						const to = Number(
+							e.currentTarget.getAttribute("index"),
+						);
+						move_item_in_bag("local-bag", slot.index, to);
 					}
 				};
 			}
 			return li(
 				attrs,
-				span({
-					"draggable": slot ? "true" : "false",
-					style: !slot ? "display: none;" : "",
-					class: "inventory-item emoji",
-					ondragstart: (e) => {
-						e.dataTransfer.setData('oceloti/item', JSON.stringify({
-							index,
-							...slot,
-						}));
-						e.dataTransfer.effectAllowed = 'move';
+				span(
+					{
+						draggable: slot ? "true" : "false",
+						style: !slot ? "display: none;" : "",
+						class: "inventory-item emoji",
+						ondragstart: (e) => {
+							e.dataTransfer.setData(
+								"oceloti/item",
+								JSON.stringify({
+									index,
+									bag_id: "local-bag",
+									...slot,
+								}),
+							);
+							e.dataTransfer.effectAllowed = "move";
+						},
 					},
-				},
-					slot ? slot.icon : ""
-				)
+					slot ? slot.icon : "",
+				),
 			);
 		}
 
 		function InventoryGrid(list) {
 			return ul({
 				class: "inventory-grid",
-				style: () => `
-					display: ${show_inventory.val ? "grid" : "none"}
-				`
+				style: () => `display: ${show_inventory.val ? "grid" : "none"}`
 			},
-				...list.map( (slot, i) => Slot(slot, i))
+				...list.map((slot, i) => Slot(slot, i)),
 			);
 		}
 
-		van.add(hud, div({
-			style: "position: relative;",
-		},
-			button({
-				onclick: (e) => {
-					e.target.classList.toggle("selected");
-					show_inventory.val = !show_inventory.val;
-				}
-			},
-				"🎒 local bag (b)"
+		van.add(
+			hud,
+			div({
+					style: "position: relative;",
+				},
+				button({
+						onclick: (e) => {
+							e.target.classList.toggle("selected");
+							show_inventory.val = !show_inventory.val;
+						},
+					},
+					"🎒 local bag (b)",
+				),
+				() => InventoryGrid(slots.val),
 			),
-			() => InventoryGrid(slots.val)
-		));
+		);
 
-		van.add(hud, div({
-			style: "position: relative;",
-		},
-			button({
-				style: `
-					background: royalblue;
-					color: white;
-				`,
-			},
-				"☁️ drive bag"
-			),
-		));
-
-		// @DEBUG
 		window.addEventListener("load", () => {
-			const items = [
-				{
-					handler: "notebook-paper",
-					width: 300,
-					height: 400,
-					state: "read",
-					content: ""
-				},
-				{
-					handler: "pdf-reader",
-					width: 300,
-					height: 400,
-					state: "read",
-					content: "https://arena-attachments.s3.amazonaws.com/18283024/b0ae4bfcbafdb3f9ad61216303baf1f0.pdf?1664478680"
-				},
-				{
-					handler: "notebook-paper",
-					width: 300,
-					height: 400,
-					state: "read",
-					content: "Hello world"
-				},
-			];
+			const encoded_local_items = localStorage.getItem("OCELOTI_LOCAL_BAG");
 
-			items.forEach((item, index) => {
-				add_item_to_bag(slots, item, index);
+			if (encoded_local_items === null) {
+				[
+					{
+						handler: "notebook-paper",
+						width: 300,
+						height: 400,
+						state: "read",
+						content: "",
+					},
+					{
+						handler: "pdf-reader",
+						width: 300,
+						height: 400,
+						state: "read",
+						content:
+							"https://arena-attachments.s3.amazonaws.com/18283024/b0ae4bfcbafdb3f9ad61216303baf1f0.pdf?1664478680",
+					},
+					{
+						handler: "notebook-paper",
+						width: 300,
+						height: 400,
+						state: "read",
+						content: "Hello world",
+					},
+				].forEach((item, index) => add_item_to_bag("local-bag", item));
+			} else {
+				const contents = JSON.parse(encoded_local_items).map(s => s === false ? null : s);
+				contents.forEach(s => {
+					if (s) add_item_to_bag("local-bag", s.data, s.index);
+				});
+			}
+
+			watch_bag("local-bag", (bag) => {
+				const encoded_bag = JSON.stringify(bag.map((s, index) => s === null ? false : { ...s, index }));
+				localStorage.setItem("OCELOTI_LOCAL_BAG", encoded_bag);
 			});
 		});
-	}
+	},
 });
+
 /* MODULE: modules/arena-api/arena-api.js */
 register_oceloti_module({
 	name: "arena-api",
@@ -1759,7 +1894,7 @@ register_oceloti_module({
 	init({ use_module }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
-		const { register_item_handler, add_item_to_bag } = use_module("inventory");
+		const { register_item_handler } = use_module("inventory");
 
 		register_item_handler({
 			icon: () => "🗒️",
@@ -1769,6 +1904,7 @@ register_oceloti_module({
 				else return "An empty piece of paper.";
 			},
 			initializer,
+			encoder,
 			renderer
 		});
 
@@ -1777,6 +1913,17 @@ register_oceloti_module({
 				case "read":
 					return handle_read_state(item);
 			}
+		}
+
+		function encoder(thing) {
+			const content = thing.querySelector(`[oceloti-ref="content"]`);
+			return {
+				handler: "notebook-paper",
+				width: thing.offsetWidth,
+				height: thing.offsetHeight,
+				state: "read",
+				content: content.innerText,
+			};
 		}
 
 		const { article, div, button, span } = van.tags;
@@ -1960,7 +2107,7 @@ register_oceloti_module({
 				dialog_el.showModal();
 			}
 		},
-			"** are.na bag"
+			"** are.na"
 		));
 	}
 });

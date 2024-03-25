@@ -2,9 +2,6 @@ register_oceloti_module({
 	name: "thing-manager",
 	deps: [],
 	init({ use_module, room, hud }) {
-		const thing_query = document.querySelectorAll("[oceloti-thing]");
-		const all_things = Array.from(thing_query);
-
 		const exports = {
 			thing_initializers: {},
 			register_thing_initializer(thing_type, initializer) {
@@ -50,10 +47,19 @@ register_oceloti_module({
 			}
 		});
 
+		const room_snapshot = localStorage.getItem("OCELOTI_ROOM_SNAPSHOT");
+		if (room_snapshot) {
+			room.innerHTML = room_snapshot;
+		}
+
 		observer.observe(room, { childList: true });
 
 		window.addEventListener("load", () => {
-			all_things.forEach((thing) => place_thing(thing, true));
+			setTimeout(() => {
+				const thing_query = document.querySelectorAll("[oceloti-thing]");
+				const all_things = Array.from(thing_query);
+				all_things.forEach((thing) => place_thing(thing, true));
+			}, 0);
 		});
 
 		function initialize_thing_state(thing, first_mount = false) {
@@ -159,16 +165,26 @@ register_oceloti_module({
 
 		function place_thing(thing, first_mount = false) {
 			initialize_thing_state(thing, first_mount);
+			const thing_name = thing.getAttribute("oceloti-thing");
 			if (
 				exports.thing_initializers &&
-				exports.thing_initializers[thing.getAttribute("oceloti-thing")]
+				exports.thing_initializers[thing_name]
 			) {
-				exports.thing_initializers[thing.getAttribute("oceloti-thing")](thing);
+				exports.thing_initializers[thing_name](thing);
+			}
+
+			
+			if (!first_mount) {
+				setTimeout(() => {
+					localStorage.setItem("OCELOTI_ROOM_SNAPSHOT", room.innerHTML);
+				}, 0);
 			}
 		}
 
 		function lift_thing(thing) {
-			console.log("removed thing:", thing)
+			setTimeout(() => {
+				localStorage.setItem("OCELOTI_ROOM_SNAPSHOT", room.innerHTML);
+			}, 0);
 		}
 
 		return exports;

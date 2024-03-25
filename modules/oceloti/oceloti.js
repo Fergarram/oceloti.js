@@ -18,7 +18,11 @@
 	oceloti.utils.are_dialogs_open = function() {
 		const dialogs = document.querySelectorAll('dialog');
 		return Array.from(dialogs).some(dialog => dialog.open);
-	}
+	};
+
+	oceloti.utils.repeat = function(length, val) {
+	    return Array.from({ length }, () => val);
+	};
 
 	window.register_oceloti_module = function({ name, deps, init }) {
 		if (!oceloti || !oceloti.room || !oceloti.hud) {

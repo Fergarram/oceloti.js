@@ -114,7 +114,7 @@ register_oceloti_module({
 				dialog_el.showModal();
 			}
 		},
-			"** are.na bag"
+			"** are.na"
 		));
 	}
 });

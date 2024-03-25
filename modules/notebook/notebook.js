@@ -4,7 +4,7 @@ register_oceloti_module({
 	init({ use_module }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
-		const { register_item_handler, add_item_to_bag } = use_module("inventory");
+		const { register_item_handler } = use_module("inventory");
 
 		register_item_handler({
 			icon: () => "🗒️",
@@ -14,6 +14,7 @@ register_oceloti_module({
 				else return "An empty piece of paper.";
 			},
 			initializer,
+			encoder,
 			renderer
 		});
 
@@ -22,6 +23,17 @@ register_oceloti_module({
 				case "read":
 					return handle_read_state(item);
 			}
+		}
+
+		function encoder(thing) {
+			const content = thing.querySelector(`[oceloti-ref="content"]`);
+			return {
+				handler: "notebook-paper",
+				width: thing.offsetWidth,
+				height: thing.offsetHeight,
+				state: "read",
+				content: content.innerText,
+			};
 		}
 
 		const { article, div, button, span } = van.tags;
