@@ -4,6 +4,12 @@
 
 override block_size = 8;
 
+const sand = 0xFF94E8FF;
+const worker = 0xFF000000;
+const past_worker = 0xFF40E8FF;
+const sky = 0xFFb8ff5b;
+const stone0 = 0xFF2671df;
+
 fn unpack_color(color: u32) -> vec4<f32> {
     let r = f32(color & 0x000000FFu) / 255.0;
     let g = f32((color & 0x0000FF00u) >> 8) / 255.0;
@@ -29,4 +35,14 @@ fn main(@builtin(global_invocation_id) grid: vec3u) {
   let y = grid.y;
 
   next[get_index(x,y)] = get_cell(x,y);
+  
+  if (get_cell(x,y) == worker) {
+    next[get_index(x,y)] = sand;
+  }
+
+  if (get_cell(x,y) == sand) {
+    if (get_cell(x-1,y) == worker) {
+      next[get_index(x,y)] = worker;
+    }
+  }
 } 

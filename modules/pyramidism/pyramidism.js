@@ -7,8 +7,8 @@ register_oceloti_module({
 		const options = {
 		  width: 1111,
 		  height: 666,
-		  timestep: 20,
-		  workgroup_size: 8,
+		  timestep: 10,
+		  workgroup_size: 1,
 		};
 		
 		let res = await fetch("../assets/pyramidism/compute.wgsl");
@@ -126,8 +126,6 @@ register_oceloti_module({
 		}
 
 		let command_encoder;
-		let whole_time = 0;
-		let loop_times = 0;
 		
 		// @STEP 2: I'll need more buffers for each room and each layer.
 		//        This is one of the trickier parts because I need a setup
@@ -135,8 +133,6 @@ register_oceloti_module({
 		//        For now, only do 1 room but with multiple layers.
 		let buffer0;
 		let buffer1;
-		
-		let render;
 
 		const compute_pipeline = device.createComputePipeline({
 			layout: device.createPipelineLayout({
@@ -170,9 +166,11 @@ register_oceloti_module({
 		const length = options.width * options.height;
 		const cells = quarry_buffer;
 
+		window.count = 0;
 		for (let i = 0; i < length; i++) {
-			if (cells[i] === 0xFF94e8ff && Math.random() < 0.001) {
+			if (cells[i] === 0xFF94E8FF && Math.random() <= 0.1) {
 				cells[i] = 0xFF000000;
+				window.count++;
 			}
 		}
 
@@ -239,12 +237,12 @@ register_oceloti_module({
 			]
 		});
 
-		loop_times = 0;
-		render = () => {
+		let loop_count = 0;
+		function render() {
 			command_encoder = device.createCommandEncoder();
 			const pass_encoder_compute = command_encoder.beginComputePass();
 			pass_encoder_compute.setPipeline(compute_pipeline);
-			pass_encoder_compute.setBindGroup(0, loop_times ? bind_group1 : bind_group0);
+			pass_encoder_compute.setBindGroup(0, loop_count ? bind_group1 : bind_group0);
 			pass_encoder_compute.dispatchWorkgroups(
 				options.width / options.workgroup_size,
 				options.height / options.workgroup_size
@@ -257,25 +255,22 @@ register_oceloti_module({
 			});
 
 			pass_encoder_render.setPipeline(render_pipeline);
-			pass_encoder_render.setVertexBuffer(0, loop_times ? buffer1 : buffer0);
+			pass_encoder_render.setVertexBuffer(0, loop_count ? buffer1 : buffer0);
 			pass_encoder_render.setVertexBuffer(1, square_buffer);
 			pass_encoder_render.setBindGroup(0, uniform_bind_group);
 			pass_encoder_render.draw(4, length);
 			pass_encoder_render.end();
 
 			device.queue.submit([ command_encoder.finish() ]);
-		};
+		}
 
 		function loop() {
-			if (options.timestep) {
-				whole_time++;
-				if (whole_time >= options.timestep) {
-					render();
-					whole_time -= options.timestep;
-					loop_times = 1 - loop_times;
-				}
+			render();
+			loop_count++;
+			if (loop_count >= options.timestep) {
+				render();
+				loop_count = 0;
 			}
-
 			requestAnimationFrame(loop);
 		}
 
