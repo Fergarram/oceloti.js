@@ -4,13 +4,12 @@
 @binding(2) @group(0) var<storage, read> current: array<u32>;
 @binding(3) @group(0) var<storage, read_write> next: array<u32>;
 
-@binding(4) @group(0) var<storage, read> current_workers: array<u32>;
-@binding(5) @group(0) var<storage, read_write> next_workers: array<u32>;
-
-@binding(6) @group(0) var<storage, read> current_objects: array<u32>;
-@binding(7) @group(0) var<storage, read_write> next_objects: array<u32>;
+@binding(4) @group(0) var<storage, read> current_layers: array<u32>;
+@binding(5) @group(0) var<storage, read_write> next_layers: array<u32>;
 
 override block_size = 8;
+
+override layers_count: u32 = 8;
 
 const sand = 0xFF94E8FF;
 const worker = 0xFF000000;
@@ -33,24 +32,39 @@ fn get_index(x: u32, y: u32) -> u32 {
   return (y % h) * w + (x % w);
 }
 
-fn get_cell(x: u32, y: u32) -> u32 {
+fn get_index_3d(x: u32, y: u32, z: u32) -> u32 {
+  let h = size.y;
+  let w = size.x;
+
+  return (z % layers_count) * w * h + (y % h) * w + (x % w);
+}
+
+fn get_final_cell(x: u32, y: u32) -> u32 {
   return current[get_index(x, y)];
 }
 
-@compute @workgroup_size(block_size, block_size)
+fn get_layer_cell(x: u32, y: u32, z: u32) -> u32 {
+  return current_layers[get_index_3d(x, y, z)];
+}
+
+@compute @workgroup_size(block_size, block_size, block_size)
 fn main(@builtin(global_invocation_id) grid: vec3u) {
   let x = grid.x;
   let y = grid.y;
 
-  next[get_index(x,y)] = get_cell(x,y);
+  next[get_index(x,y)] = get_final_cell(x,y);
   
-  if (get_cell(x,y) == worker) {
-    next[get_index(x,y)] = sand;
+  if (get_layer_cell(x,y,1) == worker) {
+    next[get_index(x,y)] = get_layer_cell(x,y,1);
   }
 
-  if (get_cell(x,y) == sand) {
-    if (get_cell(x-game_state[0],y) == worker) {
-      next[get_index(x,y)] = worker;
-    }
+  if (get_layer_cell(x,y,0) == stone0) {
+    next[get_index(x,y)] = get_layer_cell(x,y,0);
   }
+
+  //if (get_final_cell(x,y) == sand) {
+  //  if (get_final_cell(x-game_state[0],y) == worker) {
+  //    next[get_index(x,y)] = worker;
+  //  }
+  //}
 } 

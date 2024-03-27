@@ -166,7 +166,8 @@ register_oceloti_module({
 			compute: {
 				module: compute_shader,
 				constants: {
-					block_size: options.workgroup_size
+					block_size: options.workgroup_size,
+					layers_count: options.layers
 				}
 			}
 		});
@@ -191,12 +192,6 @@ register_oceloti_module({
 		const length = options.width * options.height;
 		const empty_cells = new Uint32Array(length);
 
-		// for (let i = 0; i < length; i++) {
-		// 	if (cells[i] === 0xFF94E8FF && Math.random() <= 0.1) {
-		// 		cells[i] = 0xFF000000;
-		// 	}
-		// }
-
 		cell_buffers.final[0] = device.createBuffer({
 			size: empty_cells.byteLength,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX,
@@ -212,14 +207,42 @@ register_oceloti_module({
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
 		});
 
+		const volume = options.width * options.height * options.layers;
+		const empty_layers_cells = new Uint32Array(volume);
+
+		for (let z = 0; z < options.layers; z++) {
+			for (let y = 0; y < options.height; y++) {
+				for (let x = 0; x < options.width; x++) {
+					const i = z * options.width * options.height + y * options.width + x;
+					if (z === 1) {
+						if (Math.random() <= 0.1) {
+							empty_layers_cells[i] = 0xFF000000;
+						} else {
+							empty_layers_cells[i] = 0x00000000;
+						}
+					} else {
+						if (Math.random() <= 0.1) {
+							empty_layers_cells[i] = 0xFF2671df;
+						} else {
+							empty_layers_cells[i] = 0x00000000;
+						}
+					}
+				}
+			}
+		}
+
 		cell_buffers.layers[0] = device.createBuffer({
-			size: empty_cells.byteLength,
+			size: empty_layers_cells.byteLength,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX,
-			mappedAtCreation: false
+			mappedAtCreation: true
 		});
 
+		new Uint32Array(cell_buffers.layers[0].getMappedRange())
+			.set(empty_layers_cells);
+		cell_buffers.layers[0].unmap();
+
 		cell_buffers.layers[1] = device.createBuffer({
-			size: empty_cells.byteLength,
+			size: empty_layers_cells.byteLength,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
 		});
 
@@ -330,7 +353,8 @@ register_oceloti_module({
 			pass_encoder_compute.setBindGroup(0, loop_count ? bind_group1 : bind_group0);
 			pass_encoder_compute.dispatchWorkgroups(
 				options.width / options.workgroup_size,
-				options.height / options.workgroup_size
+				options.height / options.workgroup_size,
+				options.layers / options.workgroup_size,
 			);
 			pass_encoder_compute.end();
 
