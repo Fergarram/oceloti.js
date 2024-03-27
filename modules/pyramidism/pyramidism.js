@@ -7,7 +7,7 @@ register_oceloti_module({
 		const options = {
 		  width: 1111,
 		  height: 666,
-		  timestep: 10,
+		  timestep: 2,
 		  workgroup_size: 1,
 		};
 		
@@ -35,7 +35,7 @@ register_oceloti_module({
     	const quarry_buffer = new Uint32Array(image_content.data.buffer);
 
 
-		const thing = room.querySelector(`[oceloti-thing="pyramidism-canvas"]`);
+		const thing = document.getElementById("pyramidism-wrapper");
 		const canvas = thing.firstElementChild;
 		const adapter = await navigator.gpu.requestAdapter();
 		const device = await adapter.requestDevice();
@@ -76,6 +76,13 @@ register_oceloti_module({
 					visibility: GPUShaderStage.COMPUTE,
 					buffer: {
 						type: "storage",
+					},
+				},
+				{
+					binding: 3,
+					visibility: GPUShaderStage.COMPUTE,
+					buffer: {
+						type: "read-only-storage",
 					},
 				},
 			]
@@ -126,11 +133,6 @@ register_oceloti_module({
 		}
 
 		let command_encoder;
-		
-		// @STEP 2: I'll need more buffers for each room and each layer.
-		//        This is one of the trickier parts because I need a setup
-		//        that allows me to easily manage and add layers.
-		//        For now, only do 1 room but with multiple layers.
 		let buffer0;
 		let buffer1;
 
@@ -153,7 +155,7 @@ register_oceloti_module({
 				GPUBufferUsage.UNIFORM |
 				GPUBufferUsage.COPY_DST |
 				GPUBufferUsage.VERTEX,
-			mappedAtCreation: true
+			mappedAtCreation: true,
 		});
 
 		new Uint32Array(size_buffer.getMappedRange()).set([
@@ -165,14 +167,6 @@ register_oceloti_module({
 
 		const length = options.width * options.height;
 		const cells = quarry_buffer;
-
-		window.count = 0;
-		for (let i = 0; i < length; i++) {
-			if (cells[i] === 0xFF94E8FF && Math.random() <= 0.1) {
-				cells[i] = 0xFF000000;
-				window.count++;
-			}
-		}
 
 		buffer0 = device.createBuffer({
 			size: cells.byteLength,
@@ -188,12 +182,57 @@ register_oceloti_module({
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
 		});
 
+		const game_state = {
+			speed: 1
+		};
+
+		const game_state_buffer = device.createBuffer({
+			size: 1 * Uint32Array.BYTES_PER_ELEMENT,
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+			mappedAtCreation: true,
+		});
+
+		new Uint32Array(game_state_buffer.getMappedRange()).set([
+			game_state.speed
+		]);
+
+		game_state_buffer.unmap();
+
+		window.addEventListener("mousedown", (e) => {
+			if (e.button !== 0) return;
+
+			game_state.speed += 4;
+
+			e.preventDefault();
+
+			device.queue.writeBuffer(
+				game_state_buffer,
+				0,
+				new Uint32Array([game_state.speed]),
+				0,
+				1
+			);
+
+			setTimeout(() => {
+				game_state.speed -= 4;	
+				device.queue.writeBuffer(
+					game_state_buffer,
+					0,
+					new Uint32Array([game_state.speed]),
+					0,
+					1
+				);
+			}, 100);
+		});
+
+
 		const bind_group0 = device.createBindGroup({
 			layout: bind_group_layout_compute,
 			entries: [
 				{ binding: 0, resource: { buffer: size_buffer } },
 				{ binding: 1, resource: { buffer: buffer0 } },
 				{ binding: 2, resource: { buffer: buffer1 } },
+				{ binding: 3, resource: { buffer: game_state_buffer } },
 			]
 		});
 
@@ -203,6 +242,7 @@ register_oceloti_module({
 				{ binding: 0, resource: { buffer: size_buffer } },
 				{ binding: 1, resource: { buffer: buffer1 } },
 				{ binding: 2, resource: { buffer: buffer0 } },
+				{ binding: 3, resource: { buffer: game_state_buffer } },
 			]
 		});
 

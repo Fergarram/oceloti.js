@@ -1,6 +1,7 @@
 @binding(0) @group(0) var<storage, read> size: vec2u;
 @binding(1) @group(0) var<storage, read> current: array<u32>;
 @binding(2) @group(0) var<storage, read_write> next: array<u32>;
+@binding(3) @group(0) var<storage> game_state: array<u32>;
 
 override block_size = 8;
 
@@ -41,7 +42,7 @@ fn main(@builtin(global_invocation_id) grid: vec3u) {
   }
 
   if (get_cell(x,y) == sand) {
-    if (get_cell(x-1,y) == worker) {
+    if (get_cell(x-game_state[0],y) == worker) {
       next[get_index(x,y)] = worker;
     }
   }
