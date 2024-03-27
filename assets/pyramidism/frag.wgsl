@@ -5,9 +5,16 @@ const stone0_internal = vec4f(0.533, 0.31, 0.09, 1.);
 const stone0_external = vec4f(1.0, 0.761, 0.522, 1.);
 const quarry0_0 = vec4f(0.875, 0.443, 0.149, 1.);
 
-// @STEP: The cell will have the color anyway, we'll just need to extract it with bitwise operations.
+
+fn unpack_color(color: u32) -> vec4<f32> {
+    let r = f32(color & 0x000000FFu) / 255.0;
+    let g = f32((color & 0x0000FF00u) >> 8) / 255.0;
+    let b = f32((color & 0x00FF0000u) >> 16) / 255.0;
+    let a = f32((color & 0xFF000000u) >> 24) / 255.0;
+    return vec4<f32>(r, g, b, a);
+}
 
 @fragment
-fn main(@location(0) cell: f32) -> @location(0) vec4f {
-  return select(sand, worker, cell == 1.);
+fn main(@location(0) @interpolate(flat) cell: u32) -> @location(0) vec4f {
+  return unpack_color(cell);
 }
