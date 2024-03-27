@@ -21,6 +21,7 @@ register_oceloti_module({
 		function renderer(item) {
 			switch(item.state) {
 				case "read":
+				case "write":
 					return handle_read_state(item);
 			}
 		}
@@ -29,9 +30,9 @@ register_oceloti_module({
 			const content = thing.querySelector(`[oceloti-ref="content"]`);
 			return {
 				handler: "notebook-paper",
+				state: "read",
 				width: thing.offsetWidth,
 				height: thing.offsetHeight,
-				state: "read",
 				content: content.outerHTML,
 			};
 		}
@@ -39,24 +40,25 @@ register_oceloti_module({
 		const { article, div, button, span } = van.tags;
 
 		function handle_read_state({ x, y, width, content }) {
-			const html = content;
+			const html = content && content.includes("oceloti-ref")
+				? content
+				: `<div oceloti-ref="content">${content}</div>`;
 			const el = article({
 				"oceloti-thing": "notebook-paper",
 				"oceloti-inner-state": "read",
+				"oceloti-thing-state": "idle",
 				style: `
 					left: ${x - (width / 2)}px;
 					top: ${y - 140}px;
 					width: ${width}px;
 				`
 			},
-				div({
-					"oceloti-ref": "content"
-				}),
-				div({
-					class: "decor",
-				})
+				div({ "oceloti-ref": "content" }),
+				div({ class: "decor" })
 			);
 			el.firstElementChild.outerHTML = html;
+			el.firstElementChild.removeAttribute("contenteditable");
+
 			return el;
 		}
 

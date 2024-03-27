@@ -8,7 +8,6 @@
 	background-position: 8px 8px;
 	image-rendering: pixelated;
 	line-height: 20px;
-/*	filter: var(--thing-thickness-1);*/
 	box-shadow: var(--thing-thickness-1-fast);
 }
 
@@ -36,7 +35,7 @@
 
 [oceloti-thing="notebook-paper"] [oceloti-ref="content"] {
 	min-height: 400px;
-	height: 100%;
+	height: fit-content;
 	word-wrap: break-word;
 	overflow: hidden;
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html oceloti-reset="black">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>pyramidism</title>
+	<meta name="description" content="Build pyramids.">
+	<style oceloti-modules="
+		css-reset
+		oceloti
+		standard-controls
+		thing-manager
+		context-menu
+		local-bag
+		paper-theme
+		notebook-paper
+		pyramidism
+	">/* STYLE MODULES */</style>
+	<style oceloti-assets="*">
+		/* STATIC ASSETS */
+	</style>
+</head>
+<body>
+	<div id="hud"></div>
+	<main
+		oceloti-room="pyramidism"
+		style="
+			width: 4000px;
+			height: 4000px;
+			background-color: white;
+			background-image: var(--assets-grid2-png);
+			background-size: 128px;
+			image-rendering: pixelated;
+	">
+	<div
+		oceloti-thing="pyramidism-canvas"
+		oceloti-inner-state="none"
+		oceloti-thing-state="idle"
+		style="
+			left: 300px;
+			top: 300px;
+		">
+		<canvas></canvas>
+	</div>
+
+	<!-- <iframe oceloti-thing="iframe" style="left: 20px; top: 20px;" src="https://corecoding.com/utilities/rgb-or-hex-to-float.php" width="400" height="400" /> -->
+	</main>
+</body>
+<script oceloti-modules="
+	oceloti
+	standard-controls
+	thing-manager
+	dnd-manager
+	van
+	context-menu
+	save-to-file
+	inventory
+	local-bag
+	notebook-paper
+	pyramidism
+">/* SCRIPT MODULES */</script>
+</html>

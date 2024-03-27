@@ -39,6 +39,8 @@
 	};
 
 	window.register_oceloti_module = function({ name, deps, init }) {
+		// @TODO: Require a reset callback.
+		//        The goal is to have a way for users to reset modules if something goes wrong.
 		if (!oceloti || !oceloti.room || !oceloti.hud || !oceloti.room_name) {
 			throw new Error("Oceloti was not setup correctly:", oceloti);
 		}

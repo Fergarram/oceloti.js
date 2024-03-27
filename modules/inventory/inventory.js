@@ -29,13 +29,15 @@ register_oceloti_module({
 							button({
 								onclick: () => {
 									const handler = thing.getAttribute("oceloti-thing");
+									
 									const compatible_handlers = exports.item_handlers.filter(h => h.name === handler);
 									if (compatible_handlers.length === 0) {
 										throw new Error(`Could not find registered handlers for "${handler}" but there should have been at least one.`);
 									}
 
 									const { encoder } = compatible_handlers[0];
-									if (exports.add_item_to_bag("local-bag", encoder(thing))) {									
+									// @TODO: Show all registered bags as context sub-menu.
+									if (exports.add_item_to_bag("local-bag", encoder(thing)) !== null) {
 										thing.remove();
 									}
 								}
@@ -48,8 +50,8 @@ register_oceloti_module({
 									if (copy.id) {
 										copy.id = copy.id + crypto.randomUUID();
 									}
-									copy.style.left = `${Number(copy.style.left.replace("px", "")) + 80}px`;
-									copy.style.top = `${Number(copy.style.top.replace("px", "")) + 80}px`;
+									copy.style.left = `${Number(copy.style.left.replace("px", "")) + 24}px`;
+									copy.style.top = `${Number(copy.style.top.replace("px", "")) + 24}px`;
 									van.add(room, copy);
 								}
 							},
