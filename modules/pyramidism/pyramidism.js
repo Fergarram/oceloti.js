@@ -7,6 +7,7 @@ register_oceloti_module({
 		const options = {
 		  width: 1111,
 		  height: 666,
+		  layers: 8,
 		  timestep: 2,
 		  workgroup_size: 1,
 		};
@@ -18,22 +19,29 @@ register_oceloti_module({
 		res = await fetch("../assets/pyramidism/vert.wgsl");
 		const vert_program = await res.text();
 
-		res = await fetch("../assets/pyramidism/quarry_left_empty.png");
-		const blob = await res.blob();
-		const bitmap = await createImageBitmap(blob);
 		const bitmap_canvas = new OffscreenCanvas(1, 1);
 		bitmap_canvas.width = options.width;
 		bitmap_canvas.height = options.height;
-		const bitmap_canvas_context = bitmap_canvas.getContext("2d");
+		const bitmap_canvas_context = bitmap_canvas.getContext("2d", {
+			willReadFrequently: true
+		});
 		bitmap_canvas_context.scale(1, -1);
-		bitmap_canvas_context.drawImage(bitmap, 0, -1 * options.height);
 
-		const image_content = bitmap_canvas_context.getImageData(
-			0, 0, options.width, options.height
-		);
-    	
-    	const quarry_buffer = new Uint32Array(image_content.data.buffer);
+		async function load_image_buffer(url) {
+			let res = await fetch(url);
+			const blob = await res.blob();
+			const bitmap = await createImageBitmap(blob);
+			bitmap_canvas_context.drawImage(bitmap, 0, -1 * options.height);
 
+			const image_content = bitmap_canvas_context.getImageData(
+				0, 0, options.width, options.height
+			);
+	    	
+	    	return new Uint32Array(image_content.data.buffer);
+		}
+
+		const quarry_final_buffer = await load_image_buffer("../assets/pyramidism/quarry_left_empty.png");
+		const workers_buffer = await load_image_buffer("../assets/pyramidism/workers.png");
 
 		const thing = document.getElementById("pyramidism-wrapper");
 		const canvas = thing.firstElementChild;
@@ -55,9 +63,15 @@ register_oceloti_module({
 		const vertex_shader = device.createShaderModule({ code: vert_program });
 		const fragment_shader = device.createShaderModule({ code: frag_program });
 
+		let cell_buffers = {
+			final: [null, null],
+			layers: [null, null],
+		};
+
 		const bind_group_layout_compute = device.createBindGroupLayout({
 			entries: [
 				{
+					// SIZE
 					binding: 0,
 					visibility: GPUShaderStage.COMPUTE,
 					buffer: {
@@ -65,6 +79,7 @@ register_oceloti_module({
 					},
 				},
 				{
+					// GAME STATE BUFFER
 					binding: 1,
 					visibility: GPUShaderStage.COMPUTE,
 					buffer: {
@@ -72,19 +87,29 @@ register_oceloti_module({
 					},
 				},
 				{
+					// Final buffer (current)
 					binding: 2,
 					visibility: GPUShaderStage.COMPUTE,
-					buffer: {
-						type: "storage",
-					},
+					buffer: { type: "read-only-storage" }
 				},
 				{
+					// Final buffer (next)
 					binding: 3,
 					visibility: GPUShaderStage.COMPUTE,
-					buffer: {
-						type: "read-only-storage",
-					},
+					buffer: { type: "storage" }
 				},
+				{
+					// Layers buffer (current)
+					binding: 4,
+					visibility: GPUShaderStage.COMPUTE,
+					buffer: { type: "read-only-storage" }
+				},
+				{
+					// Layers buffer (next)
+					binding: 5,
+					visibility: GPUShaderStage.COMPUTE,
+					buffer: { type: "storage" }
+				}
 			]
 		});
 
@@ -133,8 +158,6 @@ register_oceloti_module({
 		}
 
 		let command_encoder;
-		let buffer0;
-		let buffer1;
 
 		const compute_pipeline = device.createComputePipeline({
 			layout: device.createPipelineLayout({
@@ -166,19 +189,37 @@ register_oceloti_module({
 		size_buffer.unmap();
 
 		const length = options.width * options.height;
-		const cells = quarry_buffer;
+		const empty_cells = new Uint32Array(length);
 
-		buffer0 = device.createBuffer({
-			size: cells.byteLength,
+		// for (let i = 0; i < length; i++) {
+		// 	if (cells[i] === 0xFF94E8FF && Math.random() <= 0.1) {
+		// 		cells[i] = 0xFF000000;
+		// 	}
+		// }
+
+		cell_buffers.final[0] = device.createBuffer({
+			size: empty_cells.byteLength,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX,
 			mappedAtCreation: true
 		});
 
-		new Uint32Array(buffer0.getMappedRange()).set(cells);
-		buffer0.unmap();
+		new Uint32Array(cell_buffers.final[0].getMappedRange())
+			.set(quarry_final_buffer);
+		cell_buffers.final[0].unmap();
 
-		buffer1 = device.createBuffer({
-			size: cells.byteLength,
+		cell_buffers.final[1] = device.createBuffer({
+			size: empty_cells.byteLength,
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
+		});
+
+		cell_buffers.layers[0] = device.createBuffer({
+			size: empty_cells.byteLength,
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX,
+			mappedAtCreation: false
+		});
+
+		cell_buffers.layers[1] = device.createBuffer({
+			size: empty_cells.byteLength,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
 		});
 
@@ -230,9 +271,11 @@ register_oceloti_module({
 			layout: bind_group_layout_compute,
 			entries: [
 				{ binding: 0, resource: { buffer: size_buffer } },
-				{ binding: 1, resource: { buffer: buffer0 } },
-				{ binding: 2, resource: { buffer: buffer1 } },
-				{ binding: 3, resource: { buffer: game_state_buffer } },
+				{ binding: 1, resource: { buffer: game_state_buffer } },
+				{ binding: 2, resource: { buffer: cell_buffers.final[0] } },
+				{ binding: 3, resource: { buffer: cell_buffers.final[1] } },
+				{ binding: 4, resource: { buffer: cell_buffers.layers[0] } },
+				{ binding: 5, resource: { buffer: cell_buffers.layers[1] } },
 			]
 		});
 
@@ -240,9 +283,11 @@ register_oceloti_module({
 			layout: bind_group_layout_compute,
 			entries: [
 				{ binding: 0, resource: { buffer: size_buffer } },
-				{ binding: 1, resource: { buffer: buffer1 } },
-				{ binding: 2, resource: { buffer: buffer0 } },
-				{ binding: 3, resource: { buffer: game_state_buffer } },
+				{ binding: 1, resource: { buffer: game_state_buffer } },
+				{ binding: 2, resource: { buffer: cell_buffers.final[1] } },
+				{ binding: 3, resource: { buffer: cell_buffers.final[0] } },
+				{ binding: 4, resource: { buffer: cell_buffers.layers[1] } },
+				{ binding: 5, resource: { buffer: cell_buffers.layers[0] } },
 			]
 		});
 
@@ -295,7 +340,12 @@ register_oceloti_module({
 			});
 
 			pass_encoder_render.setPipeline(render_pipeline);
-			pass_encoder_render.setVertexBuffer(0, loop_count ? buffer1 : buffer0);
+			pass_encoder_render.setVertexBuffer(
+				0,
+				loop_count
+					? cell_buffers.final[1]
+					: cell_buffers.final[0]
+			);
 			pass_encoder_render.setVertexBuffer(1, square_buffer);
 			pass_encoder_render.setBindGroup(0, uniform_bind_group);
 			pass_encoder_render.draw(4, length);

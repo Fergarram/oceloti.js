@@ -1,7 +1,14 @@
 @binding(0) @group(0) var<storage, read> size: vec2u;
-@binding(1) @group(0) var<storage, read> current: array<u32>;
-@binding(2) @group(0) var<storage, read_write> next: array<u32>;
-@binding(3) @group(0) var<storage> game_state: array<u32>;
+@binding(1) @group(0) var<storage, read> game_state: array<u32>;
+
+@binding(2) @group(0) var<storage, read> current: array<u32>;
+@binding(3) @group(0) var<storage, read_write> next: array<u32>;
+
+@binding(4) @group(0) var<storage, read> current_workers: array<u32>;
+@binding(5) @group(0) var<storage, read_write> next_workers: array<u32>;
+
+@binding(6) @group(0) var<storage, read> current_objects: array<u32>;
+@binding(7) @group(0) var<storage, read_write> next_objects: array<u32>;
 
 override block_size = 8;
 
