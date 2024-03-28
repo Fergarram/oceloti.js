@@ -11,9 +11,13 @@ override block_size = 8;
 
 override layers_count: u32 = 8;
 
+const transparent = 0x00000000;
+const white = 0xFFFFFFFF;
 const sand = 0xFF94E8FF;
 const worker = 0xFF000000;
-const past_worker = 0xFF40E8FF;
+const worker_next_r = 0xFF0000F1;
+const worker_next_tr = 0xFF0000F2;
+const worker_next_br = 0xFF0000F3;
 const sky = 0xFFb8ff5b;
 const stone0 = 0xFF2671df;
 
@@ -25,7 +29,7 @@ fn unpack_color(color: u32) -> vec4<f32> {
     return vec4<f32>(r, g, b, a);
 }
 
-fn get_index(x: u32, y: u32) -> u32 {
+fn get_index_2d(x: u32, y: u32) -> u32 {
   let h = size.y;
   let w = size.x;
 
@@ -39,32 +43,112 @@ fn get_index_3d(x: u32, y: u32, z: u32) -> u32 {
   return (z % layers_count) * w * h + (y % h) * w + (x % w);
 }
 
-fn get_final_cell(x: u32, y: u32) -> u32 {
-  return current[get_index(x, y)];
+fn get_render_cell(x: u32, y: u32) -> u32 {
+  return current[get_index_2d(x, y)];
 }
 
 fn get_layer_cell(x: u32, y: u32, z: u32) -> u32 {
   return current_layers[get_index_3d(x, y, z)];
 }
 
+fn surrounded_by(x: u32, y: u32, z: u32, cell_type: u32) -> bool {
+  return get_layer_cell(x + 1, y, z) == cell_type &&
+    get_layer_cell(x - 1, y, z) == cell_type &&
+    get_layer_cell(x, y + 1, z) == cell_type &&
+    get_layer_cell(x, y - 1, z) == cell_type &&
+    get_layer_cell(x + 1, y + 1, z) == cell_type &&
+    get_layer_cell(x - 1, y - 1, z) == cell_type &&
+    get_layer_cell(x + 1, y - 1, z) == cell_type &&
+    get_layer_cell(x - 1, y + 1, z) == cell_type;
+}
+
 @compute @workgroup_size(block_size, block_size, block_size)
 fn main(@builtin(global_invocation_id) grid: vec3u) {
+  let worker_move_speed: u32 = 1; //game_state[0];
+
   let x = grid.x;
   let y = grid.y;
+  let z = grid.z;
 
-  next[get_index(x,y)] = get_final_cell(x,y);
-  
-  if (get_layer_cell(x,y,1) == worker) {
-    next[get_index(x,y)] = get_layer_cell(x,y,1);
+  if (z == 0) {
+
+    //
+    // Merge layers
+    //
+
+    // First pass - ground layer
+    next[get_index_2d(x, y)] = get_layer_cell(x, y, 0);
+
+    // Second pass - worker layer
+    if (get_layer_cell(x, y, 1) == worker || get_layer_cell(x, y, 1) == worker_next_r) {
+      next[get_index_2d(x, y)] = get_layer_cell(x, y, 1);
+    }
+
+    //
+    // Update next generation of cells
+    //
+
+    next_layers[get_index_3d(x, y, 1)] = get_layer_cell(x, y, 1);
+
+    // If worker can move, schedule move
+
+    if (
+      get_layer_cell(x, y, 1) == worker &&
+      surrounded_by(x, y, 0, sand) &&
+      get_layer_cell(x + worker_move_speed, y, 1) != white &&
+      get_layer_cell(x + worker_move_speed, y + worker_move_speed, 1) == white
+      // Check worker state
+    ) {
+      next_layers[get_index_3d(x, y, 1)] = worker_next_br;
+    }
+    if (
+      get_layer_cell(x, y, 1) == worker &&
+      surrounded_by(x, y, 0, sand) &&
+      get_layer_cell(x + worker_move_speed, y, 1) == worker &&
+      get_layer_cell(x + worker_move_speed, y + worker_move_speed, 1) != white &&
+      get_layer_cell(x + worker_move_speed, y - worker_move_speed, 1) == white
+      // Check worker state
+    ) {
+      next_layers[get_index_3d(x, y, 1)] = worker_next_tr;
+    }
+    if (
+      get_layer_cell(x, y, 1) == worker &&
+      surrounded_by(x, y, 0, sand) &&
+      get_layer_cell(x + worker_move_speed, y, 1) == white &&
+      get_layer_cell(x - worker_move_speed, y, 1) == white
+      // Check worker state
+    ) {
+      next_layers[get_index_3d(x, y, 1)] = worker_next_r;
+    }
+
+    // If worker can move, move
+    if (
+      get_layer_cell(x, y, 1) == white &&
+      (
+        get_layer_cell(x - worker_move_speed, y, 1) == worker_next_r ||
+        get_layer_cell(x - worker_move_speed, y + worker_move_speed, 1) == worker_next_tr ||
+        get_layer_cell(x - worker_move_speed, y - worker_move_speed, 1) == worker_next_br
+      )
+    ) {
+      next_layers[get_index_3d(x, y, 1)] = worker;
+    }
+
+    // If worker moved, delete traces
+    if (
+      (
+        get_layer_cell(x, y, 1) == worker_next_r &&
+        get_layer_cell(x + worker_move_speed, y, 1) == worker
+      ) ||
+      (
+        get_layer_cell(x, y, 1) == worker_next_tr &&
+        get_layer_cell(x + worker_move_speed, y - worker_move_speed, 1) == worker
+      ) ||
+      (
+        get_layer_cell(x, y, 1) == worker_next_br &&
+        get_layer_cell(x + worker_move_speed, y + worker_move_speed, 1) == worker
+      )
+    ) {
+      next_layers[get_index_3d(x, y, 1)] = white;
+    }
   }
-
-  if (get_layer_cell(x,y,0) == stone0) {
-    next[get_index(x,y)] = get_layer_cell(x,y,0);
-  }
-
-  //if (get_final_cell(x,y) == sand) {
-  //  if (get_final_cell(x-game_state[0],y) == worker) {
-  //    next[get_index(x,y)] = worker;
-  //  }
-  //}
-} 
+}

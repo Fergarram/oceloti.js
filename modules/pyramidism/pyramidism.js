@@ -8,7 +8,7 @@ register_oceloti_module({
 		  width: 1111,
 		  height: 666,
 		  layers: 8,
-		  timestep: 2,
+		  timestep: 30,
 		  workgroup_size: 1,
 		};
 		
@@ -190,7 +190,8 @@ register_oceloti_module({
 		size_buffer.unmap();
 
 		const length = options.width * options.height;
-		const empty_cells = new Uint32Array(length);
+		const volume = options.width * options.height * options.layers;
+		const empty_cells = new Uint32Array(length).fill(0x00000000);
 
 		cell_buffers.final[0] = device.createBuffer({
 			size: empty_cells.byteLength,
@@ -199,7 +200,7 @@ register_oceloti_module({
 		});
 
 		new Uint32Array(cell_buffers.final[0].getMappedRange())
-			.set(quarry_final_buffer);
+			.set(empty_cells);
 		cell_buffers.final[0].unmap();
 
 		cell_buffers.final[1] = device.createBuffer({
@@ -207,44 +208,37 @@ register_oceloti_module({
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
 		});
 
-		const volume = options.width * options.height * options.layers;
-		const empty_layers_cells = new Uint32Array(volume);
+		const layers_cell_buffer = new Uint32Array(volume).fill(0x00000000);
 
-		for (let z = 0; z < options.layers; z++) {
-			for (let y = 0; y < options.height; y++) {
-				for (let x = 0; x < options.width; x++) {
-					const i = z * options.width * options.height + y * options.width + x;
-					if (z === 1) {
-						if (Math.random() <= 0.1) {
-							empty_layers_cells[i] = 0xFF000000;
-						} else {
-							empty_layers_cells[i] = 0x00000000;
-						}
-					} else {
-						if (Math.random() <= 0.1) {
-							empty_layers_cells[i] = 0xFF2671df;
-						} else {
-							empty_layers_cells[i] = 0x00000000;
-						}
-					}
-				}
+		function set_layer(z, layer_buffer) {
+			const offset = z * options.width * options.height;
+			for (let i = 0; i < options.width * options.height; i++) {
+				layers_cell_buffer[offset + i] = layer_buffer[i];
 			}
 		}
 
+		set_layer(0, quarry_final_buffer);
+		set_layer(1, workers_buffer);
+
 		cell_buffers.layers[0] = device.createBuffer({
-			size: empty_layers_cells.byteLength,
+			size: layers_cell_buffer.byteLength,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX,
 			mappedAtCreation: true
 		});
 
 		new Uint32Array(cell_buffers.layers[0].getMappedRange())
-			.set(empty_layers_cells);
+			.set(layers_cell_buffer);
 		cell_buffers.layers[0].unmap();
 
 		cell_buffers.layers[1] = device.createBuffer({
-			size: empty_layers_cells.byteLength,
-			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX
+			size: layers_cell_buffer.byteLength,
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX,
+			mappedAtCreation: true
 		});
+
+		new Uint32Array(cell_buffers.layers[1].getMappedRange())
+			.set(layers_cell_buffer);
+		cell_buffers.layers[1].unmap();
 
 		const game_state = {
 			speed: 1
