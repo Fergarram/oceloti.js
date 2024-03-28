@@ -8,7 +8,7 @@ register_oceloti_module({
 		  width: 1111,
 		  height: 666,
 		  layers: 8,
-		  timestep: 30,
+		  timestep: 3,
 		  workgroup_size: 1,
 		};
 		
