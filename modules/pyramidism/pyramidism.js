@@ -8,8 +8,8 @@ register_oceloti_module({
 		  width: 1111,
 		  height: 666,
 		  layers: 8,
-		  timestep: 3,
-		  workgroup_size: 1,
+		  timestep: 1,
+		  workgroup_size: 6,
 		};
 		
 		let res = await fetch("../assets/pyramidism/compute.wgsl");
@@ -58,6 +58,10 @@ register_oceloti_module({
 			format: presentation_format,
 			alphaMode: "premultiplied",
 		});
+
+		const area = options.width * options.height;
+		const volume = options.width * options.height * options.layers;
+		const empty_cells = new Uint32Array(area).fill(0x00000000);
 
 		const compute_shader = device.createShaderModule({ code: compute_program });
 		const vertex_shader = device.createShaderModule({ code: vert_program });
@@ -109,6 +113,12 @@ register_oceloti_module({
 					binding: 5,
 					visibility: GPUShaderStage.COMPUTE,
 					buffer: { type: "storage" }
+				},
+				{
+					// Random noise layer
+					binding: 6,
+					visibility: GPUShaderStage.COMPUTE,
+					buffer: { type: "read-only-storage" }
 				}
 			]
 		});
@@ -189,9 +199,26 @@ register_oceloti_module({
 
 		size_buffer.unmap();
 
-		const length = options.width * options.height;
-		const volume = options.width * options.height * options.layers;
-		const empty_cells = new Uint32Array(length).fill(0x00000000);
+		function randomize_buffer(length) {
+			const buffer = new Uint32Array(length);
+			for (let i = 0; i < length; i++) {
+				buffer[i] = (Math.random() * 0x100000000) & 0xff000000 |
+							(Math.random() * 0x1000000) & 0x00ff0000 |
+							(Math.random() * 0x10000) & 0x0000ff00 |
+							(Math.random() * 0x100) & 0x000000ff;
+			}
+			return buffer;
+		}
+
+		const random_layer_buffer = device.createBuffer({
+			size: empty_cells.byteLength,
+			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+			mappedAtCreation: true
+		});
+
+		new Uint32Array(random_layer_buffer.getMappedRange())
+			.set(randomize_buffer(area));
+		random_layer_buffer.unmap();
 
 		cell_buffers.final[0] = device.createBuffer({
 			size: empty_cells.byteLength,
@@ -210,15 +237,32 @@ register_oceloti_module({
 
 		const layers_cell_buffer = new Uint32Array(volume).fill(0x00000000);
 
-		function set_layer(z, layer_buffer) {
+		function set_layer(z, layer_buffer, replace = (p) => p) {
 			const offset = z * options.width * options.height;
 			for (let i = 0; i < options.width * options.height; i++) {
-				layers_cell_buffer[offset + i] = layer_buffer[i];
+				layers_cell_buffer[offset + i] = replace(layer_buffer[i]);
 			}
 		}
 
 		set_layer(0, quarry_final_buffer);
-		set_layer(1, workers_buffer);
+		set_layer(1, workers_buffer, (pixel) => {
+			if (pixel === 0xFFFFFFFF) {
+				return 0x00000000;
+			} else if (pixel === 0xFF000000) {
+				return 0x20000000;
+			} else {
+				return pixel;
+			}
+		});
+		set_layer(2, workers_buffer, (pixel) => {
+			if (pixel === 0xFFFFFFFF) {
+				return 0x00000000;
+			} else if (pixel === 0xFF000000) {
+				return 0x02000000;
+			} else {
+				return pixel;
+			}
+		});
 
 		cell_buffers.layers[0] = device.createBuffer({
 			size: layers_cell_buffer.byteLength,
@@ -293,6 +337,7 @@ register_oceloti_module({
 				{ binding: 3, resource: { buffer: cell_buffers.final[1] } },
 				{ binding: 4, resource: { buffer: cell_buffers.layers[0] } },
 				{ binding: 5, resource: { buffer: cell_buffers.layers[1] } },
+				{ binding: 6, resource: { buffer: random_layer_buffer } },
 			]
 		});
 
@@ -305,6 +350,7 @@ register_oceloti_module({
 				{ binding: 3, resource: { buffer: cell_buffers.final[0] } },
 				{ binding: 4, resource: { buffer: cell_buffers.layers[1] } },
 				{ binding: 5, resource: { buffer: cell_buffers.layers[0] } },
+				{ binding: 6, resource: { buffer: random_layer_buffer } },
 			]
 		});
 
@@ -366,11 +412,17 @@ register_oceloti_module({
 			);
 			pass_encoder_render.setVertexBuffer(1, square_buffer);
 			pass_encoder_render.setBindGroup(0, uniform_bind_group);
-			pass_encoder_render.draw(4, length);
+			pass_encoder_render.draw(4, area);
 			pass_encoder_render.end();
 
 			device.queue.submit([ command_encoder.finish() ]);
 		}
+
+		setInterval(() => {
+			device.queue.writeBuffer(
+				random_layer_buffer, 0, randomize_buffer(area), 0, area
+			);
+		}, 100);
 
 		function loop() {
 			render();

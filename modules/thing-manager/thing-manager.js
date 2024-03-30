@@ -49,7 +49,7 @@ register_oceloti_module({
 
 		const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
 		if (room_snapshot) {
-			// room.innerHTML = room_snapshot;
+			room.innerHTML = room_snapshot;
 		}
 
 		observer.observe(room, { childList: true });
