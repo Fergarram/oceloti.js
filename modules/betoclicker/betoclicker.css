@@ -1,0 +1,17 @@
+@font-face {
+  font-family: "Redaction 70";
+  src: url("../assets/fonts/Redaction_70-Bold.woff2") format('woff2');
+  font-weight: 700;
+}
+
+html {
+	font-family: Garamond;
+	font-size: 32px;
+}
+
+/*button {
+  border: none;
+  outline: none;
+  padding: 0;
+  background: none;
+}*/
