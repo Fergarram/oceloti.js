@@ -7,8 +7,8 @@ register_oceloti_module({
 		const options = {
 		  width: 1111,
 		  height: 666,
-		  layers: 8,
-		  timestep: 10,
+		  layers: 32,
+		  timestep: 4,
 		  workgroup_size: 6,
 		};
 		
@@ -285,46 +285,112 @@ register_oceloti_module({
 		cell_buffers.layers[1].unmap();
 
 		const game_state = {
-			speed: 1
+			speed: 1,
+			key_1: false,
+			key_2: true,
+			key_3: false,
+			key_4: false,
+			key_5: false,
+			key_6: false,
+			key_7: false,
+			key_8: false,
+			key_9: false,
+			key_0: false,
 		};
 
 		const game_state_buffer = device.createBuffer({
-			size: 1 * Uint32Array.BYTES_PER_ELEMENT,
+			size: Object.keys(game_state).length * Uint32Array.BYTES_PER_ELEMENT,
 			usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
 			mappedAtCreation: true,
 		});
 
 		new Uint32Array(game_state_buffer.getMappedRange()).set([
-			game_state.speed
+			game_state.speed,
+			game_state.key_1,
+			game_state.key_2,
+			game_state.key_3,
+			game_state.key_4,
+			game_state.key_5,
+			game_state.key_6,
+			game_state.key_7,
+			game_state.key_8,
+			game_state.key_9,
+			game_state.key_0,
 		]);
 
 		game_state_buffer.unmap();
 
-		window.addEventListener("mousedown", (e) => {
-			if (e.button !== 0) return;
+		window.addEventListener("keydown", (e) => {
 
-			game_state.speed += 4;
+			if (e.key === "1") {
+				e.preventDefault();
+				game_state.key_1 = !game_state.key_1;
+			}
 
-			e.preventDefault();
+			if (e.key === "2") {
+				e.preventDefault();
+				game_state.key_2 = !game_state.key_2;
+			}
+
+			if (e.key === "3") {
+				e.preventDefault();
+				game_state.key_3 = !game_state.key_3;
+			}
+
+			if (e.key === "4") {
+				e.preventDefault();
+				game_state.key_4 = !game_state.key_4;
+			}
+
+			if (e.key === "5") {
+				e.preventDefault();
+				game_state.key_5 = !game_state.key_5;
+			}
+
+			if (e.key === "6") {
+				e.preventDefault();
+				game_state.key_6 = !game_state.key_6;
+			}
+
+			if (e.key === "7") {
+				e.preventDefault();
+				game_state.key_7 = !game_state.key_7;
+			}
+
+			if (e.key === "8") {
+				e.preventDefault();
+				game_state.key_8 = !game_state.key_8;
+			}
+
+			if (e.key === "9") {
+				e.preventDefault();
+				game_state.key_9 = !game_state.key_9;
+			}
+
+			if (e.key === "0") {
+				e.preventDefault();
+				game_state.key_0 = !game_state.key_0;
+			}
 
 			device.queue.writeBuffer(
 				game_state_buffer,
 				0,
-				new Uint32Array([game_state.speed]),
+				new Uint32Array([
+					game_state.speed,
+					game_state.key_1,
+					game_state.key_2,
+					game_state.key_3,
+					game_state.key_4,
+					game_state.key_5,
+					game_state.key_6,
+					game_state.key_7,
+					game_state.key_8,
+					game_state.key_9,
+					game_state.key_0,
+				]),
 				0,
-				1
+				Object.keys(game_state).length
 			);
-
-			setTimeout(() => {
-				game_state.speed -= 4;	
-				device.queue.writeBuffer(
-					game_state_buffer,
-					0,
-					new Uint32Array([game_state.speed]),
-					0,
-					1
-				);
-			}, 100);
 		});
 
 
