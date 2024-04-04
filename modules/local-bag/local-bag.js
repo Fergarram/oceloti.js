@@ -36,6 +36,7 @@ register_oceloti_module({
 									drop_item_from_bag(
 										"local-bag",
 										index,
+										// @STEP: Get computed transform scale
 										window.scrollX + window.innerWidth / 2,
 										window.scrollY + window.innerHeight / 2,
 									);
@@ -166,6 +167,20 @@ register_oceloti_module({
 						state: "read",
 						content:
 							"https://arena-attachments.s3.amazonaws.com/18283024/b0ae4bfcbafdb3f9ad61216303baf1f0.pdf?1664478680",
+					},
+					{
+						handler: "clicker-card",
+						width: 400,
+						height: 400,
+						state: "default",
+						content: "0",
+					},
+					{
+						handler: "cell-editor",
+						width: 400,
+						height: 400,
+						state: "default",
+						content: "",
 					},
 					{
 						handler: "notebook-paper",

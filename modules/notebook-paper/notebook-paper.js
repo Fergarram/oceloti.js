@@ -5,10 +5,13 @@ register_oceloti_module({
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_item_handler } = use_module("inventory");
+		const { article, div, button, span } = van.tags;
+
+		const THING_NAME = "notebook-paper";
 
 		register_item_handler({
 			icon: () => "🗒️",
-			name: "notebook-paper",
+			name: THING_NAME,
 			description: ({ content, state }) => {
 				if (content) return "A piece of paper with text.";
 				else return "An empty piece of paper.";
@@ -29,7 +32,7 @@ register_oceloti_module({
 		function encoder(thing) {
 			const content = thing.querySelector(`[oceloti-ref="content"]`);
 			return {
-				handler: "notebook-paper",
+				handler: THING_NAME,
 				state: "read",
 				width: thing.offsetWidth,
 				height: thing.offsetHeight,
@@ -37,14 +40,12 @@ register_oceloti_module({
 			};
 		}
 
-		const { article, div, button, span } = van.tags;
-
 		function handle_read_state({ x, y, width, content }) {
 			const html = content && content.includes("oceloti-ref")
 				? content
 				: `<div oceloti-ref="content">${content}</div>`;
 			const el = article({
-				"oceloti-thing": "notebook-paper",
+				"oceloti-thing": THING_NAME,
 				"oceloti-inner-state": "read",
 				"oceloti-thing-state": "idle",
 				style: `
@@ -73,7 +74,7 @@ register_oceloti_module({
 					right: 6px;
 					bottom: 6px;
 				`,
-				onclick: handle_toggle
+				onclick: toggle_state
 			},
 				span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
 			);
@@ -85,7 +86,7 @@ register_oceloti_module({
 			content.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
 				add_menu("paper_actions", [
-					button({ onclick: handle_toggle }, state.val === "read" ? "📝 Write" : "👓 Read")
+					button({ onclick: toggle_state }, state.val === "read" ? "📝 Write" : "👓 Read")
 				]);
 			});
 
@@ -94,7 +95,7 @@ register_oceloti_module({
 				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			});
 
-			function handle_toggle() {
+			function toggle_state() {
 				if (state.val === "read") {
 					state.val = "write";
 					thing.setAttribute("oceloti-inner-state", "write");

@@ -140,6 +140,7 @@ register_oceloti_module({
 		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
 		    	dragging_x = dragging_x - delta_x;
 		    	dragging_y = dragging_y - delta_y;
+		    	// @STEP: Get computed transform scale
 		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
 		    }
 		}

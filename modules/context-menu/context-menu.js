@@ -85,7 +85,7 @@ register_oceloti_module({
 		    	}
 		    });
 
-		    window.addEventListener("mousedown", (e) => {
+		    const mousedown_handler = (e) => {
 		    	if (
 			        e.button === 2 ||
 			        e.target.parentNode === menu
@@ -93,8 +93,11 @@ register_oceloti_module({
 			        return;
 			    }
 		    	if (menu) close_menu();
+		    	// @TODO: To fix the accumulating menu bug I need to check for the menu originator/trigger — if it's a different one then I just clear the menu.
 		    	self.menu = {};
-		    });
+		    };
+
+		    window.addEventListener("mousedown", mousedown_handler);
 		});
 
 		return self;

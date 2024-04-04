@@ -127,23 +127,23 @@ fn selfi(x: u32, y: u32, layer: u32) -> u32 {
 
 // Worker goal states
 const worker_idle        = 0x01000000;
-const worker_find_quarry = 0x02000000;
+const worker_move_left = 0x02000000;
 const worker_mine        = 0x03000000;
 
 // Worker move directions
-const worker_go  = 0x20000000;
-const worker_go_l  = 0x21aa0000;
-const worker_go_bl = 0x22aa0000;
-const worker_go_tl = 0x23aa0000;
-const worker_go_r  = 0x24aa0000;
-const worker_go_br = 0x25aa0000;
-const worker_go_tr = 0x26aa0000;
-const worker_will_move_from_l = 0x27aa0000;
-const worker_will_move_from_bl = 0x28aa0000;
-const worker_will_move_from_tl = 0x29aa0000;
-const worker_will_move_from_r = 0x30aa0000;
-const worker_will_move_from_br = 0x31aa0000;
-const worker_will_move_from_tr = 0x32aa0000;
+const worker_step  = 0x20000000;
+const worker_step_l  = 0x21aa0000;
+const worker_step_bl = 0x22aa0000;
+const worker_step_tl = 0x23aa0000;
+const worker_step_r  = 0x24aa0000;
+const worker_step_br = 0x25aa0000;
+const worker_step_tr = 0x26aa0000;
+const worker_will_spawn_from_l = 0x27aa0000;
+const worker_will_spawn_from_bl = 0x28aa0000;
+const worker_will_spawn_from_tl = 0x29aa0000;
+const worker_will_spawn_from_r = 0x30aa0000;
+const worker_will_spawn_from_br = 0x31aa0000;
+const worker_will_spawn_from_tr = 0x32aa0000;
 
 @compute @workgroup_size(block_size, block_size, block_size)
 fn main(@builtin(global_invocation_id) grid: vec3u) {
@@ -229,94 +229,96 @@ fn main(@builtin(global_invocation_id) grid: vec3u) {
 		//
 
 		{
-			// Finding sandstone
+			// Move generally to left
 			if (
-				get_layer_cell(x,y,2) == worker_find_quarry &&
-				get_layer_cell(x,y,1) == worker_go &&
+				get_layer_cell(x,y,2) == worker_move_left &&
+				get_layer_cell(x,y,1) == worker_step &&
 				collision_at(x,y,0,sandstone)
 			) {
-				next_layers[selfi(x,y,1)] = worker_go;
+				next_layers[selfi(x,y,1)] = worker_step;
 				next_layers[selfi(x,y,2)] = worker_mine;
 			} else if (
-				get_layer_cell(x,y,2) == worker_find_quarry &&
-				get_layer_cell(x,y,1) == worker_go
+				get_layer_cell(x,y,2) == worker_move_left &&
+				get_layer_cell(x,y,1) == worker_step
 			) {
-				let state = get_random_state(x, y, 5u);
+				let state = get_random_state(x, y, 6);
 				if (state == 0) {
-					next_layers[selfi(x,y,1)] = worker_go_l;
+					next_layers[selfi(x,y,1)] = worker_step_l;
 				} else if (state == 1 || state == 2) {
-					next_layers[selfi(x,y,1)] = worker_go_bl;
+					next_layers[selfi(x,y,1)] = worker_step_bl;
 				} else if (state == 3 || state == 4) {
-					next_layers[selfi(x,y,1)] = worker_go_tl;
+					next_layers[selfi(x,y,1)] = worker_step_tl;
+				} else if (state == 5) {
+					next_layers[selfi(x,y,1)] = worker_step;
 				}
 			}
 
 			// Creating movement spawners
 			if (get_layer_cell(x,y,1) == none) {
-				if (get_layer_cell(x + 1, y, 1) == worker_go_l) {
-					next_layers[selfi(x,y,1)] = worker_will_move_from_l;
+				if (get_layer_cell(x + 1, y, 1) == worker_step_l) {
+					next_layers[selfi(x,y,1)] = worker_will_spawn_from_l;
 				}
-				if (get_layer_cell(x - 1, y, 1) == worker_go_r) {
-					next_layers[selfi(x,y,1)] = worker_will_move_from_r;
+				if (get_layer_cell(x - 1, y, 1) == worker_step_r) {
+					next_layers[selfi(x,y,1)] = worker_will_spawn_from_r;
 				}
-				if (get_layer_cell(x + 1, y + 1, 1) == worker_go_bl) {
-					next_layers[selfi(x,y,1)] = worker_will_move_from_bl;
+				if (get_layer_cell(x + 1, y + 1, 1) == worker_step_bl) {
+					next_layers[selfi(x,y,1)] = worker_will_spawn_from_bl;
 				}
-				if (get_layer_cell(x + 1, y - 1, 1) == worker_go_tl) {
-					next_layers[selfi(x,y,1)] = worker_will_move_from_tl;
+				if (get_layer_cell(x + 1, y - 1, 1) == worker_step_tl) {
+					next_layers[selfi(x,y,1)] = worker_will_spawn_from_tl;
 				}
-				if (get_layer_cell(x - 1, y + 1, 1) == worker_go_br) {
-					next_layers[selfi(x,y,1)] = worker_will_move_from_br;
+				if (get_layer_cell(x - 1, y + 1, 1) == worker_step_br) {
+					next_layers[selfi(x,y,1)] = worker_will_spawn_from_br;
 				}
-				if (get_layer_cell(x - 1, y - 1, 1) == worker_go_tr) {
-					next_layers[selfi(x,y,1)] = worker_will_move_from_tr;
+				if (get_layer_cell(x - 1, y - 1, 1) == worker_step_tr) {
+					next_layers[selfi(x,y,1)] = worker_will_spawn_from_tr;
 				}
 			}
 
 			// Cleaning up traces
 			if (
-				get_layer_cell(x,y,1) == worker_go_l &&
-				get_layer_cell(x - 1, y, 1) == worker_will_move_from_l
+				get_layer_cell(x,y,1) == worker_step_l &&
+				get_layer_cell(x - 1, y, 1) == worker_will_spawn_from_l
 			) {
 				next_layers[selfi(x,y,1)] = none;
 				next_layers[selfi(x,y,2)] = none;
 			}
  
 			if (
-				get_layer_cell(x,y,1) == worker_go_r &&
-				get_layer_cell(x + 1, y, 1) == worker_will_move_from_r
+				get_layer_cell(x,y,1) == worker_step_r &&
+				get_layer_cell(x + 1, y, 1) == worker_will_spawn_from_r
 			) {
 				next_layers[selfi(x,y,1)] = none;
 				next_layers[selfi(x,y,2)] = none;
 			}
 
 			if (
-				get_layer_cell(x,y,1) == worker_go_bl &&
-				get_layer_cell(x - 1, y - 1, 1) == worker_will_move_from_bl
+				get_layer_cell(x,y,1) == worker_step_bl &&
+				get_layer_cell(x - 1, y - 1, 1) == worker_will_spawn_from_bl
 			) {
 				next_layers[selfi(x,y,1)] = none;
 				next_layers[selfi(x,y,2)] = none;
 			}
 
 			if (
-				get_layer_cell(x,y,1) == worker_go_br &&
-				get_layer_cell(x + 1, y - 1, 1) == worker_will_move_from_br
+				get_layer_cell(x,y,1) == worker_step_br &&
+				get_layer_cell(x + 1, y - 1, 1) == worker_will_spawn_from_br
 			) {
 				next_layers[selfi(x,y,1)] = none;
 				next_layers[selfi(x,y,2)] = none;
 			}
 
 			if (
-				get_layer_cell(x,y,1) == worker_go_tl &&
-				get_layer_cell(x - 1, y + 1, 1) == worker_will_move_from_tl
+				get_layer_cell(x,y,1) == worker_step_tl &&
+				get_layer_cell(x - 1, y + 1, 1) == worker_will_spawn_from_tl
 			) {
 				next_layers[selfi(x,y,1)] = none;
 				next_layers[selfi(x,y,2)] = none;
 			}
 
 			if (
-				get_layer_cell(x,y,1) == worker_go_tr &&
-				get_layer_cell(x + 1, y + 1, 1) == worker_will_move_from_tr
+				get_layer_cell(x,y,1) == worker_step_tr &&
+				get_layer_cell(x + 1, y + 1, 1) == worker_will_spawn_from_tr
 			) {
 				next_layers[selfi(x,y,1)] = none;
 				next_layers[selfi(x,y,2)] = none;
@@ -324,23 +326,23 @@ fn main(@builtin(global_invocation_id) grid: vec3u) {
 
 			// Transforming spawners
 			if (
-				get_layer_cell(x,y,1) == worker_will_move_from_l ||
-				get_layer_cell(x,y,1) == worker_will_move_from_tl ||
-				get_layer_cell(x,y,1) == worker_will_move_from_bl ||
-				get_layer_cell(x,y,1) == worker_will_move_from_r ||
-				get_layer_cell(x,y,1) == worker_will_move_from_tr ||
-				get_layer_cell(x,y,1) == worker_will_move_from_br
+				get_layer_cell(x,y,1) == worker_will_spawn_from_l ||
+				get_layer_cell(x,y,1) == worker_will_spawn_from_tl ||
+				get_layer_cell(x,y,1) == worker_will_spawn_from_bl ||
+				get_layer_cell(x,y,1) == worker_will_spawn_from_r ||
+				get_layer_cell(x,y,1) == worker_will_spawn_from_tr ||
+				get_layer_cell(x,y,1) == worker_will_spawn_from_br
 			) {
 				if (
-					get_layer_cell(x,y,2) == worker_find_quarry &&
-					get_layer_cell(x,y,1) == worker_go &&
+					get_layer_cell(x,y,2) == worker_move_left &&
+					get_layer_cell(x,y,1) == worker_step &&
 					collision_at(x,y,0,sandstone)
 				) {
-					next_layers[selfi(x,y,1)] = worker_go;
+					next_layers[selfi(x,y,1)] = worker_step;
 					next_layers[selfi(x,y,2)] = worker_mine;
 				} else {
-					next_layers[selfi(x,y,1)] = worker_go;
-					next_layers[selfi(x,y,2)] = worker_find_quarry;
+					next_layers[selfi(x,y,1)] = worker_step;
+					next_layers[selfi(x,y,2)] = worker_move_left;
 				}
 			}
 

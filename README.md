@@ -10,6 +10,7 @@ When running the `build.js` script, it will generate the built `room` and replac
 - [ ] Handle file dropping (depends on image, etc item modules)
 - [ ] Create an image thing module
 - [ ] Create a link thing module
+- [ ] Add base64 js-available assets `/modules/[module_name]/assets.json` for modules.
 
 ## UX Improv:
 - [ ] Work on mobile UI and controls. Touch events...
@@ -21,11 +22,12 @@ When running the `build.js` script, it will generate the built `room` and replac
 
 ## Bugs:
 - [ ] Inventory item invisible in Safari when dragging to room.
+- [ ] Accumulating context menus. Look for @TODO in `context-menu.js`.
 
 ## Cool steps:
 - [ ] Assistant use case: "shift everthing in the room about 300px to the right and top"
       An undo button would need to be implemented. The assistant has access to outerHTML and has context about the whole room setup.
-- [ ] Shadow modes: top-down, wall
+- [ ] Shadow modes: floor (current), wall
  
 ## Not urgent:
 - [ ] Implement paste handler

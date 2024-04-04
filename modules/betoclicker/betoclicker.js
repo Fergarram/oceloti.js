@@ -3,164 +3,77 @@ register_oceloti_module({
 	deps: ["van", "context-menu",],
 	init({ use_module, room }) {
 		const van = use_module("van");
-
+		const { add_menu } = use_module("context-menu");
+		const { register_item_handler } = use_module("inventory");
 		const { div, button, img, span } = van.tags;
 
-		const { add_menu } = use_module("context-menu");
+		const THING_NAME = "clicker-card";
 
-		const pacoc = van.state(0);
-		const ferark = van.state(0);
-		const duende = van.state(0);
-		const chino = van.state(0);
-
-		const pacoc_clicka = div({
-			id: "pacoco-clicka",
-			style: `
-				position: absolute;
-				left: 32px;
-				top: 200px;
-			`
-		},
-			button({
-				"use-native-menu": true,
-				oncontextmenu: (e) => {
-					e.preventDefault();
-				},
-				onmousedown: (e) => {
-					pacoc.val +=  e.button === 0 ? 1 : -1;
-				},
-				style: `
-					flex-direction: column;
-					border-radius: 4px;
-				`
+		register_item_handler({
+			icon: () => "🪪",
+			name: THING_NAME,
+			description: ({ content, state }) => {
+				return "A clicker card.";
 			},
-				img({
-					draggable: false,
-					src: window.PACOCO,
-					alt: "",
-					style: "width: 400px; height: 400px;"
-				}),
-				span(pacoc)
-			),
-		);
-
-		const ferark_clicka = div({
-			id: "ferark-clicka",
-			style: `
-				position: absolute;
-				left: 502px;
-				top: 200px;
-			`
-		},
-			button({
-				"use-native-menu": true,
-				oncontextmenu: (e) => {
-					e.preventDefault();
-				},
-				onmousedown: (e) => {
-					ferark.val +=  e.button === 0 ? 1 : -1;
-				},
-				style: `
-					flex-direction: column;
-					border-radius: 4px;
-				`
-			},
-				img({
-					draggable: false,
-					src: window.FERARK,
-					alt: "",
-					style: "width: 400px; height: 400px;"
-				}),
-				span(ferark)
-			),
-		);
-
-		const duende_clicka = div({
-			id: "duende-clicka",
-			style: `
-				position: absolute;
-				left: 1002px;
-				top: 200px;
-			`
-		},
-			button({
-				"use-native-menu": true,
-				oncontextmenu: (e) => {
-					e.preventDefault();
-				},
-				onmousedown: (e) => {
-					duende.val +=  e.button === 0 ? 1 : -1;
-				},
-				style: `
-					flex-direction: column;
-					border-radius: 4px;
-				`
-			},
-				img({
-					draggable: false,
-					src: window.MALVADO,
-					alt: "",
-					style: "width: 400px; height: 400px;"
-				}),
-				span(duende)
-			),
-		);
-
-		const chino_clicka = div({
-			id: "duende-chino",
-			style: `
-				position: absolute;
-				left: 1602px;
-				top: 200px;
-			`
-		},
-			button({
-				"use-native-menu": true,
-				oncontextmenu: (e) => {
-					e.preventDefault();
-				},
-				onmousedown: (e) => {
-					chino.val +=  e.button === 0 ? 1 : -1;
-				},
-				style: `
-					flex-direction: column;
-					border-radius: 4px;
-				`
-			},
-				img({
-					draggable: false,
-					src: "https://qph.cf2.quoracdn.net/main-qimg-b0c204b880556d97007c4eaac1f3224f",
-					alt: "",
-					style: "width: 400px; height: 400px;"
-				}),
-				span(chino)
-			),
-		);
+			initializer,
+			encoder,
+			renderer
+		});
 
 
-		const existing_pacoco = document.getElementById("pacoco-clicka");
-		if (existing_pacoco) {
-			existing_pacoco.remove();
+		function initializer(thing) {
+			const clicks_el = thing.querySelector(`[oceloti-ref="clicks"]`);
+			const button_el = thing.querySelector(`[oceloti-ref="button"]`);
+			const click_counter = van.state(Number(clicks_el.innerText));
+			button_el.addEventListener("contextmenu", (e) => e.preventDefault());
+			button_el.addEventListener("mousedown", (e) => {
+				click_counter.val +=  e.button === 0 ? 1 : -1;
+				clicks_el.innerText = click_counter.val;
+			});
 		}
 
-		const existing_ferark = document.getElementById("ferark-clicka");
-		if (existing_ferark) {
-			existing_ferark.remove();
+		function encoder(thing) {
+			const clicks_el = thing.querySelector(`[oceloti-ref="clicks"]`);
+			return {
+				handler: THING_NAME,
+				state: "default",
+				width: thing.offsetWidth,
+				height: thing.offsetHeight,
+				content: clicks_el.innerText,
+			};
 		}
 
-		const existing_duende = document.getElementById("duende-clicka");
-		if (existing_duende) {
-			existing_duende.remove();
+		function renderer({ x, y, content }) {
+			return div({
+				"oceloti-thing": THING_NAME,
+				"oceloti-inner-state": "default",
+				"oceloti-thing-state": "idle",
+				style: `
+					left: ${x - 200}px;
+					top: ${y - 140}px;
+					width: 400px;
+				`
+			},
+				div({
+					"oceloti-ref": "button",
+					"use-native-menu": true,
+					style: `
+						flex-direction: column;
+						border-radius: 4px;
+					`
+				},
+					img({
+						"use-native-menu": true,
+						draggable: false,
+						src: window.PACOCO,
+						alt: "",
+						style: "width: 100%; height: 100%;"
+					}),
+					span({
+						"oceloti-ref": "clicks"
+					}, content)
+				),
+			);
 		}
-
-		const existing_chino = document.getElementById("duende-chino");
-		if (existing_chino) {
-			existing_chino.remove();
-		}
-
-		van.add(room, pacoc_clicka);
-		van.add(room, ferark_clicka);
-		van.add(room, duende_clicka);
-		van.add(room, chino_clicka);
 	},
 });

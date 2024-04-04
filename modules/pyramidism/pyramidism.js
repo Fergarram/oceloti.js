@@ -8,7 +8,7 @@ register_oceloti_module({
 		  width: 1111,
 		  height: 666,
 		  layers: 32,
-		  timestep: 4,
+		  timestep: 1,
 		  workgroup_size: 6,
 		};
 		
@@ -321,7 +321,7 @@ register_oceloti_module({
 		game_state_buffer.unmap();
 
 		window.addEventListener("keydown", (e) => {
-
+			if (e.meta || e.ctrl || e.shift) return;
 			if (e.key === "1") {
 				e.preventDefault();
 				game_state.key_1 = !game_state.key_1;
