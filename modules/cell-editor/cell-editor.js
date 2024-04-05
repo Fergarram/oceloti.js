@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "cell-editor",
 	deps: ["van", "context-menu",],
-	init({ use_module, room, repeat }) {
+	init({ use_module, room, room_name, repeat, next_loop }) {
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_item_handler } = use_module("inventory");
@@ -20,11 +20,6 @@ register_oceloti_module({
 			renderer
 		});
 
-
-		function initializer(thing) {
-			
-		}
-
 		function encoder(thing) {
 			return {
 				handler: THING_NAME,
@@ -35,7 +30,105 @@ register_oceloti_module({
 			};
 		}
 
+		function initializer(thing) {
+			const slider = thing.querySelector(".neighborhood-slider input");
+			slider.value = slider.dataset.value;
+
+			const update_grids = async () => {
+				const neighborhood_size = Number(slider.dataset.value);
+				const side_length = (1 + ( neighborhood_size * 2 ));
+				const cells_length = side_length ** 2;
+
+				const left_grids = Array.from(thing.querySelectorAll(".current .grid"));
+				left_grids.forEach(grid => {
+					grid.outerHTML = CellGridLayout(side_length, cells_length, false).outerHTML;
+				});
+
+				const right_grids = Array.from(thing.querySelectorAll(".next .grid"));
+				right_grids.forEach(grid => {
+					grid.outerHTML = CellGridLayout(side_length, cells_length, true).outerHTML;
+				});
+
+				await next_loop();
+				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+			};
+
+			slider.addEventListener("input", (e) => {
+				slider.setAttribute("data-value", slider.value);
+				update_grids();
+			});
+
+			const add_layer_button = thing.querySelector('[ref="add-layer-button"]');
+			const program_sheet = thing.querySelector('.program-sheet');
+
+			add_layer_button.addEventListener("click", () => {
+				if (program_sheet.classList.contains("empty")) {
+					program_sheet.innerHTML = "";
+					program_sheet.classList.remove("empty");
+				}
+				const neighborhood_size = Number(slider.dataset.value);
+				const side_length = (1 + ( neighborhood_size * 2 ));
+				const cells_length = side_length ** 2;
+				van.add(program_sheet, GridPair(0, side_length, cells_length));
+			});
+
+			update_grids();
+		}
+
+		function CellGridLayout(side_length, cells_length, is_next = false) {
+			const center_cell = Math.floor(cells_length / 2);
+			return div({
+				class: "grid",
+				style: () => `
+					grid-template-columns: repeat(${side_length}, 32px);
+					grid-template-rows: repeat(${side_length}, 32px);
+				`
+			},
+				repeat(cells_length, 0).map((_, i) => div({
+					class: !is_next ? "cell" : i !== center_cell ? "empty" : "cell",
+				},
+					!is_next
+						? input({
+							type: "text",
+							minlength: "1",
+							maxlength: "3",
+						})
+						: i === center_cell
+							? input({
+								type: "text",
+								minlength: "1",
+								maxlength: "3",
+							})
+							: div()
+				))
+			);
+		};
+
+		function GridPair(layer_index, side_length, cells_length) {
+			return div({
+				class: "layers"
+			},
+				div({
+					class: "grid-wrapper current"
+				},
+					div(`Condition (L${layer_index})`),
+					CellGridLayout(side_length, cells_length)
+				),
+				div({
+					class: "grid-wrapper next"
+				},
+					div(`Next Self (L${layer_index})`),
+					CellGridLayout(side_length, cells_length, true)
+				)
+			);
+		}
+
 		function renderer({ x, y, content }) {
+			const neighborhood_size = 1;
+			const side_length = (1 + ( neighborhood_size * 2 ));
+			const cells_length = side_length ** 2;
+			const layers = [];
+
 			return div({
 				"oceloti-thing": THING_NAME,
 				"oceloti-inner-state": "default",
@@ -50,17 +143,20 @@ register_oceloti_module({
 				div({
 					class: "header"
 				},
-					div({
+					input({
 						class: "title",
-					}, "Untitled reaction"),
+						type: "text",
+						placeholder: "Untitled reaction sheet"
+					}),
 					div({
 						class: "neighborhood-slider",
 					},
 						label("Neighborhood size", ),
 						input({
 							type: "range",
-							min: 0,
-							max: 5,
+							min: 1,
+							max: 3,
+							"data-value": 1
 						}),
 					),
 					textarea({
@@ -68,54 +164,19 @@ register_oceloti_module({
 					}),
 				),
 				div({
-					class: "program-sheet"
+					class: `program-sheet ${layers.length === 0 ? "empty" : ""}`
 				},
-					div({
-						class: "layers current"
-					},
-						repeat(3).map((_, l) => div({
-							class: "grid-wrapper"
-						},
-							div(`Condition (L${l})`),
-							div({
-								class: "grid"
-							},
-								repeat(25).map((_, i) => div({
-									class: `cell`
-								},
-									input({
-										type: "text",
-										minlength: "1",
-										maxlength: "3",
-									})
-								))
-							)
-						))
-					),
-					div({
-						class: "layers next"
-					},
-						repeat(3).map((_, l) => div({
-							class: "grid-wrapper"
-						},
-							div(`Next Self (L${l})`),
-							div({
-								class: "grid"
-							},
-								repeat(25, 0).map((_, i) => div({
-									class: i !== 12 ? "empty" : "cell",
-								},
-									i === 12 ? 
-									input({
-										type: "text",
-										minlength: "1",
-										maxlength: "3",
-									}) : div()
-								))
-							)
-						))
-					),
+					layers.map((l) => GridPair(l, side_length, cells_length))
 				),
+				div({
+					class: "footer",
+				},
+					button({
+						"ref": "add-layer-button"
+					},
+						"Add layer pair"
+					)
+				)
 			);
 		}
 	},
