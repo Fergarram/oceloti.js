@@ -12,12 +12,12 @@
 	<style oceloti-modules="
 		css-reset
 		oceloti
-		standard-controls
-		thing-manager
-		context-menu
-		equipment
-		local-bag
 		paper-theme
+		standard-controls
+		context-menu
+		cursor-manager
+		hand-cursor
+		local-bag
 		notebook-paper
 		cell-editor
 	">/* MODULE: modules/css-reset/css-reset.css */
@@ -93,170 +93,6 @@ fieldset {
 	top: 50%;
 	display: block;
 	transform: translate(-50%, -50%);
-}
-/* MODULE: modules/standard-controls/standard-controls.css */
-.is-panning *,
-.is-dragging * {
-	user-select: none;
-	-webkit-user-select: none;
-	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing !important;
-}
-
-/* MODULE: modules/thing-manager/thing-manager.css */
-[oceloti-thing-state="idle"] {
-	cursor: var(--assets-cursors-grab-svg) 10 10, grab;
-}
-
-.is-dragging * {
-	user-select: none;
--webkit-user-select: none;
-	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing;
-}
-/* MODULE: modules/context-menu/context-menu.css */
-#oceloti-context-menu {
-	position: fixed;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	max-width: 200px;
-	width: fit-content;
-	height: fit-content;
-	background: lightgray;
-	padding: 3px;
-	filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
-	border-radius: 4px;
-	z-index: 9999999;
-}
-
-#oceloti-context-menu .separator {
-	width: 100%;
-	border-bottom: 1px solid silver;
-}
-
-
-#oceloti-context-menu .separator:first-child {
-	display: none;
-}
-
-#oceloti-context-menu button {
-	white-space: nowrap;
-	width: 100%;
-	filter: none;
-	border-radius: 2px;
-}
-
-#oceloti-context-menu button:hover {
-	background-color: silver;
-}
-
-#oceloti-context-menu button:active {
-	background-color: silver;
-}
-/* MODULE: modules/equipment/equipment.css */
-@keyframes slide_bottom {
-  from {
-    opacity: 0;
-    transform: translate(0, 95%);
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.equipment-grid {
-	display: grid;
-	grid-template-columns: repeat(8, 1fr);
-	gap: 4px;
-	padding: 4px;
-	background-color: lightgray;
-	position: fixed;
-	left: 12px;
-	bottom: 40px;
-	width: fit-content;
-	max-height: 65vh;
-	overflow: scroll;
-	animation-name: slide_bottom;
-	animation-duration: 200ms;
-	animation-fill-mode: forwards;
-	filter: drop-shadow(2px 2px);
-	border-radius: 0.5rem;
-}
-
-.equipment-slot {
-	border: 1px solid darkgray;
-	border-radius: 4px;
-	width: 48px;
-	height: 48px;
-}
-
-.equipment-slot:hover {
-	background-color: silver;
-}
-
-.equipment-item {
-	user-select: none;
--webkit-user-select: none;
-	display: flex;
-	width: 100%;
-	height: 100%;
-	align-items: center;
-	justify-content: center;
-	font-size: 30px;
-}
-/* MODULE: modules/local-bag/local-bag.css */
-@keyframes slide_top {
-  from {
-    opacity: 0;
-    transform: translateY(95%);
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.inventory-grid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 2px;
-	padding: 4px;
-	position: absolute;
-	left: 0;
-	bottom: -8px;
-	width: fit-content;
-	max-height: 65vh;
-	overflow: scroll;
-	background-color: lightgray;
-	border-radius: 0.5rem;
-	transform: translateY(100%);
-	filter: drop-shadow(2px 2px);
-/*	animation-name: slide_top;
-	animation-duration: 200ms;
-	animation-fill-mode: forwards;*/
-	list-style: none;
-}
-
-.inventory-slot {
-	position: relative;
-	border: 1px solid darkgray;
-	border-radius: 4px;
-	width: 48px;
-	height: 48px;
-}
-
-.inventory-slot.dragover,
-.inventory-slot:hover {
-	background-color: silver;
-}
-
-.inventory-item {
-	user-select: none;
--webkit-user-select: none;
-	display: flex;
-	width: 100%;
-	height: 100%;
-	align-items: center;
-	justify-content: center;
-	font-size: 30px;
 }
 /* MODULE: modules/paper-theme/paper-theme.css */
 :root {
@@ -417,6 +253,121 @@ button .emoji {
 .emoji {
 	font-family: "Noto Color Emoji", sans-serif;
 }
+/* MODULE: modules/standard-controls/standard-controls.css */
+.is-panning *,
+.is-dragging * {
+	user-select: none;
+	-webkit-user-select: none;
+	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing !important;
+}
+
+/* MODULE: modules/context-menu/context-menu.css */
+#oceloti-context-menu {
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-width: 200px;
+	width: fit-content;
+	height: fit-content;
+	background: lightgray;
+	padding: 3px;
+	filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
+	border-radius: 4px;
+	z-index: 9999999;
+}
+
+#oceloti-context-menu .separator {
+	width: 100%;
+	border-bottom: 1px solid silver;
+}
+
+
+#oceloti-context-menu .separator:first-child {
+	display: none;
+}
+
+#oceloti-context-menu button {
+	white-space: nowrap;
+	width: 100%;
+	filter: none;
+	border-radius: 2px;
+}
+
+#oceloti-context-menu button:hover {
+	background-color: silver;
+}
+
+#oceloti-context-menu button:active {
+	background-color: silver;
+}
+/* MODULE: modules/cursor-manager/cursor-manager.css */
+
+/* MODULE: modules/hand-cursor/hand-cursor.css */
+[oceloti-thing-state="idle"] {
+/*	cursor: var(--assets-cursors-grab-svg) 10 10, grab;*/
+}
+
+.is-dragging * {
+	user-select: none;
+-webkit-user-select: none;
+	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing;
+}
+/* MODULE: modules/local-bag/local-bag.css */
+@keyframes slide_top {
+  from {
+    opacity: 0;
+    transform: translateY(95%);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.inventory-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 2px;
+	padding: 4px;
+	position: absolute;
+	left: 0;
+	bottom: -8px;
+	width: fit-content;
+	max-height: 65vh;
+	overflow: scroll;
+	background-color: lightgray;
+	border-radius: 0.5rem;
+	transform: translateY(100%);
+	filter: drop-shadow(2px 2px);
+/*	animation-name: slide_top;
+	animation-duration: 200ms;
+	animation-fill-mode: forwards;*/
+	list-style: none;
+}
+
+.inventory-slot {
+	position: relative;
+	border: 1px solid darkgray;
+	border-radius: 4px;
+	width: 48px;
+	height: 48px;
+}
+
+.inventory-slot.dragover,
+.inventory-slot:hover {
+	background-color: silver;
+}
+
+.inventory-item {
+	user-select: none;
+-webkit-user-select: none;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+	font-size: 30px;
+}
 /* MODULE: modules/notebook-paper/notebook-paper.css */
 [oceloti-thing="notebook-paper"] {
 	height: fit-content;
@@ -507,8 +458,9 @@ button .emoji {
 
 [oceloti-thing="cell-editor"] .footer {
 	display: flex;
-	justify-content: center;
+	justify-content: space-between;
 	padding: 12px;
+	gap: 8px;
 	border-top: 1px dashed rgba(0,0,0,0.25);
 }
 
@@ -660,7 +612,8 @@ button .emoji {
 	</style>
 </head>
 <body>
-	<div id="hud"></div>
+	<div id="hud">
+	</div>
 	<main
 		oceloti-room="notes"
 		style="
@@ -691,15 +644,14 @@ button .emoji {
 	standard-controls
 	thing-manager
 	dnd-manager
+	cursor-manager
 	van
 	context-menu
-	save-to-file
 	inventory
-	equipment
+	hand-cursor
+	save-to-file
 	local-bag
-	arena-api
 	notebook-paper
-	arena-cards
 	cell-editor
 ">/* MODULE: modules/oceloti/oceloti.js */
 {
@@ -927,18 +879,35 @@ register_oceloti_module({
 	init({ use_module, room, room_name, hud, next_loop }) {
 		const exports = {
 			thing_initializers: {},
+			place_callbacks: [],
 			register_thing_initializer(thing_type, initializer) {
 				exports.thing_initializers[thing_type] = initializer;
+			},
+			on_place(callback) {
+				exports.place_callbacks.push(callback);
+			},
+			async place_thing(thing, first_mount = false) {
+				exports.place_callbacks.forEach(c => c(thing, first_mount));
+
+				const thing_name = thing.getAttribute("oceloti-thing");
+				if (
+					exports.thing_initializers &&
+					exports.thing_initializers[thing_name]
+				) {
+					exports.thing_initializers[thing_name](thing);
+				}
+
+				
+				if (!first_mount) {
+					await next_loop();
+					localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				}
+			},
+			async lift_thing(thing) {
+				await next_loop();
+				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			}
 		};
-
-		let last_mouse_x = 0;
-		let last_mouse_y = 0;
-		let delta_x = 0;
-		let delta_y = 0;
-		let dragged_thing = null;
-		let dragging_x = 0;
-		let dragging_y = 0;
 
 		const observer = new MutationObserver((mutations) => {
 			for (let mutation of mutations) {
@@ -946,11 +915,10 @@ register_oceloti_module({
 					if (mutation.addedNodes.length > 0) {
 						mutation.addedNodes.forEach((node) => {
 							if (
-								node.id !== "oceloti-floating-thing" &&
 								node.getAttribute("oceloti-thing-state") !== "elevated" &&
 								node.hasAttribute("oceloti-thing")
 							) {
-								place_thing(node);
+								exports.place_thing(node);
 							}
 						});
 					}
@@ -958,11 +926,10 @@ register_oceloti_module({
 					if (mutation.removedNodes.length > 0) {
 						mutation.removedNodes.forEach((node) => {
 							if (
-								node.id !== "oceloti-floating-thing" &&
 								node.getAttribute("oceloti-thing-state") !== "elevated" &&
 								node.hasAttribute("oceloti-thing")
 							) {
-								lift_thing(node);
+								exports.lift_thing(node);
 							}
 						});
 					}
@@ -970,8 +937,10 @@ register_oceloti_module({
 			}
 		});
 
+		// @STEP: Move to the save module.
 		const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
 		if (room_snapshot) {
+			localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
 			room.innerHTML = room_snapshot;
 		}
 
@@ -981,131 +950,8 @@ register_oceloti_module({
 			await next_loop();
 			const thing_query = document.querySelectorAll("[oceloti-thing]");
 			const all_things = Array.from(thing_query);
-			all_things.forEach((thing) => place_thing(thing, true));
+			all_things.forEach((thing) => exports.place_thing(thing, true));
 		});
-
-		async function initialize_thing_state(thing, first_mount = false) {
-			if (!first_mount) {
-			    await next_loop();
-		    	thing.setAttribute("oceloti-thing-state", "idle");
-			    thing.style.removeProperty("will-change");
-			    thing.style.removeProperty("pointer-events");
-			}
-
-			thing.addEventListener("mousedown", handle_mousedown);
-
-			function handle_mousedown(e) {
-			    if (!e.target) return;
-			    if (dragged_thing !== null) return;
-			    const target = e.target;
-			    if (
-			        thing.getAttribute("oceloti-thing-state") !== "idle" ||
-			        target.tagName === "A" ||
-			        target.tagName === "BUTTON" ||
-			        target.tagName === "INPUT" ||
-			        target.tagName === "TEXTAREA" ||
-			        (
-			        	target.tagName === "IMG" && 
-			        	target.getAttribute("draggable") !== "false"
-			        ) 
-			    ) {
-			        return;
-			    }
-
-			    if (e.button !== 0) return;
-
-			    document.body.classList.toggle("is-dragging");
-			    let x = Number(thing.style.left.replace("px", ""));
-		    	let y = Number(thing.style.top.replace("px", ""));
-		    	dragging_x = x;
-		    	dragging_y = y;
-
-			    last_mouse_x = e.clientX;
-			    last_mouse_y = e.clientY;
-
-			    thing.style.willChange = "filter, transform";
-			    thing.style.pointerEvents = "none";
-			    const thing_html = thing.outerHTML;
-			    thing.remove();
-
-			    const floating_wrapper = document.createElement("div");
-
-			    floating_wrapper.id = "oceloti-floating-thing";
-			    floating_wrapper.style.pointerEvents = "none";
-			    floating_wrapper.style.position = "absolute";
-			    floating_wrapper.style.left = "0";
-			    floating_wrapper.style.top = "0";
-			    floating_wrapper.style.willChange = "transform";
-			    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
-			    floating_wrapper.innerHTML = thing_html;
-
-			    const inner_thing = floating_wrapper.firstElementChild;
-			    inner_thing.style.left = "";
-			    inner_thing.style.top = "";
-
-			    room.appendChild(floating_wrapper);
-			    dragged_thing = inner_thing;
-
-			    window.addEventListener("mousemove", handle_mousemove);
-			    window.addEventListener("mouseup", handle_mouseup);
-			}
-		}
-
-		function handle_mousemove(e) {
-		    if (e.button !== 0) return;
-
-		    delta_x = last_mouse_x - e.clientX;
-		    delta_y = last_mouse_y - e.clientY;
-		    last_mouse_x = e.clientX;
-		    last_mouse_y = e.clientY;
-
-		    if (dragged_thing) {
-		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
-		    	dragging_x = dragging_x - delta_x;
-		    	dragging_y = dragging_y - delta_y;
-		    	// @STEP: Get computed transform scale
-		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
-		    }
-		}
-
-		function handle_mouseup(e) {
-		    if (e.button !== 0) return;
-			document.body.classList.toggle("is-dragging");
-		    const wrapper = dragged_thing.parentNode;
-		    wrapper.after(dragged_thing);
-
-		    dragged_thing.style.left = `${dragging_x}px`;
-		    dragged_thing.style.top = `${dragging_y}px`;
-		    place_thing(dragged_thing);
-
-		    wrapper.remove();
-		    dragged_thing = null;
-
-		    window.removeEventListener("mousemove", handle_mousemove);
-		    window.removeEventListener("mouseup", handle_mouseup);
-		}
-
-		async function place_thing(thing, first_mount = false) {
-			initialize_thing_state(thing, first_mount);
-			const thing_name = thing.getAttribute("oceloti-thing");
-			if (
-				exports.thing_initializers &&
-				exports.thing_initializers[thing_name]
-			) {
-				exports.thing_initializers[thing_name](thing);
-			}
-
-			
-			if (!first_mount) {
-				await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
-			}
-		}
-
-		async function lift_thing(thing) {
-			await next_loop();
-			localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
-		}
 
 		return exports;
 	}
@@ -1166,6 +1012,14 @@ register_oceloti_module({
 		});
 
 		return exports;
+	}
+});
+/* MODULE: modules/cursor-manager/cursor-manager.js */
+register_oceloti_module({
+	name: "cursor-manager",
+	deps: [],
+	init({  }) {
+		
 	}
 });
 /* MODULE: modules/van/van.js */
@@ -1399,71 +1253,6 @@ register_oceloti_module({
 		});
 
 		return self;
-	}
-});
-/* MODULE: modules/save-to-file/save-to-file.js */
-register_oceloti_module({
-	name: "save-to-file",
-	deps: ["van"],
-	init({ use_module, hud, next_loop }) {
-
-		const van = use_module("van");
-
-		const { dialog, button, p, div, a } = van.tags;
-
-		const hud_button = button({
-			onclick: save
-		}, "💾 Save");
-
-		// van.add(hud, hud_button);
-
-		window.addEventListener("keydown", handle_keydown);
-
-		function handle_keydown(e) {
-			if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-				e.preventDefault();
-				save();
-			}
-		}
-
-		async function save() {
-			let dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-
-			if (hud) {
-				let hud_contents = hud.innerHTML;
-				dom_content = dom_content.replace(hud_contents, "");
-			}
-
-			const dialog_el = dialog({
-				"oceloti-dialog": "save-to-file",
-				onclose: (e) => e.target.remove()
-			},
-				div({
-					style: `
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						flex-direction: column;
-						gap: 0.75rem;
-					`
-				},
-					p(`Right-click download button to "save as".`),
-					a({ class: "button" }, "⬇️ Download")
-				)
-			);
-
-			van.add(document.body, dialog_el)
-
-			await next_loop();
-			
-			const blob = new Blob([dom_content], { type: 'text/html' });
-			const url = URL.createObjectURL(blob);
-			const link_el = dialog_el.querySelector("a");
-			link_el.href = url;
-			link_el.download = `${document.title}.html`;
-			
-			dialog_el.showModal();
-		}
 	}
 });
 /* MODULE: modules/inventory/inventory.js */
@@ -1712,86 +1501,214 @@ register_oceloti_module({
 		return exports;
 	}
 });
-/* MODULE: modules/equipment/equipment.js */
+/* MODULE: modules/hand-cursor/hand-cursor.js */
 register_oceloti_module({
-	name: "equipment",
+	name: "hand-cursor",
+	deps: [ "thing-manager" ],
+	init({ room, next_loop, use_module }) {
+		let last_mouse_x = 0;
+		let last_mouse_y = 0;
+		let delta_x = 0;
+		let delta_y = 0;
+		let dragged_thing = null;
+		let dragging_x = 0;
+		let dragging_y = 0;
+
+		const { on_place, place_thing } = use_module("thing-manager");
+
+		on_place(init);
+
+		async function init(thing, first_mount = false) {
+			if (!first_mount) {
+			    await next_loop();
+		    	thing.setAttribute("oceloti-thing-state", "idle");
+			    thing.style.removeProperty("will-change");
+			    thing.style.removeProperty("pointer-events");
+			}
+
+			thing.addEventListener("mousedown", handle_mousedown);
+
+			function handle_mousedown(e) {
+				//@STEP: Check if the cursor is active.
+				return;
+
+			    if (!e.target) return;
+			    if (dragged_thing !== null) return;
+			    const target = e.target;
+			    if (
+			        thing.getAttribute("oceloti-thing-state") !== "idle" ||
+			        target.tagName === "A" ||
+			        target.tagName === "BUTTON" ||
+			        target.tagName === "INPUT" ||
+			        target.tagName === "TEXTAREA" ||
+			        (
+			        	target.tagName === "IMG" && 
+			        	target.getAttribute("draggable") !== "false"
+			        ) 
+			    ) {
+			        return;
+			    }
+
+			    if (e.button !== 0) return;
+
+			    document.body.classList.toggle("is-dragging");
+			    let x = Number(thing.style.left.replace("px", ""));
+		    	let y = Number(thing.style.top.replace("px", ""));
+		    	dragging_x = x;
+		    	dragging_y = y;
+
+			    last_mouse_x = e.clientX;
+			    last_mouse_y = e.clientY;
+
+			    thing.style.willChange = "filter, transform";
+			    thing.style.pointerEvents = "none";
+			    const thing_html = thing.outerHTML;
+			    thing.remove();
+
+			    const floating_wrapper = document.createElement("div");
+
+			    floating_wrapper.id = "oceloti-floating-thing";
+			    floating_wrapper.style.pointerEvents = "none";
+			    floating_wrapper.style.position = "absolute";
+			    floating_wrapper.style.left = "0";
+			    floating_wrapper.style.top = "0";
+			    floating_wrapper.style.willChange = "transform";
+			    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
+			    floating_wrapper.innerHTML = thing_html;
+
+			    const inner_thing = floating_wrapper.firstElementChild;
+			    inner_thing.style.left = "";
+			    inner_thing.style.top = "";
+
+			    room.appendChild(floating_wrapper);
+			    dragged_thing = inner_thing;
+
+			    window.addEventListener("mousemove", handle_mousemove);
+			    window.addEventListener("mouseup", handle_mouseup);
+			}
+		}
+
+		function handle_mousemove(e) {
+		    if (e.button !== 0) return;
+
+		    delta_x = last_mouse_x - e.clientX;
+		    delta_y = last_mouse_y - e.clientY;
+		    last_mouse_x = e.clientX;
+		    last_mouse_y = e.clientY;
+
+		    if (dragged_thing) {
+		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
+		    	dragging_x = dragging_x - delta_x;
+		    	dragging_y = dragging_y - delta_y;
+		    	// @STEP: Get computed transform scale
+		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
+		    }
+		}
+
+		function handle_mouseup(e) {
+		    if (e.button !== 0) return;
+			document.body.classList.toggle("is-dragging");
+		    const wrapper = dragged_thing.parentNode;
+		    wrapper.after(dragged_thing);
+
+		    dragged_thing.style.left = `${dragging_x}px`;
+		    dragged_thing.style.top = `${dragging_y}px`;
+		    place_thing(dragged_thing);
+
+		    wrapper.remove();
+		    dragged_thing = null;
+
+		    window.removeEventListener("mousemove", handle_mousemove);
+		    window.removeEventListener("mouseup", handle_mouseup);
+		}
+	}
+});
+/* MODULE: modules/save-to-file/save-to-file.js */
+register_oceloti_module({
+	name: "save-to-file",
 	deps: ["van"],
-	init({ use_module, hud }) {
+	init({ use_module, hud, room, room_name, next_loop }) {
+
 		const van = use_module("van");
 
-		const { div, button, img } = van.tags;
+		const { dialog, button, p, div, a } = van.tags;
 
-		const slots = [
-			"🔍","","🤚","✏️","🪄"," ", " ", " "
-		];
+		const hud_button = button({
+			onclick: save
+		}, "💾 Save");
 
-		const show_equipment = van.state(false);
-
-		const equipment_grid = div({
-			class: "equipment-grid",
-			style: () => `
-				display: ${show_equipment.val ? "grid" : "none"}
+		const unsaved_msg = div({
+			style: `
+				display: none;
+				position: fixed;
+				top: 0;
+				right: 0;
+				color: white;
+				background: black;
+				padding: 4px 6px;
 			`
 		},
-			slots.map(slot => div({
-				"oceloti-menu": "equipment-slot",
-				class: "equipment-slot",
-				onmousedown: (e) => {
-					if (e.button !== 2) return;
-				},
-			},
-				div({ class: "equipment-item emoji" }, slot)
-			))
+			"unsaved changes"
 		);
 
-		const equipment_launcher = div({
-			style: `
-				display: flex;
-				align-items: center;
-				gap: 6px;
-				position: fixed;
-				left: 12px;
-				bottom: 12px;
-			`,
-		},
-			div({
-				style: "position: relative;"
-			},
-				button({
-					onclick: (e) => {
-						
-					}
-				},
-					"🔌 equipment (e)"
-				),
-				equipment_grid
-			),
-			div({
-				style: "position: relative;"
-			},
-				button({
-					onclick: (e) => {
-						e.target.classList.toggle("selected");
-						show_equipment.val = !show_equipment.val;
-					}
-				},
-					"🖱️ cursors (c)"
-				),
-			),
-			div({
-				style: "position: relative;"
-			},
-				button({
-					onclick: (e) => {
-					}
-				},
-					"📔 item handbook (h)"
-				),
-			)
-		);
+		van.add(hud, unsaved_msg);
 
-		van.add(hud, equipment_launcher);
-	}	
+		window.addEventListener("load", () => {
+			const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
+			const room_initial_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`);
+			if (room_snapshot !== room_initial_snapshot) {
+				unsaved_msg.style.display = "block";
+			}
+		});
+
+		window.addEventListener("keydown", handle_keydown);
+
+		function handle_keydown(e) {
+			if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+				e.preventDefault();
+				save();
+			}
+		}
+
+		async function save() {
+			let dom_content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+			if (hud) {
+				let hud_contents = hud.innerHTML;
+				dom_content = dom_content.replace(hud_contents, "");
+			}
+
+			const dialog_el = dialog({
+				"oceloti-dialog": "save-to-file",
+				onclose: (e) => e.target.remove()
+			},
+				div({
+					style: `
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						flex-direction: column;
+						gap: 0.75rem;
+					`
+				},
+					p(`Right-click download button to "save as".`),
+					a({ class: "button" }, "⬇️ Download")
+				)
+			);
+
+			van.add(document.body, dialog_el)
+
+			await next_loop();
+			
+			const blob = new Blob([dom_content], { type: 'text/html' });
+			const url = URL.createObjectURL(blob);
+			const link_el = dialog_el.querySelector("a");
+			link_el.href = url;
+			link_el.download = `${document.title}.html`;
+			
+			dialog_el.showModal();
+		}
+	}
 });
 /* MODULE: modules/local-bag/local-bag.js */
 register_oceloti_module({
@@ -2001,73 +1918,6 @@ register_oceloti_module({
 	},
 });
 
-/* MODULE: modules/arena-api/arena-api.js */
-register_oceloti_module({
-	name: "arena-api",
-	deps: [],
-	init() {
-		async function sign_in(token) {
-			if (!token) {
-				console.error("Can't sign in without token.");
-				return {
-					status: "error",
-					message: "Can't sign in without token."
-				};
-			}
-
-			try {
-				const user = await fetch_arena({
-					endpoint: "/me",
-					token
-				});
-				localStorage.setItem("ARENA_TOKEN", token);
-				return {
-					status: "success",
-					message: `Hello ${user.full_name}.`,
-					user
-				}
-			} catch(e) {
-				console.error("Failed to sign in with token:", token);
-				return {
-					status: "error",
-					message: "Bad token. Use a different token or generate again."
-				};
-			}
-		}
-
-		async function query({
-			endpoint,
-			token,
-			params = "",
-			body = {}
-		}) {
-			const local_token = localStorage.getItem("ARENA_TOKEN");
-
-			const BASE_URL = 'https://api.are.na/v2';
-
-			const headers = { "Content-Type": "application/json" }
-
-			if (token || local_token) {
-				headers["Authorization"] = `Bearer ${token || local_token}`
-			}
-
-			const response = await fetch(`${BASE_URL}${endpoint}${params}`, {
-				method: "GET",
-				headers
-			});
-
-			if (!response.ok)
-				throw new Error('Network response was not ok');
-
-			return response.json();
-		}
-
-		return {
-			sign_in,
-			query
-		};
-	}
-});
 /* MODULE: modules/notebook-paper/notebook-paper.js */
 register_oceloti_module({
 	name: "notebook-paper",
@@ -2180,127 +2030,6 @@ register_oceloti_module({
 				}
 			}
 		}
-	}
-});
-/* MODULE: modules/arena-cards/arena-cards.js */
-register_oceloti_module({
-	name: "arena-cards",
-	deps: ["van", "arena-api"],
-	init({ use_module, room, hud }) {
-		const van = use_module("van");
-		const { sign_in } = use_module("arena-api");
-
-		const { dialog, form, fieldset, input, p, div, a, button } = van.tags;
-
-		const dialog_el = dialog({
-			"oceloti-dialog": "arena-token",
-			onclose: (e) => e.target.remove(),
-			style: `
-				display: flex;
-				flex-direction: column;
-				gap: 1rem;
-			`,
-		},
-			form({
-				method: "dialog",
-				onsubmit: async (e) => {
-					e.preventDefault();
-					const form = new FormData(e.target);
-					const fields = {};
-					for (const [key, value] of form.entries()) {
-						fields[key] = value;
-					}
-					
-					const res = await sign_in(fields.token);
-
-					const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
-
-					messages_el.innerHTML = "";
-					
-					if (res.status === "error") {
-						van.add(messages_el, div({
-							"class": "nugget nugget-error"
-						}, 
-							p(res.message)
-						));
-						return;
-					}
-
-					if (res.status === "success") {
-						van.add(messages_el, div({ 
-							"class": "nugget nugget-success"
-						},
-							p(res.message),
-							button({ onclick: () => dialog_el.close()}, 
-								"Close"
-							)
-						));
-					}
-				}
-			},
-				p({
-					style: "margin-bottom: 1rem;",
-				},
-					"Sign In to use Are.na blocks."
-				),
-				fieldset({
-					style: `
-						display: flex;
-						gap: 0.5rem;
-					`
-				},
-					input({
-						"name": "token",
-						"type": "text",
-						"required": "true",
-						"style": "width: 100%;",
-						"autocomplete": "off",
-						// @TODO: Fix this absurd bug... wtf.
-						onclick: (e) => e.target.focus()
-					}),
-					button({
-						style: `
-							width: fit-content;
-							white-space: nowrap;
-						`,
-						"type": "submit"
-					},
-						"add token"
-					)
-				)
-			),
-			div({
-				"oceloti-dialog-messages": ""
-			},
-				div({
-					class: "nugget"
-				},
-					p(
-						"To get your token visit: ",
-						a({
-							style: "margin-left: 8px;",
-							target: "_blank",
-							href: "https://arena-token-gen.vercel.app/"
-						},
-							"suna.garden/get-token"
-						)
-					),
-				)
-			)
-		);
-
-		van.add(hud, button({
-			style: `
-				background: black;
-				color: white;
-			`,
-			onclick: () => {
-				van.add(document.body, dialog_el);
-				dialog_el.showModal();
-			}
-		},
-			"** are.na"
-		));
 	}
 });
 /* MODULE: modules/cell-editor/cell-editor.js */
@@ -2481,6 +2210,11 @@ register_oceloti_module({
 						"ref": "add-layer-button"
 					},
 						"Add layer pair"
+					),
+					button({
+						"ref": "run-button"
+					},
+						"Run"
 					)
 				)
 			);

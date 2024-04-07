@@ -1,5 +1,5 @@
 [oceloti-thing-state="idle"] {
-	cursor: var(--assets-cursors-grab-svg) 10 10, grab;
+/*	cursor: var(--assets-cursors-grab-svg) 10 10, grab;*/
 }
 
 .is-dragging * {

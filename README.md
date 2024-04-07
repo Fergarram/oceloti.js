@@ -31,6 +31,5 @@ When running the `build.js` script, it will generate the built `room` and replac
  
 ## Not urgent:
 - [ ] Implement paste handler
-- [ ] Movable shortcuts
 - [ ] Compiler should only build modified blueprints.
 - [ ] Add compiler option: make backups

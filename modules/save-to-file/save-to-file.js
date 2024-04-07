@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "save-to-file",
 	deps: ["van"],
-	init({ use_module, hud, next_loop }) {
+	init({ use_module, hud, room, room_name, next_loop }) {
 
 		const van = use_module("van");
 
@@ -11,7 +11,29 @@ register_oceloti_module({
 			onclick: save
 		}, "💾 Save");
 
-		// van.add(hud, hud_button);
+		const unsaved_msg = div({
+			style: `
+				display: none;
+				position: fixed;
+				top: 0;
+				right: 0;
+				color: white;
+				background: black;
+				padding: 4px 6px;
+			`
+		},
+			"unsaved changes"
+		);
+
+		van.add(hud, unsaved_msg);
+
+		window.addEventListener("load", () => {
+			const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
+			const room_initial_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`);
+			if (room_snapshot !== room_initial_snapshot) {
+				unsaved_msg.style.display = "block";
+			}
+		});
 
 		window.addEventListener("keydown", handle_keydown);
 

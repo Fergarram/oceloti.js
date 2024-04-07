@@ -175,6 +175,11 @@ register_oceloti_module({
 						"ref": "add-layer-button"
 					},
 						"Add layer pair"
+					),
+					button({
+						"ref": "run-button"
+					},
+						"Run"
 					)
 				)
 			);

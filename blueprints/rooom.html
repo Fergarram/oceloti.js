@@ -12,12 +12,12 @@
 	<style oceloti-modules="
 		css-reset
 		oceloti
-		standard-controls
-		thing-manager
-		context-menu
-		equipment
-		local-bag
 		paper-theme
+		standard-controls
+		context-menu
+		cursor-manager
+		hand-cursor
+		local-bag
 		notebook-paper
 		cell-editor
 	">/* STYLE MODULES */</style>
@@ -85,7 +85,8 @@
 	</style>
 </head>
 <body>
-	<div id="hud"></div>
+	<div id="hud">
+	</div>
 	<main
 		oceloti-room="notes"
 		style="
@@ -116,15 +117,14 @@
 	standard-controls
 	thing-manager
 	dnd-manager
+	cursor-manager
 	van
 	context-menu
-	save-to-file
 	inventory
-	equipment
+	hand-cursor
+	save-to-file
 	local-bag
-	arena-api
 	notebook-paper
-	arena-cards
 	cell-editor
 ">/* SCRIPT MODULES */</script>
 </html>

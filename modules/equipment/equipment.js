@@ -7,7 +7,7 @@ register_oceloti_module({
 		const { div, button, img } = van.tags;
 
 		const slots = [
-			"🔍","","🤚","✏️","🪄"," ", " ", " "
+			"🔍","↖️","🤚","✏️","🪄"," ", " ", " "
 		];
 
 		const show_equipment = van.state(false);
