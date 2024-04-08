@@ -60,7 +60,7 @@ register_oceloti_module({
 			        e.preventDefault();
 			    }
 
-			    if (e.button !== 0 && e.button !== 2) return;
+			    if (e.button !== 0) return;
 
 			    document.body.classList.toggle("is-dragging");
 			    let x = Number(thing.style.left.replace("px", ""));
@@ -71,28 +71,33 @@ register_oceloti_module({
 			    last_mouse_x = e.clientX;
 			    last_mouse_y = e.clientY;
 
-			    thing.style.willChange = "filter, transform";
-			    thing.style.pointerEvents = "none";
-			    const thing_html = thing.outerHTML;
-			    thing.remove();
+			    thing.style.willChange = "filter, transform, left, top";
 
-			    const floating_wrapper = document.createElement("div");
+			    if (!e.shiftKey) {
+			    	thing.style.pointerEvents = "none";
+				    const thing_html = thing.outerHTML;
+				    thing.remove();
 
-			    floating_wrapper.id = "oceloti-floating-thing";
-			    floating_wrapper.style.pointerEvents = "none";
-			    floating_wrapper.style.position = "absolute";
-			    floating_wrapper.style.left = "0";
-			    floating_wrapper.style.top = "0";
-			    floating_wrapper.style.willChange = "transform";
-			    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
-			    floating_wrapper.innerHTML = thing_html;
+				    const floating_wrapper = document.createElement("div");
 
-			    const inner_thing = floating_wrapper.firstElementChild;
-			    inner_thing.style.left = "";
-			    inner_thing.style.top = "";
+				    floating_wrapper.id = "oceloti-floating-thing";
+				    floating_wrapper.style.pointerEvents = "none";
+				    floating_wrapper.style.position = "absolute";
+				    floating_wrapper.style.left = "0";
+				    floating_wrapper.style.top = "0";
+				    floating_wrapper.style.willChange = "transform";
+				    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
+				    floating_wrapper.innerHTML = thing_html;
 
-			    room.appendChild(floating_wrapper);
-			    dragged_thing = inner_thing;
+				    const inner_thing = floating_wrapper.firstElementChild;
+				    inner_thing.style.left = "";
+				    inner_thing.style.top = "";
+
+				    room.appendChild(floating_wrapper);
+				    dragged_thing = inner_thing;
+			    } else {
+			    	dragged_thing = thing;
+			    }
 
 			    window.addEventListener("mousemove", handle_mousemove);
 			    window.addEventListener("mouseup", handle_mouseup);
@@ -100,33 +105,43 @@ register_oceloti_module({
 		});
 
 		function handle_mousemove(e) {
-		    if (e.button !== 0 && e.button !== 2) return;
+		    if (e.button !== 0) return;
 
 		    delta_x = last_mouse_x - e.clientX;
 		    delta_y = last_mouse_y - e.clientY;
 		    last_mouse_x = e.clientX;
 		    last_mouse_y = e.clientY;
 
-		    if (dragged_thing) {
+		    dragging_x = dragging_x - delta_x;
+	    	dragging_y = dragging_y - delta_y;
+	    	// @STEP: Get computed transform scale
+
+		    if (dragged_thing && !e.shiftKey) {
 		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
-		    	dragging_x = dragging_x - delta_x;
-		    	dragging_y = dragging_y - delta_y;
-		    	// @STEP: Get computed transform scale
 		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
+		    } else if (dragged_thing && e.shiftKey) {
+		    	dragged_thing.style.left = `${dragging_x}px`;
+		    	dragged_thing.style.top = `${dragging_y}px`;
 		    }
 		}
 
 		function handle_mouseup(e) {
-		    if (e.button !== 0 && e.button !== 2) return;
+		    if (e.button !== 0) return;
 			document.body.classList.toggle("is-dragging");
-		    const wrapper = dragged_thing.parentNode;
-		    wrapper.after(dragged_thing);
 
-		    dragged_thing.style.left = `${dragging_x}px`;
-		    dragged_thing.style.top = `${dragging_y}px`;
-		    place_thing(dragged_thing);
+			if (!e.shiftKey) {
+			    const wrapper = dragged_thing.parentNode;
+			    wrapper.after(dragged_thing);
 
-		    wrapper.remove();
+			    dragged_thing.style.left = `${dragging_x}px`;
+			    dragged_thing.style.top = `${dragging_y}px`;
+			    place_thing(dragged_thing);
+
+			    wrapper.remove();
+			} else {
+			    dragged_thing.style.removeProperty("will-change");
+			}
+
 		    dragged_thing = null;
 
 		    window.removeEventListener("mousemove", handle_mousemove);

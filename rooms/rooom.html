@@ -645,8 +645,8 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 	standard-controls
 	thing-manager
 	dnd-manager
-	cursor-manager
 	van
+	cursor-manager
 	context-menu
 	inventory
 	hand-cursor
@@ -791,7 +791,13 @@ register_oceloti_module({
 				e.preventDefault();
 				return;
 			}
-			if (e.button === 1) {
+			if (
+				e.button === 1 ||
+				(
+					e.button === 2 &&
+					document.body.getAttribute("oceloti-cursor") === "hand"
+				)
+			) {
 				e.preventDefault();
 				is_panning = true;
 				document.body.classList.toggle("is-panning");
@@ -801,7 +807,13 @@ register_oceloti_module({
 		}
 
 		function handle_mouseup(e) {
-			if (e.button === 1) {
+			if (
+				e.button === 1 ||
+				(
+					e.button === 2 &&
+					document.body.getAttribute("oceloti-cursor") === "hand"
+				)
+			) {
 				is_panning = false;
 				document.body.classList.toggle("is-panning");
 			}
@@ -1015,65 +1027,6 @@ register_oceloti_module({
 		return exports;
 	}
 });
-/* MODULE: modules/cursor-manager/cursor-manager.js */
-register_oceloti_module({
-	name: "cursor-manager",
-	deps: [],
-	init({  }) {
-		const exports = {
-			cursors: {},
-			active_cursor: "",
-			register_cursor({ slug, icon, name, description }) {
-				exports.cursors[slug] = {
-					name,
-					icon,
-					slug,
-					description,
-				};
-			},
-			set_active_cursor(slug) {
-				if (!exports.cursors[slug]) {
-					console.error("Trying to activate a non-existent cursor:", slug);
-					return;
-				}
-				exports.active_cursor = slug;
-				document.body.setAttribute("oceloti-cursor", slug);
-			},
-			is_cursor_active(slug) {
-				return exports.active_cursor === slug;
-			},
-		};
-
-		// Default pointer cursor
-		exports.register_cursor({
-			name: "Pointer Cursor",
-			slug: "pointer",
-			icon: "↖️",
-			description: "Pointer cursor that allows to interact or inspect things."
-		});
-		exports.set_active_cursor("pointer");
-
-		// UI
-		window.addEventListener("keydown", handle_keydown);
-		function handle_keydown(e) {
-			// @TODO: This should be handled by a `keyboard-shortcuts` module.
-			const active_element = document.activeElement;
-			const is_input_focused = active_element.tagName === 'INPUT' || active_element.tagName === 'TEXTAREA';
-			const is_editable_focused = active_element.hasAttribute('contenteditable');
-
-			if (is_input_focused || is_editable_focused) {
-				return;
-			}
-
-			if (e.key === "c") {
-				// @LAST: Add picker wheel
-				console.log("open");
-			}
-		}
-
-		return exports;
-	}
-});
 /* MODULE: modules/van/van.js */
 register_oceloti_module({
 	name: "van",
@@ -1199,6 +1152,84 @@ register_oceloti_module({
 		};
 		var hydrate = (dom, f) => update(dom, bind(f, dom));
 		return { add, _, tags: tagsNS(), tagsNS, state, val, oldVal, derive, hydrate };
+	}
+});
+/* MODULE: modules/cursor-manager/cursor-manager.js */
+register_oceloti_module({
+	name: "cursor-manager",
+	deps: ["van"],
+	init({ use_module, hud }) {
+		const van = use_module("van");
+
+		const { div } = van.tags;
+		const current_cursor = van.state("");
+
+		const exports = {
+			cursors: {},
+			active_cursor: "",
+			register_cursor({ slug, icon, name, description }) {
+				exports.cursors[slug] = {
+					name,
+					icon,
+					slug,
+					description,
+				};
+			},
+			set_active_cursor(slug) {
+				if (!exports.cursors[slug]) {
+					console.error("Trying to activate a non-existent cursor:", slug);
+					return;
+				}
+				exports.active_cursor = slug;
+				current_cursor.val = exports.cursors[slug].icon;
+				document.body.setAttribute("oceloti-cursor", slug);
+			},
+			is_cursor_active(slug) {
+				return exports.active_cursor === slug;
+			},
+		};
+
+		// Default pointer cursor
+		exports.register_cursor({
+			name: "Pointer Cursor",
+			slug: "pointer",
+			icon: "↖️",
+			description: "Pointer cursor that allows to interact or inspect things."
+		});
+		exports.set_active_cursor("pointer");
+
+		window.addEventListener("keydown", handle_keydown);
+		function handle_keydown(e) {
+			// @TODO: This should be handled by a `keyboard-shortcuts` module.
+			const active_element = document.activeElement;
+			const is_input_focused = active_element.tagName === 'INPUT' || active_element.tagName === 'TEXTAREA';
+			const is_editable_focused = active_element.hasAttribute('contenteditable');
+
+			if (is_input_focused || is_editable_focused) {
+				if (e.key === "Escape") {
+					active_element.blur();
+					e.preventDefault();
+				} else {
+					return;
+				}
+			}
+
+			if (e.key === "Escape") {
+				if (exports.active_cursor !== "pointer")
+					exports.set_active_cursor("pointer");
+				else if (exports.active_cursor === "pointer")
+					exports.set_active_cursor("hand");
+			}
+		}
+
+		const cursor_indicator = div({
+			style: "position: fixed; bottom: 12px; left: 12px; font-size: 24px; pointer-events: none;"
+		},
+			current_cursor
+		);
+		van.add(hud, cursor_indicator)
+
+		return exports;
 	}
 });
 /* MODULE: modules/context-menu/context-menu.js */
@@ -1623,7 +1654,7 @@ register_oceloti_module({
 			        e.preventDefault();
 			    }
 
-			    if (e.button !== 0 && e.button !== 2) return;
+			    if (e.button !== 0) return;
 
 			    document.body.classList.toggle("is-dragging");
 			    let x = Number(thing.style.left.replace("px", ""));
@@ -1634,28 +1665,33 @@ register_oceloti_module({
 			    last_mouse_x = e.clientX;
 			    last_mouse_y = e.clientY;
 
-			    thing.style.willChange = "filter, transform";
-			    thing.style.pointerEvents = "none";
-			    const thing_html = thing.outerHTML;
-			    thing.remove();
+			    thing.style.willChange = "filter, transform, left, top";
 
-			    const floating_wrapper = document.createElement("div");
+			    if (!e.shiftKey) {
+			    	thing.style.pointerEvents = "none";
+				    const thing_html = thing.outerHTML;
+				    thing.remove();
 
-			    floating_wrapper.id = "oceloti-floating-thing";
-			    floating_wrapper.style.pointerEvents = "none";
-			    floating_wrapper.style.position = "absolute";
-			    floating_wrapper.style.left = "0";
-			    floating_wrapper.style.top = "0";
-			    floating_wrapper.style.willChange = "transform";
-			    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
-			    floating_wrapper.innerHTML = thing_html;
+				    const floating_wrapper = document.createElement("div");
 
-			    const inner_thing = floating_wrapper.firstElementChild;
-			    inner_thing.style.left = "";
-			    inner_thing.style.top = "";
+				    floating_wrapper.id = "oceloti-floating-thing";
+				    floating_wrapper.style.pointerEvents = "none";
+				    floating_wrapper.style.position = "absolute";
+				    floating_wrapper.style.left = "0";
+				    floating_wrapper.style.top = "0";
+				    floating_wrapper.style.willChange = "transform";
+				    floating_wrapper.style.transform = `translate(${x}px, ${y}px) translateZ(0)`;
+				    floating_wrapper.innerHTML = thing_html;
 
-			    room.appendChild(floating_wrapper);
-			    dragged_thing = inner_thing;
+				    const inner_thing = floating_wrapper.firstElementChild;
+				    inner_thing.style.left = "";
+				    inner_thing.style.top = "";
+
+				    room.appendChild(floating_wrapper);
+				    dragged_thing = inner_thing;
+			    } else {
+			    	dragged_thing = thing;
+			    }
 
 			    window.addEventListener("mousemove", handle_mousemove);
 			    window.addEventListener("mouseup", handle_mouseup);
@@ -1663,33 +1699,43 @@ register_oceloti_module({
 		});
 
 		function handle_mousemove(e) {
-		    if (e.button !== 0 && e.button !== 2) return;
+		    if (e.button !== 0) return;
 
 		    delta_x = last_mouse_x - e.clientX;
 		    delta_y = last_mouse_y - e.clientY;
 		    last_mouse_x = e.clientX;
 		    last_mouse_y = e.clientY;
 
-		    if (dragged_thing) {
+		    dragging_x = dragging_x - delta_x;
+	    	dragging_y = dragging_y - delta_y;
+	    	// @STEP: Get computed transform scale
+
+		    if (dragged_thing && !e.shiftKey) {
 		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
-		    	dragging_x = dragging_x - delta_x;
-		    	dragging_y = dragging_y - delta_y;
-		    	// @STEP: Get computed transform scale
 		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
+		    } else if (dragged_thing && e.shiftKey) {
+		    	dragged_thing.style.left = `${dragging_x}px`;
+		    	dragged_thing.style.top = `${dragging_y}px`;
 		    }
 		}
 
 		function handle_mouseup(e) {
-		    if (e.button !== 0 && e.button !== 2) return;
+		    if (e.button !== 0) return;
 			document.body.classList.toggle("is-dragging");
-		    const wrapper = dragged_thing.parentNode;
-		    wrapper.after(dragged_thing);
 
-		    dragged_thing.style.left = `${dragging_x}px`;
-		    dragged_thing.style.top = `${dragging_y}px`;
-		    place_thing(dragged_thing);
+			if (!e.shiftKey) {
+			    const wrapper = dragged_thing.parentNode;
+			    wrapper.after(dragged_thing);
 
-		    wrapper.remove();
+			    dragged_thing.style.left = `${dragging_x}px`;
+			    dragged_thing.style.top = `${dragging_y}px`;
+			    place_thing(dragged_thing);
+
+			    wrapper.remove();
+			} else {
+			    dragged_thing.style.removeProperty("will-change");
+			}
+
 		    dragged_thing = null;
 
 		    window.removeEventListener("mousemove", handle_mousemove);

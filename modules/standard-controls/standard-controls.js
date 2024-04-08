@@ -55,7 +55,13 @@ register_oceloti_module({
 				e.preventDefault();
 				return;
 			}
-			if (e.button === 1) {
+			if (
+				e.button === 1 ||
+				(
+					e.button === 2 &&
+					document.body.getAttribute("oceloti-cursor") === "hand"
+				)
+			) {
 				e.preventDefault();
 				is_panning = true;
 				document.body.classList.toggle("is-panning");
@@ -65,7 +71,13 @@ register_oceloti_module({
 		}
 
 		function handle_mouseup(e) {
-			if (e.button === 1) {
+			if (
+				e.button === 1 ||
+				(
+					e.button === 2 &&
+					document.body.getAttribute("oceloti-cursor") === "hand"
+				)
+			) {
 				is_panning = false;
 				document.body.classList.toggle("is-panning");
 			}

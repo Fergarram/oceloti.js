@@ -1,7 +1,12 @@
 register_oceloti_module({
 	name: "cursor-manager",
-	deps: [],
-	init({  }) {
+	deps: ["van"],
+	init({ use_module, hud }) {
+		const van = use_module("van");
+
+		const { div } = van.tags;
+		const current_cursor = van.state("");
+
 		const exports = {
 			cursors: {},
 			active_cursor: "",
@@ -19,6 +24,7 @@ register_oceloti_module({
 					return;
 				}
 				exports.active_cursor = slug;
+				current_cursor.val = exports.cursors[slug].icon;
 				document.body.setAttribute("oceloti-cursor", slug);
 			},
 			is_cursor_active(slug) {
@@ -35,7 +41,6 @@ register_oceloti_module({
 		});
 		exports.set_active_cursor("pointer");
 
-		// UI
 		window.addEventListener("keydown", handle_keydown);
 		function handle_keydown(e) {
 			// @TODO: This should be handled by a `keyboard-shortcuts` module.
@@ -44,14 +49,28 @@ register_oceloti_module({
 			const is_editable_focused = active_element.hasAttribute('contenteditable');
 
 			if (is_input_focused || is_editable_focused) {
-				return;
+				if (e.key === "Escape") {
+					active_element.blur();
+					e.preventDefault();
+				} else {
+					return;
+				}
 			}
 
-			if (e.key === "c") {
-				// @LAST: Add picker wheel
-				console.log("open");
+			if (e.key === "Escape") {
+				if (exports.active_cursor !== "pointer")
+					exports.set_active_cursor("pointer");
+				else if (exports.active_cursor === "pointer")
+					exports.set_active_cursor("hand");
 			}
 		}
+
+		const cursor_indicator = div({
+			style: "position: fixed; bottom: 12px; left: 12px; font-size: 24px; pointer-events: none;"
+		},
+			current_cursor
+		);
+		van.add(hud, cursor_indicator)
 
 		return exports;
 	}
