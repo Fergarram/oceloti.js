@@ -52,6 +52,7 @@ register_oceloti_module({
 				if (e.key === "Escape") {
 					active_element.blur();
 					e.preventDefault();
+					return;
 				} else {
 					return;
 				}
