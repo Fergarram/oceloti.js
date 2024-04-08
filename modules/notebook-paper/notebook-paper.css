@@ -44,7 +44,8 @@
 	outline: none;
 }
 
-[oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
+/*[oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
 	user-select: none;
 -webkit-user-select: none;
 }
+*/

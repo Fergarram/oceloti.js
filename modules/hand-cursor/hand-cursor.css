@@ -1,9 +1,10 @@
-[oceloti-thing-state="idle"] {
-/*	cursor: var(--assets-cursors-grab-svg) 10 10, grab;*/
+body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"],
+body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
+	cursor: var(--assets-cursors-grab-svg) 10 10, grab !important;
 }
 
 .is-dragging * {
+	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing !important;
 	user-select: none;
 -webkit-user-select: none;
-	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing;
 }

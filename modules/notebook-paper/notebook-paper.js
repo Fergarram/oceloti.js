@@ -99,12 +99,10 @@ register_oceloti_module({
 				if (state.val === "read") {
 					state.val = "write";
 					thing.setAttribute("oceloti-inner-state", "write");
-					thing.setAttribute("oceloti-thing-state", "active");
 					content.setAttribute("contenteditable", "");
 				} else {
 					state.val = "read"
 					thing.setAttribute("oceloti-inner-state", "read");
-					thing.setAttribute("oceloti-thing-state", "idle");
 					content.removeAttribute("contenteditable");
 				}
 			}

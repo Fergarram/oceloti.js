@@ -304,14 +304,15 @@ button .emoji {
 /* MODULE: modules/cursor-manager/cursor-manager.css */
 
 /* MODULE: modules/hand-cursor/hand-cursor.css */
-[oceloti-thing-state="idle"] {
-/*	cursor: var(--assets-cursors-grab-svg) 10 10, grab;*/
+body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"],
+body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
+	cursor: var(--assets-cursors-grab-svg) 10 10, grab !important;
 }
 
 .is-dragging * {
+	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing !important;
 	user-select: none;
 -webkit-user-select: none;
-	cursor: var(--assets-cursors-grabbed-svg) 10 10, grabbing;
 }
 /* MODULE: modules/local-bag/local-bag.css */
 @keyframes slide_top {
@@ -415,11 +416,11 @@ button .emoji {
 	outline: none;
 }
 
-[oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
+/*[oceloti-thing="notebook-paper"][oceloti-inner-state="read"] [oceloti-ref="content"] {
 	user-select: none;
 -webkit-user-select: none;
 }
-
+*/
 /* MODULE: modules/cell-editor/cell-editor.css */
 [oceloti-thing="cell-editor"] {
 	display: flex;
@@ -1019,7 +1020,58 @@ register_oceloti_module({
 	name: "cursor-manager",
 	deps: [],
 	init({  }) {
-		
+		const exports = {
+			cursors: {},
+			active_cursor: "",
+			register_cursor({ slug, icon, name, description }) {
+				exports.cursors[slug] = {
+					name,
+					icon,
+					slug,
+					description,
+				};
+			},
+			set_active_cursor(slug) {
+				if (!exports.cursors[slug]) {
+					console.error("Trying to activate a non-existent cursor:", slug);
+					return;
+				}
+				exports.active_cursor = slug;
+				document.body.setAttribute("oceloti-cursor", slug);
+			},
+			is_cursor_active(slug) {
+				return exports.active_cursor === slug;
+			},
+		};
+
+		// Default pointer cursor
+		exports.register_cursor({
+			name: "Pointer Cursor",
+			slug: "pointer",
+			icon: "↖️",
+			description: "Pointer cursor that allows to interact or inspect things."
+		});
+		exports.set_active_cursor("pointer");
+
+		// UI
+		window.addEventListener("keydown", handle_keydown);
+		function handle_keydown(e) {
+			// @TODO: This should be handled by a `keyboard-shortcuts` module.
+			const active_element = document.activeElement;
+			const is_input_focused = active_element.tagName === 'INPUT' || active_element.tagName === 'TEXTAREA';
+			const is_editable_focused = active_element.hasAttribute('contenteditable');
+
+			if (is_input_focused || is_editable_focused) {
+				return;
+			}
+
+			if (e.key === "c") {
+				// @LAST: Add picker wheel
+				console.log("open");
+			}
+		}
+
+		return exports;
 	}
 });
 /* MODULE: modules/van/van.js */
@@ -1154,17 +1206,26 @@ register_oceloti_module({
 	name: "context-menu",
 	deps: ["van"],
 	init({ use_module, hud, are_dialogs_open }) {
-		const self = {
+		const { is_cursor_active } = use_module("cursor-manager");
+		const van = use_module("van");
+
+		const exports = {
 			menu: {}
 		};
 
-		self.add_menu = function(name, items) {
-			self.menu[name] = items;
+		exports.add_menu = function(name, items) {
+			exports.menu[name] = items;
 		}
 
-		const van = use_module("van");
-
 		document.addEventListener("contextmenu", function(e) {
+		    let menu = document.getElementById("oceloti-context-menu");
+		    
+			if (!is_cursor_active("pointer") && e.target.closest('[oceloti-room]')) {
+				if (menu) close_menu();
+				exports.menu = {};
+				return;
+			}
+
 			const selection = window.getSelection();
 			if (
 		        are_dialogs_open() ||
@@ -1183,8 +1244,6 @@ register_oceloti_module({
 
 		    e.preventDefault();
 
-		    let menu = document.getElementById("oceloti-context-menu");
-
 		    function close_menu(clean = false) {
 				if (menu) menu.remove();
 				let el = e.target;
@@ -1196,7 +1255,7 @@ register_oceloti_module({
 				}
 
 				if (clean || !has_menu) {
-					self.menu = {};
+					exports.menu = {};
 				}
 			}
 
@@ -1218,10 +1277,10 @@ register_oceloti_module({
 		    		top: ${e.clientY}px;
 		    	`
 		    },
-		    	Object.keys(self.menu).length > 0
-		    		? Object.keys(self.menu).map((group_name) => [
+		    	Object.keys(exports.menu).length > 0
+		    		? Object.keys(exports.menu).map((group_name) => [
 		    			div({ class: "separator" }),
-		    			...self.menu[group_name].map(item => item)
+		    			...exports.menu[group_name].map(item => item)
 			    	])
 			    	: button({ "disabled": "true" }, "Nothing to do")
 		    );
@@ -1246,13 +1305,13 @@ register_oceloti_module({
 			    }
 		    	if (menu) close_menu();
 		    	// @TODO: To fix the accumulating menu bug I need to check for the menu originator/trigger — if it's a different one then I just clear the menu.
-		    	self.menu = {};
+		    	exports.menu = {};
 		    };
 
 		    window.addEventListener("mousedown", mousedown_handler);
 		});
 
-		return self;
+		return exports;
 	}
 });
 /* MODULE: modules/inventory/inventory.js */
@@ -1504,7 +1563,7 @@ register_oceloti_module({
 /* MODULE: modules/hand-cursor/hand-cursor.js */
 register_oceloti_module({
 	name: "hand-cursor",
-	deps: [ "thing-manager" ],
+	deps: [ "thing-manager", "cursor-manager" ],
 	init({ room, next_loop, use_module }) {
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
@@ -1514,11 +1573,17 @@ register_oceloti_module({
 		let dragging_x = 0;
 		let dragging_y = 0;
 
+		const { register_cursor, set_active_cursor, is_cursor_active } = use_module("cursor-manager");
 		const { on_place, place_thing } = use_module("thing-manager");
 
-		on_place(init);
+		register_cursor({
+			name: "Hand Cursor",
+			slug: "hand",
+			icon: "🤚",
+			description: "Magic hand that allows you to move things around."
+		});
 
-		async function init(thing, first_mount = false) {
+		on_place(async (thing, first_mount = false) => {
 			if (!first_mount) {
 			    await next_loop();
 		    	thing.setAttribute("oceloti-thing-state", "idle");
@@ -1527,29 +1592,38 @@ register_oceloti_module({
 			}
 
 			thing.addEventListener("mousedown", handle_mousedown);
+			thing.addEventListener("contextmenu", handle_contextmenu);
+			room.addEventListener("contextmenu", handle_contextmenu);
+
+			function handle_contextmenu(e) {
+				if (!is_cursor_active("hand")) return;
+				e.preventDefault();
+			}
 
 			function handle_mousedown(e) {
-				//@STEP: Check if the cursor is active.
-				return;
-
+				if (!is_cursor_active("hand")) return;
 			    if (!e.target) return;
 			    if (dragged_thing !== null) return;
 			    const target = e.target;
+			    const is_contenteditable = target.isContentEditable || target.closest('[contenteditable="true"]');
 			    if (
 			        thing.getAttribute("oceloti-thing-state") !== "idle" ||
 			        target.tagName === "A" ||
 			        target.tagName === "BUTTON" ||
 			        target.tagName === "INPUT" ||
 			        target.tagName === "TEXTAREA" ||
+			        is_contenteditable ||
 			        (
 			        	target.tagName === "IMG" && 
 			        	target.getAttribute("draggable") !== "false"
 			        ) 
 			    ) {
-			        return;
+			    	// @NOTE: This seems to work. It used to just return.
+			    	// I need to test in other browsers.
+			        e.preventDefault();
 			    }
 
-			    if (e.button !== 0) return;
+			    if (e.button !== 0 && e.button !== 2) return;
 
 			    document.body.classList.toggle("is-dragging");
 			    let x = Number(thing.style.left.replace("px", ""));
@@ -1586,10 +1660,10 @@ register_oceloti_module({
 			    window.addEventListener("mousemove", handle_mousemove);
 			    window.addEventListener("mouseup", handle_mouseup);
 			}
-		}
+		});
 
 		function handle_mousemove(e) {
-		    if (e.button !== 0) return;
+		    if (e.button !== 0 && e.button !== 2) return;
 
 		    delta_x = last_mouse_x - e.clientX;
 		    delta_y = last_mouse_y - e.clientY;
@@ -1606,7 +1680,7 @@ register_oceloti_module({
 		}
 
 		function handle_mouseup(e) {
-		    if (e.button !== 0) return;
+		    if (e.button !== 0 && e.button !== 2) return;
 			document.body.classList.toggle("is-dragging");
 		    const wrapper = dragged_thing.parentNode;
 		    wrapper.after(dragged_thing);
@@ -1641,11 +1715,13 @@ register_oceloti_module({
 			style: `
 				display: none;
 				position: fixed;
-				top: 0;
+				bottom: 0;
 				right: 0;
 				color: white;
 				background: black;
 				padding: 4px 6px;
+				user-select: none;
+		-webkit-user-select: none;
 			`
 		},
 			"unsaved changes"
@@ -2020,12 +2096,10 @@ register_oceloti_module({
 				if (state.val === "read") {
 					state.val = "write";
 					thing.setAttribute("oceloti-inner-state", "write");
-					thing.setAttribute("oceloti-thing-state", "active");
 					content.setAttribute("contenteditable", "");
 				} else {
 					state.val = "read"
 					thing.setAttribute("oceloti-inner-state", "read");
-					thing.setAttribute("oceloti-thing-state", "idle");
 					content.removeAttribute("contenteditable");
 				}
 			}

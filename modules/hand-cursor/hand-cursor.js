@@ -1,6 +1,6 @@
 register_oceloti_module({
 	name: "hand-cursor",
-	deps: [ "thing-manager" ],
+	deps: [ "thing-manager", "cursor-manager" ],
 	init({ room, next_loop, use_module }) {
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
@@ -10,11 +10,17 @@ register_oceloti_module({
 		let dragging_x = 0;
 		let dragging_y = 0;
 
+		const { register_cursor, set_active_cursor, is_cursor_active } = use_module("cursor-manager");
 		const { on_place, place_thing } = use_module("thing-manager");
 
-		on_place(init);
+		register_cursor({
+			name: "Hand Cursor",
+			slug: "hand",
+			icon: "🤚",
+			description: "Magic hand that allows you to move things around."
+		});
 
-		async function init(thing, first_mount = false) {
+		on_place(async (thing, first_mount = false) => {
 			if (!first_mount) {
 			    await next_loop();
 		    	thing.setAttribute("oceloti-thing-state", "idle");
@@ -23,29 +29,38 @@ register_oceloti_module({
 			}
 
 			thing.addEventListener("mousedown", handle_mousedown);
+			thing.addEventListener("contextmenu", handle_contextmenu);
+			room.addEventListener("contextmenu", handle_contextmenu);
+
+			function handle_contextmenu(e) {
+				if (!is_cursor_active("hand")) return;
+				e.preventDefault();
+			}
 
 			function handle_mousedown(e) {
-				//@STEP: Check if the cursor is active.
-				return;
-
+				if (!is_cursor_active("hand")) return;
 			    if (!e.target) return;
 			    if (dragged_thing !== null) return;
 			    const target = e.target;
+			    const is_contenteditable = target.isContentEditable || target.closest('[contenteditable="true"]');
 			    if (
 			        thing.getAttribute("oceloti-thing-state") !== "idle" ||
 			        target.tagName === "A" ||
 			        target.tagName === "BUTTON" ||
 			        target.tagName === "INPUT" ||
 			        target.tagName === "TEXTAREA" ||
+			        is_contenteditable ||
 			        (
 			        	target.tagName === "IMG" && 
 			        	target.getAttribute("draggable") !== "false"
 			        ) 
 			    ) {
-			        return;
+			    	// @NOTE: This seems to work. It used to just return.
+			    	// I need to test in other browsers.
+			        e.preventDefault();
 			    }
 
-			    if (e.button !== 0) return;
+			    if (e.button !== 0 && e.button !== 2) return;
 
 			    document.body.classList.toggle("is-dragging");
 			    let x = Number(thing.style.left.replace("px", ""));
@@ -82,10 +97,10 @@ register_oceloti_module({
 			    window.addEventListener("mousemove", handle_mousemove);
 			    window.addEventListener("mouseup", handle_mouseup);
 			}
-		}
+		});
 
 		function handle_mousemove(e) {
-		    if (e.button !== 0) return;
+		    if (e.button !== 0 && e.button !== 2) return;
 
 		    delta_x = last_mouse_x - e.clientX;
 		    delta_y = last_mouse_y - e.clientY;
@@ -102,7 +117,7 @@ register_oceloti_module({
 		}
 
 		function handle_mouseup(e) {
-		    if (e.button !== 0) return;
+		    if (e.button !== 0 && e.button !== 2) return;
 			document.body.classList.toggle("is-dragging");
 		    const wrapper = dragged_thing.parentNode;
 		    wrapper.after(dragged_thing);

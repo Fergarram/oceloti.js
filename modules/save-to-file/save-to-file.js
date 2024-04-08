@@ -15,11 +15,13 @@ register_oceloti_module({
 			style: `
 				display: none;
 				position: fixed;
-				top: 0;
+				bottom: 0;
 				right: 0;
 				color: white;
 				background: black;
 				padding: 4px 6px;
+				user-select: none;
+		-webkit-user-select: none;
 			`
 		},
 			"unsaved changes"

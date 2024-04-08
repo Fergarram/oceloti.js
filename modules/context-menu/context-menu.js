@@ -2,17 +2,26 @@ register_oceloti_module({
 	name: "context-menu",
 	deps: ["van"],
 	init({ use_module, hud, are_dialogs_open }) {
-		const self = {
+		const { is_cursor_active } = use_module("cursor-manager");
+		const van = use_module("van");
+
+		const exports = {
 			menu: {}
 		};
 
-		self.add_menu = function(name, items) {
-			self.menu[name] = items;
+		exports.add_menu = function(name, items) {
+			exports.menu[name] = items;
 		}
 
-		const van = use_module("van");
-
 		document.addEventListener("contextmenu", function(e) {
+		    let menu = document.getElementById("oceloti-context-menu");
+		    
+			if (!is_cursor_active("pointer") && e.target.closest('[oceloti-room]')) {
+				if (menu) close_menu();
+				exports.menu = {};
+				return;
+			}
+
 			const selection = window.getSelection();
 			if (
 		        are_dialogs_open() ||
@@ -31,8 +40,6 @@ register_oceloti_module({
 
 		    e.preventDefault();
 
-		    let menu = document.getElementById("oceloti-context-menu");
-
 		    function close_menu(clean = false) {
 				if (menu) menu.remove();
 				let el = e.target;
@@ -44,7 +51,7 @@ register_oceloti_module({
 				}
 
 				if (clean || !has_menu) {
-					self.menu = {};
+					exports.menu = {};
 				}
 			}
 
@@ -66,10 +73,10 @@ register_oceloti_module({
 		    		top: ${e.clientY}px;
 		    	`
 		    },
-		    	Object.keys(self.menu).length > 0
-		    		? Object.keys(self.menu).map((group_name) => [
+		    	Object.keys(exports.menu).length > 0
+		    		? Object.keys(exports.menu).map((group_name) => [
 		    			div({ class: "separator" }),
-		    			...self.menu[group_name].map(item => item)
+		    			...exports.menu[group_name].map(item => item)
 			    	])
 			    	: button({ "disabled": "true" }, "Nothing to do")
 		    );
@@ -94,12 +101,12 @@ register_oceloti_module({
 			    }
 		    	if (menu) close_menu();
 		    	// @TODO: To fix the accumulating menu bug I need to check for the menu originator/trigger — if it's a different one then I just clear the menu.
-		    	self.menu = {};
+		    	exports.menu = {};
 		    };
 
 		    window.addEventListener("mousedown", mousedown_handler);
 		});
 
-		return self;
+		return exports;
 	}
 });
