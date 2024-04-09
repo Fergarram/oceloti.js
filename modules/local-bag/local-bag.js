@@ -142,7 +142,7 @@ register_oceloti_module({
 							show_inventory.val = !show_inventory.val;
 						},
 					},
-					"🎒 local bag (b)",
+					"🎒 local bag",
 				),
 				() => InventoryGrid(slots.val),
 			),
