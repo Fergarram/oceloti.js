@@ -47,8 +47,9 @@ register_oceloti_module({
 			const active_element = document.activeElement;
 			const is_input_focused = active_element.tagName === 'INPUT' || active_element.tagName === 'TEXTAREA';
 			const is_editable_focused = active_element.hasAttribute('contenteditable');
+			const menu = document.getElementById("oceloti-context-menu");
 
-			if (is_input_focused || is_editable_focused) {
+			if (is_input_focused || is_editable_focused || menu) {
 				if (e.key === "Escape") {
 					active_element.blur();
 					e.preventDefault();
@@ -74,7 +75,7 @@ register_oceloti_module({
 				font-size: 24px;
 				line-height: 24px;
 				pointer-events: none;
-				background: white;
+				background: black;
 				border-radius: 9999px;
 				width: 48px;
 				height: 48px;
@@ -83,7 +84,7 @@ register_oceloti_module({
 				justify-content: center;
 			`
 		},
-			current_cursor
+			div(current_cursor)
 		);
 		van.add(hud, cursor_indicator)
 

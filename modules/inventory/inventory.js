@@ -66,6 +66,9 @@ register_oceloti_module({
 					});
 				});
 			},
+			get_item_handler(name) {
+				return exports.item_handlers.filter(h => h.name === name);
+			},
 			create_new_bag(id, length) {
 				const ids = Object.keys(exports.bags);
 				if (ids.includes(id)) {

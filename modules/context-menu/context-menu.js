@@ -1,17 +1,21 @@
 register_oceloti_module({
 	name: "context-menu",
-	deps: ["van"],
+	deps: ["van", "cursor-manager"],
 	init({ use_module, hud, are_dialogs_open }) {
 		const { is_cursor_active } = use_module("cursor-manager");
 		const van = use_module("van");
 
 		const exports = {
-			menu: {}
+			menu: {},
+			add_menu(name, items) {
+				exports.menu[name] = items;
+			},
+			close_menu() {
+		    	const menu = document.getElementById("oceloti-context-menu");
+		    	if (menu) menu.remove();
+				exports.menu = {};
+			}
 		};
-
-		exports.add_menu = function(name, items) {
-			exports.menu[name] = items;
-		}
 
 		document.addEventListener("contextmenu", function(e) {
 		    let menu = document.getElementById("oceloti-context-menu");

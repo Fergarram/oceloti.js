@@ -20,6 +20,7 @@
 		local-bag
 		notebook-paper
 		cell-editor
+		thing-handbook
 	">/* MODULE: modules/css-reset/css-reset.css */
 *, *::before, *::after {
   padding: 0;
@@ -528,6 +529,8 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 [oceloti-thing="cell-editor"] .cell.or-case input {
 	border-radius: 9999px;
 }
+/* MODULE: modules/thing-handbook/thing-handbook.css */
+
 </style>
 	<style oceloti-assets="*">
 		:root {
@@ -618,8 +621,8 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 	<main
 		oceloti-room="notes"
 		style="
-			width: 1400px;
-			height: 1400px;
+			width: 1600px;
+			height: 1000px;
 			background-color: white;
 			background-image: var(--assets-pyramidism-bg-png);
 			background-size: 128px;
@@ -654,6 +657,7 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 	local-bag
 	notebook-paper
 	cell-editor
+	thing-handbook
 ">/* MODULE: modules/oceloti/oceloti.js */
 {
 	const room = document.querySelector("[oceloti-room]");
@@ -1204,8 +1208,9 @@ register_oceloti_module({
 			const active_element = document.activeElement;
 			const is_input_focused = active_element.tagName === 'INPUT' || active_element.tagName === 'TEXTAREA';
 			const is_editable_focused = active_element.hasAttribute('contenteditable');
+			const menu = document.getElementById("oceloti-context-menu");
 
-			if (is_input_focused || is_editable_focused) {
+			if (is_input_focused || is_editable_focused || menu) {
 				if (e.key === "Escape") {
 					active_element.blur();
 					e.preventDefault();
@@ -1231,7 +1236,7 @@ register_oceloti_module({
 				font-size: 24px;
 				line-height: 24px;
 				pointer-events: none;
-				background: white;
+				background: black;
 				border-radius: 9999px;
 				width: 48px;
 				height: 48px;
@@ -1240,7 +1245,7 @@ register_oceloti_module({
 				justify-content: center;
 			`
 		},
-			current_cursor
+			div(current_cursor)
 		);
 		van.add(hud, cursor_indicator)
 
@@ -1250,18 +1255,22 @@ register_oceloti_module({
 /* MODULE: modules/context-menu/context-menu.js */
 register_oceloti_module({
 	name: "context-menu",
-	deps: ["van"],
+	deps: ["van", "cursor-manager"],
 	init({ use_module, hud, are_dialogs_open }) {
 		const { is_cursor_active } = use_module("cursor-manager");
 		const van = use_module("van");
 
 		const exports = {
-			menu: {}
+			menu: {},
+			add_menu(name, items) {
+				exports.menu[name] = items;
+			},
+			close_menu() {
+		    	const menu = document.getElementById("oceloti-context-menu");
+		    	if (menu) menu.remove();
+				exports.menu = {};
+			}
 		};
-
-		exports.add_menu = function(name, items) {
-			exports.menu[name] = items;
-		}
 
 		document.addEventListener("contextmenu", function(e) {
 		    let menu = document.getElementById("oceloti-context-menu");
@@ -1428,6 +1437,9 @@ register_oceloti_module({
 						]);
 					});
 				});
+			},
+			get_item_handler(name) {
+				return exports.item_handlers.filter(h => h.name === name);
 			},
 			create_new_bag(id, length) {
 				const ids = Object.keys(exports.bags);
@@ -2344,6 +2356,39 @@ register_oceloti_module({
 			);
 		}
 	},
+});
+/* MODULE: modules/thing-handbook/thing-handbook.js */
+register_oceloti_module({
+	name: "thing-handbook",
+	deps: ["inventory", "van", "context-menu"],
+	init({ use_module, room }) {
+		const van = use_module("van");
+		const { get_item_handler } = use_module("inventory");
+		const { add_menu } = use_module("context-menu");
+		const { button } = van.tags;
+
+		room.addEventListener("mousedown", (e) => {
+			if (e.button !== 2) return;
+			if (e.target !== room) return;
+			add_menu("handbook", [
+				button({
+					onclick() {
+						const data = {
+							handler: "notebook-paper",
+							width: 300,
+							height: 400,
+							state: "read",
+							content: "",
+						};
+						const available_handlers = get_item_handler(data.handler);
+						const x = window.scrollX + e.clientX;
+						const y = window.scrollY + e.clientY;
+						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+					}
+				}, "🗒️ new paper"),
+			]);
+		});
+	}
 });
 </script>
 </html>
