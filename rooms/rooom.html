@@ -618,8 +618,8 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 	<main
 		oceloti-room="notes"
 		style="
-			width: 8000px;
-			height: 8000px;
+			width: 1400px;
+			height: 1400px;
 			background-color: white;
 			background-image: var(--assets-pyramidism-bg-png);
 			background-size: 128px;
@@ -1193,7 +1193,7 @@ register_oceloti_module({
 		exports.register_cursor({
 			name: "Pointer Cursor",
 			slug: "pointer",
-			icon: "↖️",
+			icon: "👆",
 			description: "Pointer cursor that allows to interact or inspect things."
 		});
 		exports.set_active_cursor("pointer");
@@ -1224,7 +1224,21 @@ register_oceloti_module({
 		}
 
 		const cursor_indicator = div({
-			style: "position: fixed; bottom: 12px; left: 12px; font-size: 24px; pointer-events: none;"
+			style: `
+				position: fixed;
+				top: 12px;
+				right: 12px;
+				font-size: 24px;
+				line-height: 24px;
+				pointer-events: none;
+				background: white;
+				border-radius: 9999px;
+				width: 48px;
+				height: 48px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			`
 		},
 			current_cursor
 		);
@@ -1596,7 +1610,7 @@ register_oceloti_module({
 register_oceloti_module({
 	name: "hand-cursor",
 	deps: [ "thing-manager", "cursor-manager" ],
-	init({ room, next_loop, use_module }) {
+	init({ room, room_name, next_loop, use_module }) {
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
 		let delta_x = 0;
@@ -1612,7 +1626,7 @@ register_oceloti_module({
 			name: "Hand Cursor",
 			slug: "hand",
 			icon: "🤚",
-			description: "Magic hand that allows you to move things around."
+			description: "Magic hand that allows you to move things and yourself around."
 		});
 
 		on_place(async (thing, first_mount = false) => {
@@ -1699,7 +1713,7 @@ register_oceloti_module({
 			}
 		});
 
-		function handle_mousemove(e) {
+		async function handle_mousemove(e) {
 		    if (e.button !== 0) return;
 
 		    delta_x = last_mouse_x - e.clientX;
@@ -1717,6 +1731,8 @@ register_oceloti_module({
 		    } else if (dragged_thing && e.shiftKey) {
 		    	dragged_thing.style.left = `${dragging_x}px`;
 		    	dragged_thing.style.top = `${dragging_y}px`;
+		    	await next_loop();
+				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 		    }
 		}
 
@@ -2110,27 +2126,14 @@ register_oceloti_module({
 		function initializer(thing) {
 			const initial_state = thing.getAttribute("oceloti-inner-state");
 			const state = van.state(initial_state);
-
-			const toggle = button({
-				"oceloti-ref": "toggle",
-				style: `
-					position: absolute;
-					right: 6px;
-					bottom: 6px;
-				`,
-				onclick: toggle_state
-			},
-				span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
-			);
-
-			// van.add(thing, toggle);
-
 			const content = thing.querySelector(`[oceloti-ref="content"]`)
 
 			content.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
+				// @TODO: Get click position to know which line to cut and add a menu item to cut there.
 				add_menu("paper_actions", [
-					button({ onclick: toggle_state }, state.val === "read" ? "📝 Write" : "👓 Read")
+					button({ onclick: toggle_state }, state.val === "read" ? "🔓 Unlock" : "🔒 Lock"),
+					button({ }, "✂️ Cut here"),
 				]);
 			});
 

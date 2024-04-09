@@ -66,27 +66,14 @@ register_oceloti_module({
 		function initializer(thing) {
 			const initial_state = thing.getAttribute("oceloti-inner-state");
 			const state = van.state(initial_state);
-
-			const toggle = button({
-				"oceloti-ref": "toggle",
-				style: `
-					position: absolute;
-					right: 6px;
-					bottom: 6px;
-				`,
-				onclick: toggle_state
-			},
-				span({ class: "emoji" }, () => state.val === "read" ? "📝" : "👓")
-			);
-
-			// van.add(thing, toggle);
-
 			const content = thing.querySelector(`[oceloti-ref="content"]`)
 
 			content.addEventListener("mousedown", (e) => {
 				if (e.button !== 2) return;
+				// @TODO: Get click position to know which line to cut and add a menu item to cut there.
 				add_menu("paper_actions", [
-					button({ onclick: toggle_state }, state.val === "read" ? "📝 Write" : "👓 Read")
+					button({ onclick: toggle_state }, state.val === "read" ? "🔓 Unlock" : "🔒 Lock"),
+					button({ }, "✂️ Cut here"),
 				]);
 			});
 

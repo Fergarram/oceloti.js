@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "hand-cursor",
 	deps: [ "thing-manager", "cursor-manager" ],
-	init({ room, next_loop, use_module }) {
+	init({ room, room_name, next_loop, use_module }) {
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
 		let delta_x = 0;
@@ -17,7 +17,7 @@ register_oceloti_module({
 			name: "Hand Cursor",
 			slug: "hand",
 			icon: "🤚",
-			description: "Magic hand that allows you to move things around."
+			description: "Magic hand that allows you to move things and yourself around."
 		});
 
 		on_place(async (thing, first_mount = false) => {
@@ -104,7 +104,7 @@ register_oceloti_module({
 			}
 		});
 
-		function handle_mousemove(e) {
+		async function handle_mousemove(e) {
 		    if (e.button !== 0) return;
 
 		    delta_x = last_mouse_x - e.clientX;
@@ -122,6 +122,8 @@ register_oceloti_module({
 		    } else if (dragged_thing && e.shiftKey) {
 		    	dragged_thing.style.left = `${dragging_x}px`;
 		    	dragged_thing.style.top = `${dragging_y}px`;
+		    	await next_loop();
+				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 		    }
 		}
 

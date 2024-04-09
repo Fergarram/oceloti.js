@@ -36,7 +36,7 @@ register_oceloti_module({
 		exports.register_cursor({
 			name: "Pointer Cursor",
 			slug: "pointer",
-			icon: "↖️",
+			icon: "👆",
 			description: "Pointer cursor that allows to interact or inspect things."
 		});
 		exports.set_active_cursor("pointer");
@@ -67,7 +67,21 @@ register_oceloti_module({
 		}
 
 		const cursor_indicator = div({
-			style: "position: fixed; bottom: 12px; left: 12px; font-size: 24px; pointer-events: none;"
+			style: `
+				position: fixed;
+				top: 12px;
+				right: 12px;
+				font-size: 24px;
+				line-height: 24px;
+				pointer-events: none;
+				background: white;
+				border-radius: 9999px;
+				width: 48px;
+				height: 48px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			`
 		},
 			current_cursor
 		);
