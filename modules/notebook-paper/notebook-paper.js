@@ -79,7 +79,7 @@ register_oceloti_module({
 
 			content.addEventListener("keydown", async (e) => {
 				await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			});
 
 			function toggle_state() {

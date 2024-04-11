@@ -20,6 +20,14 @@ register_oceloti_module({
 			description: "Magic hand that allows you to move things and yourself around."
 		});
 
+		function handle_auxclick(event) {
+			if (event.target.tagName === 'A' && event.button === 1 && !is_cursor_active("pointer")) {
+				event.preventDefault();
+			}
+		}
+
+		document.addEventListener('auxclick', handle_auxclick);
+
 		on_place(async (thing, first_mount = false) => {
 			if (!first_mount) {
 			    await next_loop();
@@ -123,7 +131,7 @@ register_oceloti_module({
 		    	dragged_thing.style.left = `${dragging_x}px`;
 		    	dragged_thing.style.top = `${dragging_y}px`;
 		    	await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 		    }
 		}
 

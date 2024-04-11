@@ -50,7 +50,7 @@ register_oceloti_module({
 				});
 
 				await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			};
 
 			slider.addEventListener("input", (e) => {

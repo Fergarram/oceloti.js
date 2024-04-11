@@ -29,7 +29,6 @@ register_oceloti_module({
 
 		room.addEventListener("dragover", (e) => {
 			e.preventDefault();
-
 			if (!e.dataTransfer.types.some(str => exports.known_dnd_types.includes(str))) {
 				e.dataTransfer.effectAllowed = "none";
 				return;

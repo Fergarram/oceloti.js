@@ -21,6 +21,9 @@
 		notebook-paper
 		cell-editor
 		thing-handbook
+		image-print
+		video-player
+		audio-player
 	">/* MODULE: modules/css-reset/css-reset.css */
 *, *::before, *::after {
   padding: 0;
@@ -531,6 +534,62 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 }
 /* MODULE: modules/thing-handbook/thing-handbook.css */
 
+/* MODULE: modules/image-print/image-print.css */
+[oceloti-cursor="pointer"] [oceloti-thing="image-print"] {
+	resize: both;
+	overflow: hidden;
+}
+
+[oceloti-cursor="pointer"] [oceloti-thing="image-print"]:hover {
+	box-shadow: var(--thing-thickness-1-fast);
+}
+
+[oceloti-thing="image-print"] img {
+	width: 100%;
+	height: 100%;
+	image-rendering: optimizeQuality;
+}
+
+/* MODULE: modules/video-player/video-player.css */
+[oceloti-thing="video-player"] {
+	box-shadow: var(--thing-thickness-1-fast);
+	background: black;
+}
+
+[oceloti-cursor="pointer"] [oceloti-thing="video-player"] {
+	resize: both;
+	overflow: hidden;
+}
+
+[oceloti-thing="video-player"] video {
+	width: 100%;
+	height: 100%;
+}
+
+[oceloti-cursor="hand"] [oceloti-thing="video-player"] video {
+	pointer-events: none;
+}
+
+/* MODULE: modules/audio-player/audio-player.css */
+[oceloti-thing="audio-player"] {
+	box-shadow: var(--thing-thickness-1-fast);
+	background: black;
+}
+
+[oceloti-cursor="pointer"] [oceloti-thing="audio-player"] {
+	resize: both;
+	overflow: hidden;
+}
+
+[oceloti-thing="audio-player"] audio {
+	width: 100%;
+	height: 100%;
+}
+
+[oceloti-cursor="hand"] [oceloti-thing="audio-player"] audio {
+	pointer-events: none;
+}
+
 </style>
 	<style oceloti-assets="*">
 		:root {
@@ -621,11 +680,11 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 	<main
 		oceloti-room="notes"
 		style="
-			width: 1600px;
-			height: 1000px;
+			width: 4000px;
+			height: 4000px;
 			background-color: white;
-			background-image: var(--assets-pyramidism-bg-png);
-			background-size: 128px;
+			background-image: var(--assets-wood-png);
+			background-size: 256px;
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
@@ -658,6 +717,9 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 	notebook-paper
 	cell-editor
 	thing-handbook
+	image-print
+	video-player
+	audio-player
 ">/* MODULE: modules/oceloti/oceloti.js */
 {
 	const room = document.querySelector("[oceloti-room]");
@@ -741,7 +803,7 @@ body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
 register_oceloti_module({
 	name: "standard-controls",
 	deps: [],
-	init({ use_module, room, are_dialogs_open }) {
+	init({ use_module, room, are_dialogs_open, next_loop }) {
 		let room_width = room.offsetWidth;
 		let room_height = room.offsetHeight;
 
@@ -917,12 +979,12 @@ register_oceloti_module({
 				
 				if (!first_mount) {
 					await next_loop();
-					localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+					// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 				}
 			},
 			async lift_thing(thing) {
 				await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			}
 		};
 
@@ -957,7 +1019,7 @@ register_oceloti_module({
 		// @STEP: Move to the save module.
 		const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
 		if (room_snapshot) {
-			localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
+			// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
 			room.innerHTML = room_snapshot;
 		}
 
@@ -1005,7 +1067,6 @@ register_oceloti_module({
 
 		room.addEventListener("dragover", (e) => {
 			e.preventDefault();
-
 			if (!e.dataTransfer.types.some(str => exports.known_dnd_types.includes(str))) {
 				e.dataTransfer.effectAllowed = "none";
 				return;
@@ -1561,6 +1622,12 @@ register_oceloti_module({
 			}
 		};
 
+		function create_temp_image(src, callback) {
+			const tmp_img = document.createElement("img");
+			tmp_img.onload = () => callback(tmp_img);
+			tmp_img.src = src;
+		}
+
 		register_drop_handler({
 			invoking_module: "inventory",
 			dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "Files"],
@@ -1570,8 +1637,71 @@ register_oceloti_module({
 
 				if (files.length > 0) {
 					for (let file of files) {
-						// @FIXME: Handle files
 						console.log(file.type);
+						if (file.type.includes("image")) {
+							const reader = new FileReader();
+							reader.onload = (event) => {
+								const base64_url = event.target.result;
+								create_temp_image(base64_url, (tmp_img) => {
+									const width = tmp_img.naturalWidth;
+									const height = tmp_img.naturalHeight;
+									const data = {
+										handler: "image-print",
+										width: width > 400 ? 400 : width,
+										height: width > 400 ? (400 * height) / width : height,
+										state: "default",
+										content: base64_url,
+									};
+									const available_handlers = exports.get_item_handler(data.handler);
+									// @TODO: If no handler available, add to bag and notify.
+									const x = window.scrollX + e.clientX;
+									const y = window.scrollY + e.clientY;
+									van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+								});
+							};
+							reader.readAsDataURL(file);
+							break;
+						}
+						if (file.type.includes("video")) {
+							const reader = new FileReader();
+							reader.onload = (event) => {
+								const base64_url = event.target.result;
+								const data = {
+									handler: "video-player",
+									width: 400,
+									height: 300,
+									state: "default",
+									content: base64_url,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							};
+							reader.readAsDataURL(file);
+							break;
+						}
+						if (file.type.includes("audio")) {
+							const reader = new FileReader();
+							reader.onload = (event) => {
+								const base64_url = event.target.result;
+								const data = {
+									handler: "audio-player",
+									width: 400,
+									height: 300,
+									state: "default",
+									content: base64_url,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							};
+							reader.readAsDataURL(file);
+							break;
+						}
 					}
 					return;
 				}
@@ -1599,16 +1729,59 @@ register_oceloti_module({
 						const alt_type = types.find(t => t === "text/plain");
 						const url = e.dataTransfer.getData(alt_type);
 						found_type = image_type ? "image" : "link";
-						console.log(found_type, url);
+						if (found_type === "image") {
+							const image_uri = e.dataTransfer.getData("application/x-moz-file-promise-url");
+							create_temp_image(image_uri, (tmp_img) => {
+								const width = tmp_img.naturalWidth;
+								const height = tmp_img.naturalHeight;
+								const data = {
+									handler: "image-print",
+									width: width > 400 ? 400 : width,
+									height: width > 400 ? (400 * height) / width : height,
+									state: "default",
+									content: image_uri,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							});
+						} else {
+							const url = e.dataTransfer.getData("text/plain");
+							const data = {
+								handler: "notebook-paper",
+								width: 400,
+								height: 400,
+								state: "read",
+								content: `<a href="${url}">${url}</a>`,
+							};
+							const available_handlers = exports.get_item_handler(data.handler);
+							// @TODO: If no handler available, add to bag and notify.
+							const x = window.scrollX + e.clientX;
+							const y = window.scrollY + e.clientY;
+							van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+						}
+
 						break;
 					}
 				}
 
 				for (const type of types) {
 					if (!found_type && type === "text/plain") {
-						// @FIXME: Handle text
 						found_type = "text";
-						console.log("text");
+						const data = {
+							handler: "notebook-paper",
+							width: 400,
+							height: 400,
+							state: "read",
+							content: e.dataTransfer.getData("text/plain"),
+						};
+						const available_handlers = exports.get_item_handler(data.handler);
+						// @TODO: If no handler available, add to bag and notify.
+						const x = window.scrollX + e.clientX;
+						const y = window.scrollY + e.clientY;
+						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 						break;
 					}
 				}
@@ -1640,6 +1813,14 @@ register_oceloti_module({
 			icon: "🤚",
 			description: "Magic hand that allows you to move things and yourself around."
 		});
+
+		function handle_auxclick(event) {
+			if (event.target.tagName === 'A' && event.button === 1 && !is_cursor_active("pointer")) {
+				event.preventDefault();
+			}
+		}
+
+		document.addEventListener('auxclick', handle_auxclick);
 
 		on_place(async (thing, first_mount = false) => {
 			if (!first_mount) {
@@ -1744,7 +1925,7 @@ register_oceloti_module({
 		    	dragged_thing.style.left = `${dragging_x}px`;
 		    	dragged_thing.style.top = `${dragging_y}px`;
 		    	await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 		    }
 		}
 
@@ -2151,7 +2332,7 @@ register_oceloti_module({
 
 			content.addEventListener("keydown", async (e) => {
 				await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			});
 
 			function toggle_state() {
@@ -2221,7 +2402,7 @@ register_oceloti_module({
 				});
 
 				await next_loop();
-				localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
+				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			};
 
 			slider.addEventListener("input", (e) => {
@@ -2388,6 +2569,189 @@ register_oceloti_module({
 				}, "🗒️ new paper"),
 			]);
 		});
+	}
+});
+/* MODULE: modules/image-print/image-print.js */
+register_oceloti_module({
+	name: "image-print",
+	deps: ["inventory", "van", "context-menu"],
+	init({ use_module, room, room_name, next_loop }) {
+		const van = use_module("van");
+		const { add_menu } = use_module("context-menu");
+		const { register_item_handler } = use_module("inventory");
+		const { figure, div, button, img } = van.tags;
+
+		const THING_NAME = "image-print";
+
+		register_item_handler({
+			icon: () => "🖼️",
+			name: THING_NAME,
+			description: ({ content, state }) => {
+				return "An image printed on a fake piece of paper.";
+			},
+			initializer,
+			encoder,
+			renderer
+		});
+
+		function renderer({ x, y, width, height, content }) {
+			return figure({
+				"oceloti-thing": THING_NAME,
+				"oceloti-inner-state": "default",
+				"oceloti-thing-state": "idle",
+				style: `
+					left: ${x - (width / 2)}px;
+					top: ${y - 140}px;
+					width: ${width}px;
+					height: ${height}px;
+				`
+			},
+				img({
+					draggable: false,
+					src: content,
+					alt: "",
+				})
+			);
+		}
+
+		function encoder(thing) {
+			const image = thing.querySelector(`img`);
+			return {
+				handler: THING_NAME,
+				state: "default",
+				width: thing.offsetWidth,
+				height: thing.offsetHeight,
+				content: image.src,
+			};
+		}
+
+		function initializer(thing) {
+			
+		}
+	}
+});
+/* MODULE: modules/video-player/video-player.js */
+register_oceloti_module({
+	name: "video-player",
+	deps: ["inventory", "van", "context-menu"],
+	init({ use_module, room, room_name, next_loop }) {
+		const van = use_module("van");
+		const { add_menu } = use_module("context-menu");
+		const { register_item_handler } = use_module("inventory");
+		const { figure, div, button, video, source } = van.tags;
+
+		const THING_NAME = "video-player";
+
+		register_item_handler({
+			icon: () => "📼",
+			name: THING_NAME,
+			description: ({ content, state }) => {
+				return "A video pretending to be tape.";
+			},
+			initializer,
+			encoder,
+			renderer
+		});
+
+		function renderer({ x, y, width, height, content }) {
+			return div({
+				"oceloti-thing": THING_NAME,
+				"oceloti-inner-state": "default",
+				"oceloti-thing-state": "idle",
+				style: `
+					left: ${x - (width / 2)}px;
+					top: ${y - 140}px;
+					width: ${width}px;
+					height: ${height}px;
+				`
+			},
+				video({
+					controls: "true"
+				},
+					source({
+						src: content
+					}),
+					"Your browser does not support the video tag."
+				)
+			);
+		}
+
+		function encoder(thing) {
+			const source = thing.querySelector(`source`);
+			return {
+				handler: THING_NAME,
+				state: "default",
+				width: thing.offsetWidth,
+				height: thing.offsetHeight,
+				content: source.src,
+			};
+		}
+
+		function initializer(thing) {
+			
+		}
+	}
+});
+/* MODULE: modules/audio-player/audio-player.js */
+register_oceloti_module({
+	name: "audio-player",
+	deps: ["inventory", "van", "context-menu"],
+	init({ use_module, room, room_name, next_loop }) {
+		const van = use_module("van");
+		const { add_menu } = use_module("context-menu");
+		const { register_item_handler } = use_module("inventory");
+		const { figure, div, button, audio, source } = van.tags;
+
+		const THING_NAME = "audio-player";
+
+		register_item_handler({
+			icon: () => "📼",
+			name: THING_NAME,
+			description: ({ content, state }) => {
+				return "A audio pretending to be tape.";
+			},
+			initializer,
+			encoder,
+			renderer
+		});
+
+		function renderer({ x, y, width, height, content }) {
+			return div({
+				"oceloti-thing": THING_NAME,
+				"oceloti-inner-state": "default",
+				"oceloti-thing-state": "idle",
+				style: `
+					left: ${x - (width / 2)}px;
+					top: ${y - 140}px;
+					width: ${width}px;
+					height: ${height}px;
+				`
+			},
+				audio({
+					controls: "true"
+				},
+					source({
+						src: content
+					}),
+					"Your browser does not support the audio tag."
+				)
+			);
+		}
+
+		function encoder(thing) {
+			const source = thing.querySelector(`source`);
+			return {
+				handler: THING_NAME,
+				state: "default",
+				width: thing.offsetWidth,
+				height: thing.offsetHeight,
+				content: source.src,
+			};
+		}
+
+		function initializer(thing) {
+			
+		}
 	}
 });
 </script>

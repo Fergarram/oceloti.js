@@ -189,6 +189,12 @@ register_oceloti_module({
 			}
 		};
 
+		function create_temp_image(src, callback) {
+			const tmp_img = document.createElement("img");
+			tmp_img.onload = () => callback(tmp_img);
+			tmp_img.src = src;
+		}
+
 		register_drop_handler({
 			invoking_module: "inventory",
 			dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "Files"],
@@ -198,8 +204,71 @@ register_oceloti_module({
 
 				if (files.length > 0) {
 					for (let file of files) {
-						// @FIXME: Handle files
 						console.log(file.type);
+						if (file.type.includes("image")) {
+							const reader = new FileReader();
+							reader.onload = (event) => {
+								const base64_url = event.target.result;
+								create_temp_image(base64_url, (tmp_img) => {
+									const width = tmp_img.naturalWidth;
+									const height = tmp_img.naturalHeight;
+									const data = {
+										handler: "image-print",
+										width: width > 400 ? 400 : width,
+										height: width > 400 ? (400 * height) / width : height,
+										state: "default",
+										content: base64_url,
+									};
+									const available_handlers = exports.get_item_handler(data.handler);
+									// @TODO: If no handler available, add to bag and notify.
+									const x = window.scrollX + e.clientX;
+									const y = window.scrollY + e.clientY;
+									van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+								});
+							};
+							reader.readAsDataURL(file);
+							break;
+						}
+						if (file.type.includes("video")) {
+							const reader = new FileReader();
+							reader.onload = (event) => {
+								const base64_url = event.target.result;
+								const data = {
+									handler: "video-player",
+									width: 400,
+									height: 300,
+									state: "default",
+									content: base64_url,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							};
+							reader.readAsDataURL(file);
+							break;
+						}
+						if (file.type.includes("audio")) {
+							const reader = new FileReader();
+							reader.onload = (event) => {
+								const base64_url = event.target.result;
+								const data = {
+									handler: "audio-player",
+									width: 400,
+									height: 300,
+									state: "default",
+									content: base64_url,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							};
+							reader.readAsDataURL(file);
+							break;
+						}
 					}
 					return;
 				}
@@ -227,16 +296,59 @@ register_oceloti_module({
 						const alt_type = types.find(t => t === "text/plain");
 						const url = e.dataTransfer.getData(alt_type);
 						found_type = image_type ? "image" : "link";
-						console.log(found_type, url);
+						if (found_type === "image") {
+							const image_uri = e.dataTransfer.getData("application/x-moz-file-promise-url");
+							create_temp_image(image_uri, (tmp_img) => {
+								const width = tmp_img.naturalWidth;
+								const height = tmp_img.naturalHeight;
+								const data = {
+									handler: "image-print",
+									width: width > 400 ? 400 : width,
+									height: width > 400 ? (400 * height) / width : height,
+									state: "default",
+									content: image_uri,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							});
+						} else {
+							const url = e.dataTransfer.getData("text/plain");
+							const data = {
+								handler: "notebook-paper",
+								width: 400,
+								height: 400,
+								state: "read",
+								content: `<a href="${url}">${url}</a>`,
+							};
+							const available_handlers = exports.get_item_handler(data.handler);
+							// @TODO: If no handler available, add to bag and notify.
+							const x = window.scrollX + e.clientX;
+							const y = window.scrollY + e.clientY;
+							van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+						}
+
 						break;
 					}
 				}
 
 				for (const type of types) {
 					if (!found_type && type === "text/plain") {
-						// @FIXME: Handle text
 						found_type = "text";
-						console.log("text");
+						const data = {
+							handler: "notebook-paper",
+							width: 400,
+							height: 400,
+							state: "read",
+							content: e.dataTransfer.getData("text/plain"),
+						};
+						const available_handlers = exports.get_item_handler(data.handler);
+						// @TODO: If no handler available, add to bag and notify.
+						const x = window.scrollX + e.clientX;
+						const y = window.scrollY + e.clientY;
+						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 						break;
 					}
 				}

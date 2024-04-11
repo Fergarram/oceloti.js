@@ -7,10 +7,10 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
-- [ ] Handle file dropping (depends on image, etc item modules)
-- [ ] Create an image thing module
-- [ ] Create a link thing module
+- [ ] Create clipboard handler module.
+- [ ] Finish implmenting loading individual assets.
 - [ ] Add base64 js-available assets `/modules/[module_name]/assets.json` for modules.
+- [ ] Find a way to not remount or to not reload media/canvas/running things.
 
 ## UX Improv:
 - [ ] Work on mobile UI and controls. Touch events...
@@ -30,6 +30,5 @@ When running the `build.js` script, it will generate the built `room` and replac
 - [ ] Shadow modes: floor (current), wall
  
 ## Not urgent:
-- [ ] Implement paste handler
 - [ ] Compiler should only build modified blueprints.
 - [ ] Add compiler option: make backups

@@ -140,7 +140,7 @@ function generate_rooms() {
                 console.log("");
             } else {
                 style_assets.forEach((asset_path) => {
-
+                    // @TODO: Finish implmenting loading individual assets.
                 });
             }
 

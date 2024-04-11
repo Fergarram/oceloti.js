@@ -1,0 +1,18 @@
+[oceloti-thing="video-player"] {
+	box-shadow: var(--thing-thickness-1-fast);
+	background: black;
+}
+
+[oceloti-cursor="pointer"] [oceloti-thing="video-player"] {
+	resize: both;
+	overflow: hidden;
+}
+
+[oceloti-thing="video-player"] video {
+	width: 100%;
+	height: 100%;
+}
+
+[oceloti-cursor="hand"] [oceloti-thing="video-player"] video {
+	pointer-events: none;
+}
