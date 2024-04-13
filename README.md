@@ -7,9 +7,10 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 When running the `build.js` script, it will generate the built `room` and replace it.
 
 ## Next steps:
-- [ ] Create clipboard handler module.
+- [ ] Use indexeddb for saving room backups.
 - [ ] Finish implmenting loading individual assets.
 - [ ] Add base64 js-available assets `/modules/[module_name]/assets.json` for modules.
+- [ ] Create clipboard handler module.
 - [ ] Find a way to not remount or to not reload media/canvas/running things.
 
 ## UX Improv:
