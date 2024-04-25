@@ -6,14 +6,14 @@ Each `blueprint` is in charge of defining the initial contents of the `room`.
 
 When running the `build.js` script, it will generate the built `room` and replace it.
 
-## Next steps:
+## Internals:
 - [ ] Use indexeddb for saving room backups.
 - [ ] Finish implmenting loading individual assets.
 - [ ] Add base64 js-available assets `/modules/[module_name]/assets.json` for modules.
-- [ ] Create clipboard handler module.
 - [ ] Find a way to not remount or to not reload media/canvas/running things.
 
 ## UX Improv:
+- [ ] Create clipboard handler module.
 - [ ] Work on mobile UI and controls. Touch events...
 - [ ] Add alternative transform-based zoom.
       NOTE: Doing `window.scrollX + e.clientX` is not going to work anymore.
@@ -29,7 +29,17 @@ When running the `build.js` script, it will generate the built `room` and replac
 - [ ] Assistant use case: "shift everthing in the room about 300px to the right and top"
       An undo button would need to be implemented. The assistant has access to outerHTML and has context about the whole room setup.
 - [ ] Shadow modes: floor (current), wall
- 
-## Not urgent:
-- [ ] Compiler should only build modified blueprints.
-- [ ] Add compiler option: make backups
+
+
+---
+1. move modules to separate script tags.
+
+2. Start a module that serves as a module editor.
+
+2a. The module editor is able to inspect style and script tags and is in charge of managing the oceloti state.
+
+2b. The module editor should provide a text editor so that the content can be modified.
+
+----
+
+A document should be able to die store a new version (egg) in indexeddb or any storage medium and use that new version fresh so that it can then be saved as html manually.
