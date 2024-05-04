@@ -1,40 +1,37 @@
 <!DOCTYPE html>
-<html oceloti-reset="black">
+<html oceloti-reset="">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>rooom is online</title>
-	<meta name="description" content="Make cool html rooms.">
-	<link
-		rel="icon"
-		href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANVJREFUOI1jYKAXyNpn8B+bOBMxiki2Cd0gbGJYXcDAwMBw9podimtgNEycoAHoNsM0n8yZxEiUASdzJjFisw2XNxgZGBgYzKfk/TfWOoThFXQxGJjmdAHuGjjDfEoe3HRkjcgGTXO6wAizDGYIhr+CvFX+MzAwMEgU8zAwMDAwvOj9giK/busdxqx9Bv9hBmCEwbqtdxh71ZgYSjd/Y4AZ1KvGxNCrxsSwbusdDAvxxgLMEHSAHAZ4DcBnCNEGEAJYEwcDAwPD/UI1lDhX7L+FUy1FAACzKVgfYDnMVgAAAABJRU5ErkJggg=="
-	></link>
-	<style oceloti-modules="
-		css-reset
-		oceloti
-		paper-theme
-		standard-controls
-		context-menu
-		cursor-manager
-		hand-cursor
-		local-bag
-		notebook-paper
-		cell-editor
-		thing-handbook
-		image-print
-		video-player
-		audio-player
-	">/* STYLE MODULES */</style>
-	<style oceloti-assets="*">
-		/* STATIC ASSETS */
-	</style>
+	<title>untitled room</title>
+	<meta name="description" content="An undescribed room.">
+	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAHlBMVEUAAACAgID//////wDAwMAAAAAAgIAAgAAAAP8AAIAiroc5AAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAAHdElNRQfiBhoANyCM1dKOAAAAYElEQVQI12NgFAQCAQYGBkYlZSVlRxADSCs5CUBFQkNBIippKcquIBE3sTInEEM5JSNdGCyS5D5jEkREPGMyWESivRMi4tk51RksohIaouQKNRliDogFYriAAIgRCgYMAMxuFv00I9ZjAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE4LTA2LTI2VDAwOjU1OjMyLTA0OjAwDh6OeQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOC0wNi0yNlQwMDo1NTozMi0wNDowMH9DNsUAAAAASUVORK5CYII=" />
+	<style oceloti-assets=""></style>
+	<style oceloti-module="oceloti"></style>
+	<style oceloti-module="standard-controls"></style>
+	<style oceloti-module="thing-manager"></style>
+	<style oceloti-module="dnd-manager"></style>
+	<style oceloti-module="van"></style>
+	<style oceloti-module="cursor-manager"></style>
+	<style oceloti-module="context-menu"></style>
+	<style oceloti-module="inventory"></style>
+	<style oceloti-module="hand-cursor"></style>
+	<style oceloti-module="save-to-file"></style>
+	<style oceloti-module="local-bag"></style>
+	<style oceloti-module="notebook-paper"></style>
+	<style oceloti-module="cell-editor"></style>
+	<style oceloti-module="thing-handbook"></style>
+	<style oceloti-module="image-print"></style>
+	<style oceloti-module="video-player"></style>
+	<style oceloti-module="audio-player"></style>
 	<style>
 		#entrance {
 			position: relative;
 			width: 100vw;
 			max-width: 1920px;
 			height: auto;
-			display: flex;
+			display: none;
+/*			display: flex;*/
 			flex-direction: column;
 			align-items: center;
 			color: white;
@@ -46,45 +43,7 @@
 			z-index: 1000;
 			height: 100vh;
 			max-height: 1920px;
-			/*background: rgba(50, 50, 50, 0.1);
-			backdrop-filter: blur(15px);
-			border: 1px solid rgba(255,255,255,0.15);
-			border-radius: 3px;
-			filter: var(--thing-thickness-1);*/
-		}
-		
-		#entrance h1 {
-			font-size: 4rem;
-/*			filter: drop-shadow(2px 2px black);*/
-		}
-
-		#entrance h2 {
-			margin-top: 2rem;
-			font-size: 1.5rem;
-			font-weight: semibold;
-/*			filter: drop-shadow(2px 2px black);*/
-		}
-
-		#entrance p {
-			font-size: 1.15rem;
-			line-height: 1.35;
-			max-width: 28em;
-			text-align: center;
-/*			filter: drop-shadow(2px 2px black);*/
-		}
-
-		#entrance a:not(.button) {
-			color: lightskyblue;
 			text-decoration: underline;
-		}
-
-		#entrance a:not(.button):hover {
-			font-style: italic;
-		}
-
-		#entrance p.headline {
-			font-size: 1.5rem;
-			max-width: 28em;
 		}
 	</style>
 </head>
@@ -92,7 +51,7 @@
 	<div id="hud">
 	</div>
 	<main
-		oceloti-room="notes"
+		oceloti-room="untitled room"
 		style="
 			width: 4000px;
 			height: 4000px;
@@ -102,37 +61,25 @@
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
-		<section id="entrance">
-			<h1>ROOOM</h1>
-			<p class="headline">Welcome to rooom, a tool for making digital gardens and online spaces.</p>
-			<a draggable="false" class="button" href="#center">Start Exploring</a>
-
-			<h2>
-				How was this built?
-			</h2>
-			<p>
-				This tool was made using <a href="https://github.com/Fergarram/oceloti.js">Oceloti.js</a>, a webroom framework that I created after prototyping a lot of infinite canvas tools. 
-			</p>
-		</section>
+		<section id="entrance"></section>
 	</main>
 </body>
-<script oceloti-modules="
-	oceloti
-	standard-controls
-	thing-manager
-	dnd-manager
-	van
-	cursor-manager
-	context-menu
-	inventory
-	hand-cursor
-	save-to-file
-	local-bag
-	notebook-paper
-	cell-editor
-	thing-handbook
-	image-print
-	video-player
-	audio-player
-">/* SCRIPT MODULES */</script>
+	<script oceloti-assets=""></script>
+	<script oceloti-module="oceloti"></script>
+	<script oceloti-module="standard-controls"></script>
+	<script oceloti-module="thing-manager"></script>
+	<script oceloti-module="dnd-manager"></script>
+	<script oceloti-module="van"></script>
+	<script oceloti-module="cursor-manager"></script>
+	<script oceloti-module="context-menu"></script>
+	<script oceloti-module="inventory"></script>
+	<script oceloti-module="hand-cursor"></script>
+	<script oceloti-module="save-to-file"></script>
+	<script oceloti-module="local-bag"></script>
+	<script oceloti-module="notebook-paper"></script>
+	<script oceloti-module="cell-editor"></script>
+	<script oceloti-module="thing-handbook"></script>
+	<script oceloti-module="image-print"></script>
+	<script oceloti-module="video-player"></script>
+	<script oceloti-module="audio-player"></script>
 </html>

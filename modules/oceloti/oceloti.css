@@ -1,11 +1,3 @@
-[oceloti-reset] {
-/*	scroll-behavior: smooth;*/
-}
-
-[oceloti-reset="black"] {
-	background-color: black;
-}
-
 [oceloti-reset] body {
 	display: flex;
 	align-items: center;
