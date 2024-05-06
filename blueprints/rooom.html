@@ -5,9 +5,33 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>untitled room</title>
 	<meta name="description" content="An undescribed room.">
+	<!-- Order in this list doesn't matter because that can be manually adjusted in the tag order of the style and script tags -->
+	<meta name="oceloti-module-list" content="
+		oceloti
+		css-reset
+		paper-theme
+		standard-controls
+		thing-manager
+		dnd-manager
+		van
+		cursor-manager
+		context-menu
+		inventory
+		hand-cursor
+		save-to-file
+		local-bag
+		notebook-paper
+		cell-editor
+		thing-handbook
+		image-print
+		video-player
+		audio-player
+	">
 	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAHlBMVEUAAACAgID//////wDAwMAAAAAAgIAAgAAAAP8AAIAiroc5AAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAAHdElNRQfiBhoANyCM1dKOAAAAYElEQVQI12NgFAQCAQYGBkYlZSVlRxADSCs5CUBFQkNBIippKcquIBE3sTInEEM5JSNdGCyS5D5jEkREPGMyWESivRMi4tk51RksohIaouQKNRliDogFYriAAIgRCgYMAMxuFv00I9ZjAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE4LTA2LTI2VDAwOjU1OjMyLTA0OjAwDh6OeQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOC0wNi0yNlQwMDo1NTozMi0wNDowMH9DNsUAAAAASUVORK5CYII=" />
-	<style oceloti-assets=""></style>
+	<style oceloti-assets="cursors bgs">/* STATIC ASSETS */</style>
 	<style oceloti-module="oceloti"></style>
+	<style oceloti-module="css-reset"></style>
+	<style oceloti-module="paper-theme"></style>
 	<style oceloti-module="standard-controls"></style>
 	<style oceloti-module="thing-manager"></style>
 	<style oceloti-module="dnd-manager"></style>
@@ -56,7 +80,7 @@
 			width: 4000px;
 			height: 4000px;
 			background-color: white;
-			background-image: var(--assets-wood-png);
+			background-image: var(--assets-bgs-wood-png);
 			background-size: 256px;
 			image-rendering: pixelated;
 	">
@@ -66,6 +90,8 @@
 </body>
 	<script oceloti-assets=""></script>
 	<script oceloti-module="oceloti"></script>
+	<script oceloti-module="css-reset"></script>
+	<script oceloti-module="paper-theme"></script>
 	<script oceloti-module="standard-controls"></script>
 	<script oceloti-module="thing-manager"></script>
 	<script oceloti-module="dnd-manager"></script>

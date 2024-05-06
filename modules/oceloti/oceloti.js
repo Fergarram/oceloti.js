@@ -12,12 +12,10 @@
 		room,
 		room_name,
 		hud,
-		css_modules: document.querySelector("style[oceloti-modules]")
-			.getAttribute("oceloti-modules").trim().split(/\s+/),
+		module_list: document.querySelector('meta[name="oceloti-module-list"]')
+			.getAttribute("content").trim().split(/\s+/),
 		css_assets:  document.querySelector("style[oceloti-assets]")
 			.getAttribute("oceloti-assets").trim().split(/\s+/),
-		js_modules: document.querySelector("script[oceloti-modules]")
-			.getAttribute("oceloti-modules").trim().split(/\s+/),
 		active_modules: {},
 		utils: {}
 	};
@@ -45,8 +43,8 @@
 			throw new Error("Oceloti was not setup correctly:", oceloti);
 		}
 
-		if (!oceloti.js_modules.includes(name)) {
-			throw new Error(`Trying to register undeclared module "${name}". Available modules:`, oceloti.js_modules);
+		if (!oceloti.module_list.includes(name)) {
+			throw new Error(`Trying to register undeclared module "${name}". Available modules:`, oceloti.module_list);
 		}
 
 		if (oceloti.active_modules[name]) {
@@ -54,7 +52,7 @@
 		}
 
 		deps.forEach(mod => {
-			if (!oceloti.js_modules.includes(mod)) {
+			if (!oceloti.module_list.includes(mod)) {
 				console.error(`"${name}" module requires "${mod}" but it wasn't included in room.`);
 				return;
 			}
