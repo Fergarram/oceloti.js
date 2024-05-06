@@ -645,8 +645,8 @@
 			width: 4000px;
 			height: 4000px;
 			background-color: white;
-			background-image: var(--assets-bgs-wood-png);
-			background-size: 256px;
+			background-image: var(--assets-bgs-grid2-png);
+			background-size: 128px;
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
@@ -953,11 +953,11 @@
 				});
 		
 				// @STEP: Move to the save module.
-				const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
-				if (room_snapshot) {
+				// const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
+				// if (room_snapshot) {
 					// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
-					room.innerHTML = room_snapshot;
-				}
+					// room.innerHTML = room_snapshot;
+				// }
 		
 				observer.observe(room, { childList: true });
 		

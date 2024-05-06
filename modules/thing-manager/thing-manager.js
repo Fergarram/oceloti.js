@@ -63,11 +63,11 @@ register_oceloti_module({
 		});
 
 		// @STEP: Move to the save module.
-		const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
-		if (room_snapshot) {
+		// const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
+		// if (room_snapshot) {
 			// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
-			room.innerHTML = room_snapshot;
-		}
+			// room.innerHTML = room_snapshot;
+		// }
 
 		observer.observe(room, { childList: true });
 

@@ -8,7 +8,6 @@ When running the `build.js` script, it will generate the built `room` and replac
 
 ## Internals:
 - [ ] Use indexeddb for saving room backups.
-- [ ] Finish implmenting loading individual assets.
 - [ ] Add base64 js-available assets `/modules/[module_name]/assets.json` for modules.
 - [ ] Find a way to not remount or to not reload media/canvas/running things.
 
