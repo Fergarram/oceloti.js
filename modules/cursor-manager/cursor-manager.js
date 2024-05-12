@@ -3,13 +3,19 @@ register_oceloti_module({
 	deps: ["van"],
 	init({ use_module, hud }) {
 		const van = use_module("van");
-
 		const { div } = van.tags;
 		const current_cursor = van.state("");
+		let switch_timeout = null;
 
 		const exports = {
 			cursors: {},
 			active_cursor: "",
+			mouse_pos: {
+				rx: 0,
+				ry: 0,
+				cx: 0,
+				cy: 0,
+			},
 			register_cursor({ slug, icon, name, description }) {
 				exports.cursors[slug] = {
 					name,
@@ -23,6 +29,12 @@ register_oceloti_module({
 					console.error("Trying to activate a non-existent cursor:", slug);
 					return;
 				}
+				if (exports.active_cursor) {
+					const cursor_indicator_el = document.getElementById("cursor-indicator");
+					cursor_indicator_el.style.opacity = "100";
+					clearTimeout(switch_timeout);
+					switch_timeout = setTimeout(() => cursor_indicator_el.style.removeProperty("opacity"), 1000);
+				}
 				exports.active_cursor = slug;
 				current_cursor.val = exports.cursors[slug].icon;
 				document.body.setAttribute("oceloti-cursor", slug);
@@ -32,14 +44,12 @@ register_oceloti_module({
 			},
 		};
 
-		// Default pointer cursor
-		exports.register_cursor({
-			name: "Pointer Cursor",
-			slug: "pointer",
-			icon: "👆",
-			description: "Pointer cursor that allows to interact or inspect things."
-		});
-		exports.set_active_cursor("pointer");
+		const cursor_indicator = div({
+			id: "cursor-indicator",
+		},
+			div(current_cursor)
+		);
+		van.add(hud, cursor_indicator);
 
 		window.addEventListener("keydown", handle_keydown);
 		function handle_keydown(e) {
@@ -67,26 +77,22 @@ register_oceloti_module({
 			}
 		}
 
-		const cursor_indicator = div({
-			style: `
-				position: fixed;
-				top: 12px;
-				right: 12px;
-				font-size: 24px;
-				line-height: 24px;
-				pointer-events: none;
-				background: black;
-				border-radius: 9999px;
-				width: 48px;
-				height: 48px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			`
-		},
-			div(current_cursor)
-		);
-		van.add(hud, cursor_indicator)
+		window.addEventListener("mousemove", handle_mousemove);
+		function handle_mousemove(e) {
+			if (!cursor_indicator) return;
+			exports.mouse_pos.cx = e.clientX;
+			exports.mouse_pos.cy = e.clientY;
+			cursor_indicator.style.transform = `translate3d(${exports.mouse_pos.cx}px, ${exports.mouse_pos.cy}px, 0)`;
+		}
+
+		// Default pointer cursor
+		exports.register_cursor({
+			name: "Pointer Cursor",
+			slug: "pointer",
+			icon: "指",
+			description: "Pointer cursor that allows to interact or inspect things."
+		});
+		exports.set_active_cursor("pointer");
 
 		return exports;
 	}

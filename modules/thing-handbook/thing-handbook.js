@@ -10,6 +10,7 @@ register_oceloti_module({
 		room.addEventListener("mousedown", (e) => {
 			if (e.button !== 2) return;
 			if (e.target !== room) return;
+			// @STEP: This is unfinished, it's hardcoded.
 			add_menu("handbook", [
 				button({
 					onclick() {
@@ -25,7 +26,7 @@ register_oceloti_module({
 						const y = window.scrollY + e.clientY;
 						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 					}
-				}, "🗒️ new paper"),
+				}, "紙 new paper"),
 			]);
 		});
 	}

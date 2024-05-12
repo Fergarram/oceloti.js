@@ -19,13 +19,13 @@
 		inventory
 		hand-cursor
 		save-to-file
-		local-bag
 		notebook-paper
 		cell-editor
 		thing-handbook
 		image-print
 		video-player
 		audio-player
+		module-editor
 	">
 	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAHlBMVEUAAACAgID//////wDAwMAAAAAAgIAAgAAAAP8AAIAiroc5AAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAAHdElNRQfiBhoANyCM1dKOAAAAYElEQVQI12NgFAQCAQYGBkYlZSVlRxADSCs5CUBFQkNBIippKcquIBE3sTInEEM5JSNdGCyS5D5jEkREPGMyWESivRMi4tk51RksohIaouQKNRliDogFYriAAIgRCgYMAMxuFv00I9ZjAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE4LTA2LTI2VDAwOjU1OjMyLTA0OjAwDh6OeQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOC0wNi0yNlQwMDo1NTozMi0wNDowMH9DNsUAAAAASUVORK5CYII=" />
 	<style oceloti-assets="cursors bgs">:root {
@@ -278,7 +278,30 @@
 	<style oceloti-module="thing-manager"></style>
 	<style oceloti-module="dnd-manager"></style>
 	<style oceloti-module="van"></style>
-	<style oceloti-module="cursor-manager"></style>
+	<style oceloti-module="cursor-manager">
+		#cursor-indicator {
+			opacity: 0;
+			position: fixed;
+			pointer-events: none;
+			z-index: 1000;
+			top: 0;
+			left: 0;
+			margin-left: 24px;
+			margin-top: -6px;
+			font-size: 16px;
+			font-weight: bold;
+			pointer-events: none;
+			color: white;
+			background: black;
+			border-radius: 9999px;
+			width: 36px;
+			height: 36px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: opacity var(--ease-curve-1) 250ms;
+		}
+	</style>
 	<style oceloti-module="context-menu">
 		#oceloti-context-menu {
 			position: fixed;
@@ -292,7 +315,7 @@
 			padding: 3px;
 			filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
 			border-radius: 4px;
-			z-index: 9999999;
+			z-index: 999;
 		}
 		
 		#oceloti-context-menu .separator {
@@ -334,62 +357,6 @@
 		}
 	</style>
 	<style oceloti-module="save-to-file"></style>
-	<style oceloti-module="local-bag">
-		@keyframes slide_top {
-		  from {
-		    opacity: 0;
-		    transform: translateY(95%);
-		  }
-		  to {
-		    opacity: 1;
-		  }
-		}
-		
-		.inventory-grid {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr);
-			gap: 2px;
-			padding: 4px;
-			position: absolute;
-			left: 0;
-			bottom: -8px;
-			width: fit-content;
-			max-height: 65vh;
-			overflow: scroll;
-			background-color: lightgray;
-			border-radius: 0.5rem;
-			transform: translateY(100%);
-			filter: drop-shadow(2px 2px);
-		/*	animation-name: slide_top;
-			animation-duration: 200ms;
-			animation-fill-mode: forwards;*/
-			list-style: none;
-		}
-		
-		.inventory-slot {
-			position: relative;
-			border: 1px solid darkgray;
-			border-radius: 4px;
-			width: 48px;
-			height: 48px;
-		}
-		
-		.inventory-slot.dragover,
-		.inventory-slot:hover {
-			background-color: silver;
-		}
-		
-		.inventory-item {
-			user-select: none;
-		-webkit-user-select: none;
-			display: flex;
-			width: 100%;
-			height: 100%;
-			align-items: center;
-			justify-content: center;
-			font-size: 30px;
-		}
-	</style>
 	<style oceloti-module="notebook-paper">
 		[oceloti-thing="notebook-paper"] {
 			height: fit-content;
@@ -402,6 +369,8 @@
 			image-rendering: pixelated;
 			line-height: 20px;
 			box-shadow: var(--thing-thickness-1-fast);
+			overflow: hidden;
+			resize: both;
 		}
 		
 		[oceloti-thing="notebook-paper"]::before {
@@ -427,7 +396,7 @@
 		}
 		
 		[oceloti-thing="notebook-paper"] [oceloti-ref="content"] {
-			min-height: 400px;
+			min-height: 100px;
 			height: fit-content;
 			word-wrap: break-word;
 			overflow: hidden;
@@ -613,6 +582,14 @@
 		}
 		
 	</style>
+	<style oceloti-module="module-editor">
+		#module-list-viewer {
+			display: flex;
+			display: none;
+			gap: 0.25rem;
+			flex-direction: column;
+		}
+	</style>
 	<style>
 		#entrance {
 			position: relative;
@@ -725,6 +702,7 @@
 					room,
 					room_name,
 					hud,
+					module_list: oceloti.module_list,
 					use_module(mod) {
 						return oceloti.active_modules[mod];
 					},
@@ -1164,13 +1142,19 @@
 			deps: ["van"],
 			init({ use_module, hud }) {
 				const van = use_module("van");
-		
 				const { div } = van.tags;
 				const current_cursor = van.state("");
+				let switch_timeout = null;
 		
 				const exports = {
 					cursors: {},
 					active_cursor: "",
+					mouse_pos: {
+						rx: 0,
+						ry: 0,
+						cx: 0,
+						cy: 0,
+					},
 					register_cursor({ slug, icon, name, description }) {
 						exports.cursors[slug] = {
 							name,
@@ -1184,6 +1168,12 @@
 							console.error("Trying to activate a non-existent cursor:", slug);
 							return;
 						}
+						if (exports.active_cursor) {
+							const cursor_indicator_el = document.getElementById("cursor-indicator");
+							cursor_indicator_el.style.opacity = "100";
+							clearTimeout(switch_timeout);
+							switch_timeout = setTimeout(() => cursor_indicator_el.style.removeProperty("opacity"), 1000);
+						}
 						exports.active_cursor = slug;
 						current_cursor.val = exports.cursors[slug].icon;
 						document.body.setAttribute("oceloti-cursor", slug);
@@ -1193,14 +1183,12 @@
 					},
 				};
 		
-				// Default pointer cursor
-				exports.register_cursor({
-					name: "Pointer Cursor",
-					slug: "pointer",
-					icon: "👆",
-					description: "Pointer cursor that allows to interact or inspect things."
-				});
-				exports.set_active_cursor("pointer");
+				const cursor_indicator = div({
+					id: "cursor-indicator",
+				},
+					div(current_cursor)
+				);
+				van.add(hud, cursor_indicator);
 		
 				window.addEventListener("keydown", handle_keydown);
 				function handle_keydown(e) {
@@ -1228,26 +1216,22 @@
 					}
 				}
 		
-				const cursor_indicator = div({
-					style: `
-						position: fixed;
-						top: 12px;
-						right: 12px;
-						font-size: 24px;
-						line-height: 24px;
-						pointer-events: none;
-						background: black;
-						border-radius: 9999px;
-						width: 48px;
-						height: 48px;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-					`
-				},
-					div(current_cursor)
-				);
-				van.add(hud, cursor_indicator)
+				window.addEventListener("mousemove", handle_mousemove);
+				function handle_mousemove(e) {
+					if (!cursor_indicator) return;
+					exports.mouse_pos.cx = e.clientX;
+					exports.mouse_pos.cy = e.clientY;
+					cursor_indicator.style.transform = `translate3d(${exports.mouse_pos.cx}px, ${exports.mouse_pos.cy}px, 0)`;
+				}
+		
+				// Default pointer cursor
+				exports.register_cursor({
+					name: "Pointer Cursor",
+					slug: "pointer",
+					icon: "指",
+					description: "Pointer cursor that allows to interact or inspect things."
+				});
+				exports.set_active_cursor("pointer");
 		
 				return exports;
 			}
@@ -1752,7 +1736,7 @@
 				register_cursor({
 					name: "Hand Cursor",
 					slug: "hand",
-					icon: "🤚",
+					icon: "移",
 					description: "Magic hand that allows you to move things and yourself around."
 				});
 		
@@ -1986,215 +1970,6 @@
 			}
 		});
 	</script>
-	<script oceloti-module="local-bag">
-		register_oceloti_module({
-			name: "local-bag",
-			deps: ["van", "context-menu", "inventory"],
-			init({ use_module, hud }) {
-				const van = use_module("van");
-				const { add_menu } = use_module("context-menu");
-				const {
-					drop_item_from_bag,
-					add_item_to_bag,
-					move_item_in_bag,
-					trash_item_from_bag,
-					create_new_bag,
-					watch_bag,
-				} = use_module("inventory");
-				
-				const slots = create_new_bag("local-bag", 18);
-		
-				const { div, button, ul, li, span } = van.tags;
-		
-				const show_inventory = van.state(false);
-		
-				function Slot(slot, index) {
-					const attrs = {
-						index,
-						class: "inventory-slot",
-					};
-					if (slot) {
-						attrs["oceloti-menu"] = "inventory-item";
-						attrs["title"] = slot.description;
-						attrs["onmousedown"] = (e) => {
-							if (e.button !== 2) return;
-							add_menu("inventory_item", [
-								button(
-									{
-										onclick: () => {
-											drop_item_from_bag(
-												"local-bag",
-												index,
-												// @STEP: Get computed transform scale
-												window.scrollX + window.innerWidth / 2,
-												window.scrollY + window.innerHeight / 2,
-											);
-										},
-									},
-									"⤵️ Drop",
-								),
-								button(
-									{
-										onclick: () => {},
-									},
-									"🔍 inspect",
-								),
-								button(
-									{
-										onclick: () => {
-											// @TODO: Implement stackable items
-										},
-									},
-									"🖨️ copy",
-								),
-								button(
-									{
-										onclick: () => {
-											trash_item_from_bag("local-bag", index);
-										},
-									},
-									"🗑️ Trash",
-								),
-							]);
-						};
-					} else {
-						attrs["ondragover"] = (e) => {
-							e.preventDefault();
-							if (!e.dataTransfer.types.includes("oceloti/item")) {
-								e.dataTransfer.effectAllowed = "none";
-								return;
-							}
-							e.target.classList.add("dragover");
-						};
-						attrs["ondragleave"] = (e) => {
-							e.preventDefault();
-							if (!e.dataTransfer.types.includes("oceloti/item")) {
-								e.dataTransfer.effectAllowed = "none";
-								return;
-							}
-							e.target.classList.remove("dragover");
-						};
-						attrs["ondrop"] = (e) => {
-							e.preventDefault();
-							if (e.dataTransfer.types.includes("oceloti/item")) {
-								const slot = JSON.parse(
-									e.dataTransfer.getData("oceloti/item"),
-								);
-								const to = Number(
-									e.currentTarget.getAttribute("index"),
-								);
-								move_item_in_bag("local-bag", slot.index, to);
-							}
-						};
-					}
-					return li(
-						attrs,
-						span(
-							{
-								draggable: slot ? "true" : "false",
-								style: !slot ? "display: none;" : "",
-								class: "inventory-item emoji",
-								ondragstart: (e) => {
-									e.dataTransfer.setData(
-										"oceloti/item",
-										JSON.stringify({
-											index,
-											bag_id: "local-bag",
-											...slot,
-										}),
-									);
-									e.dataTransfer.effectAllowed = "move";
-								},
-							},
-							slot ? slot.icon : "",
-						),
-					);
-				}
-		
-				function InventoryGrid(list) {
-					return ul({
-						class: "inventory-grid",
-						style: () => `display: ${show_inventory.val ? "grid" : "none"}`
-					},
-						...list.map((slot, i) => Slot(slot, i)),
-					);
-				}
-		
-				van.add(
-					hud,
-					div({
-							style: "position: relative;",
-						},
-						button({
-								onclick: (e) => {
-									e.target.classList.toggle("selected");
-									show_inventory.val = !show_inventory.val;
-								},
-							},
-							"🎒 local bag",
-						),
-						() => InventoryGrid(slots.val),
-					),
-				);
-		
-				window.addEventListener("load", () => {
-					const encoded_local_items = localStorage.getItem("OCELOTI_LOCAL_BAG");
-		
-					if (encoded_local_items === null) {
-						[
-							{
-								handler: "notebook-paper",
-								width: 300,
-								height: 400,
-								state: "read",
-								content: "",
-							},
-							{
-								handler: "pdf-reader",
-								width: 300,
-								height: 400,
-								state: "read",
-								content:
-									"https://arena-attachments.s3.amazonaws.com/18283024/b0ae4bfcbafdb3f9ad61216303baf1f0.pdf?1664478680",
-							},
-							{
-								handler: "clicker-card",
-								width: 400,
-								height: 400,
-								state: "default",
-								content: "0",
-							},
-							{
-								handler: "cell-editor",
-								width: 400,
-								height: 400,
-								state: "default",
-								content: "",
-							},
-							{
-								handler: "notebook-paper",
-								width: 300,
-								height: 400,
-								state: "read",
-								content: "Hello world",
-							},
-						].forEach((item, index) => add_item_to_bag("local-bag", item));
-					} else {
-						const contents = JSON.parse(encoded_local_items).map(s => s === false ? null : s);
-						contents.forEach(s => {
-							if (s) add_item_to_bag("local-bag", s.data, s.index);
-						});
-					}
-		
-					watch_bag("local-bag", (bag) => {
-						const encoded_bag = JSON.stringify(bag.map((s, index) => s === null ? false : { ...s, index }));
-						localStorage.setItem("OCELOTI_LOCAL_BAG", encoded_bag);
-					});
-				});
-			},
-		});
-		
-	</script>
 	<script oceloti-module="notebook-paper">
 		register_oceloti_module({
 			name: "notebook-paper",
@@ -2208,7 +1983,7 @@
 				const THING_NAME = "notebook-paper";
 		
 				register_item_handler({
-					icon: () => "🗒️",
+					icon: () => "紙",
 					name: THING_NAME,
 					description: ({ content, state }) => {
 						if (content) return "A piece of paper with text.";
@@ -2498,6 +2273,7 @@
 				room.addEventListener("mousedown", (e) => {
 					if (e.button !== 2) return;
 					if (e.target !== room) return;
+					// @STEP: This is unfinished, it's hardcoded.
 					add_menu("handbook", [
 						button({
 							onclick() {
@@ -2513,7 +2289,7 @@
 								const y = window.scrollY + e.clientY;
 								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 							}
-						}, "🗒️ new paper"),
+						}, "紙 new paper"),
 					]);
 				});
 			}
@@ -2702,6 +2478,106 @@
 				function initializer(thing) {
 					
 				}
+			}
+		});
+	</script>
+	<script oceloti-module="module-editor">
+		register_oceloti_module({
+			name: "module-editor",
+			deps: ["inventory", "van", "context-menu"],
+			init({ use_module, room, room_name, next_loop, module_list }) {
+				const van = use_module("van");
+				const { add_menu } = use_module("context-menu");
+				const { register_item_handler, get_item_handler } = use_module("inventory");
+				const { article, div, button, span } = van.tags;
+		
+				const THING_NAME = "module-editor";
+		
+				register_item_handler({
+					icon: () => "部",
+					name: THING_NAME,
+					description: ({ content, state }) => "Module",
+					initializer,
+					encoder,
+					renderer
+				});
+		
+				function renderer({ x, y, width, content }) {
+					const html = content && content.includes("oceloti-ref")
+						? content
+						: `<div oceloti-ref="content">${content}</div>`;
+					const el = article({
+						"oceloti-thing": THING_NAME,
+						"oceloti-inner-state": "read",
+						"oceloti-thing-state": "idle",
+						style: `
+							left: ${x - (width / 2)}px;
+							top: ${y - 140}px;
+							width: ${width}px;
+						`
+					},
+						div({ "oceloti-ref": "content" }),
+						div({ class: "decor" })
+					);
+					el.firstElementChild.outerHTML = html;
+					el.firstElementChild.removeAttribute("contenteditable");
+		
+					return el;
+				}
+		
+				function encoder(thing) {
+					const content = thing.querySelector(`[oceloti-ref="content"]`);
+					return {
+						handler: THING_NAME,
+						state: "default",
+						width: thing.offsetWidth,
+						height: thing.offsetHeight,
+						content: content.outerHTML,
+					};
+				}
+		
+				function initializer(thing) {
+					
+				}
+		
+				window.addEventListener("load", () => {
+					window.open_module_editor = () => {
+						const list_el = document.getElementById("module-list-viewer");
+						if (!list_el) return;
+						list_el.style.display = "flex";
+					};
+					
+					const css = `font-weight: bold;`;
+					console.log("Call %copen_module_editor()%c in the console to show the UI.", css);
+					
+					const place_code_paper = (content) => {
+						const data = {
+							handler: "notebook-paper",
+							width: 300,
+							height: 400,
+							state: "read",
+							content,
+						};
+						const available_handlers = get_item_handler(data.handler);
+						const x = window.scrollX + window.innerWidth / 2;
+						const y = window.scrollY + window.innerHeight / 2;
+						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+					};
+		
+					const module_list_viewer = div({
+						id: "module-list-viewer"
+					},
+						module_list.map((mod) => {
+							const script_el = document.querySelector(`script[oceloti-module="${mod}"]`);
+							const code = `<pre>${script_el.innerHTML}</pre>`;
+							return button({ onclick: () => place_code_paper(code) }, mod);
+						})
+					);
+		
+					van.add(hud, module_list_viewer);
+		
+					open_module_editor();
+				});
 			}
 		});
 	</script>

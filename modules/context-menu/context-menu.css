@@ -10,7 +10,7 @@
 	padding: 3px;
 	filter: drop-shadow(-1px -1px white) drop-shadow(2px 2px);
 	border-radius: 4px;
-	z-index: 9999999;
+	z-index: 999;
 }
 
 #oceloti-context-menu .separator {

@@ -68,6 +68,7 @@
 			room,
 			room_name,
 			hud,
+			module_list: oceloti.module_list,
 			use_module(mod) {
 				return oceloti.active_modules[mod];
 			},

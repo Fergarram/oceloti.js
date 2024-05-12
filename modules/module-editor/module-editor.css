@@ -1,0 +1,6 @@
+#module-list-viewer {
+	display: flex;
+	display: none;
+	gap: 0.25rem;
+	flex-direction: column;
+}
