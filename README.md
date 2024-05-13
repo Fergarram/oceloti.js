@@ -8,7 +8,9 @@ When running the `build.js` script, it will generate the built `room` and replac
 
 ## Things:
 - [ ] Customizable paper
+- [ ] Better image resize controls
 - [ ] Connected Pins
+- [ ] Codepad allows to save to dom so at least one can save new version
 
 ## Internals:
 - [ ] Use indexeddb for saving room backups.
