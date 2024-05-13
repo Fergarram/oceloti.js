@@ -91,8 +91,6 @@ register_oceloti_module({
 			);
 
 			van.add(hud, module_list_viewer);
-
-			open_module_editor();
 		});
 	}
 });
