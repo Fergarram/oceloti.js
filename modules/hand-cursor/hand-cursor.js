@@ -27,6 +27,12 @@ register_oceloti_module({
 		}
 
 		document.addEventListener('auxclick', handle_auxclick);
+		room.addEventListener("contextmenu", handle_contextmenu);
+
+		function handle_contextmenu(e) {
+			if (!is_cursor_active("hand")) return;
+			e.preventDefault();
+		}
 
 		on_place(async (thing, first_mount = false) => {
 			if (!first_mount) {
@@ -38,12 +44,6 @@ register_oceloti_module({
 
 			thing.addEventListener("mousedown", handle_mousedown);
 			thing.addEventListener("contextmenu", handle_contextmenu);
-			room.addEventListener("contextmenu", handle_contextmenu);
-
-			function handle_contextmenu(e) {
-				if (!is_cursor_active("hand")) return;
-				e.preventDefault();
-			}
 
 			function handle_mousedown(e) {
 				if (!is_cursor_active("hand")) return;
