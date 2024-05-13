@@ -5,9 +5,6 @@ register_oceloti_module({
 		let room_width = room.offsetWidth;
 		let room_height = room.offsetHeight;
 
-		// @TODO: Save zoom to local storage.
-		window.zoom = 100;
-
 		if (window.location.hash) {
 			const id = window.location.hash.replace("#", "");
 			const el = document.getElementById(id);
@@ -121,31 +118,6 @@ register_oceloti_module({
 			}
 
 			if (!e.ctrlKey) return;
-
-
-			// @NOTE: alternative transform-based zoom sketch
-
-			// e.preventDefault();
-
-			// window.zoom = zoom - e.deltaY;
-			// console.log(window.zoom);
-			// room.style.willChange = "transform";
-			// room.style.transformOrigin = "top left";
-			// room.style.transform = `scale(${window.zoom / 100}) translateZ(0)`
-
-			// return;
-
-			const dir = e.deltaY > 0 ? -10 : 10;
-			let zoom = window.devicePixelRatio * 100;
-			zoom = Math.round(zoom + dir);
-			zoom = Math.round(zoom / 10) * 10;
-			window.zoom = zoom;
-			if (zoom === 100) {
-				document.body.classList.remove("has-zoom");
-			} else {
-				document.body.classList.add("has-zoom");
-			}
-			window.dispatchEvent(new Event("zoom"));
 		}
 	}
 });

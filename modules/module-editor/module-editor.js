@@ -53,7 +53,7 @@ register_oceloti_module({
 		}
 
 		function initializer(thing) {
-			
+
 		}
 
 		window.addEventListener("load", () => {
@@ -62,13 +62,13 @@ register_oceloti_module({
 				if (!list_el) return;
 				list_el.style.display = "flex";
 			};
-			
+
 			const css = `font-weight: bold;`;
 			console.log("Call %copen_module_editor()%c in the console to show the UI.", css);
-			
+
 			const place_code_paper = (content) => {
 				const data = {
-					handler: "notebook-paper",
+					handler: "codepad",
 					width: 300,
 					height: 400,
 					state: "read",
@@ -85,7 +85,7 @@ register_oceloti_module({
 			},
 				module_list.map((mod) => {
 					const script_el = document.querySelector(`script[oceloti-module="${mod}"]`);
-					const code = `<pre>${script_el.innerHTML}</pre>`;
+					const code = `${script_el.innerHTML.replaceAll("\n\t\t", "\n").trim()}`;
 					return button({ onclick: () => place_code_paper(code) }, mod);
 				})
 			);

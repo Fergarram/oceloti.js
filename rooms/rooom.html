@@ -20,6 +20,7 @@
 		hand-cursor
 		save-to-file
 		notebook-paper
+		codepad
 		cell-editor
 		thing-handbook
 		image-print
@@ -412,6 +413,29 @@
 		}
 		*/
 	</style>
+	<style oceloti-module="codepad">
+		[oceloti-thing="codepad"] {
+		    min-height: 10rem;
+		    min-width: 10rem;
+		    padding: 8px;
+		    background-color: #f9f7ee;
+		    image-rendering: pixelated;
+		    box-shadow: var(--thing-thickness-1-fast);
+		    overflow: scroll;
+		    resize: both;
+		    border-radius: 6px;
+		}
+		
+		[oceloti-thing="codepad"] pre, textarea {
+		    border-radius: 5px;
+		    tab-size: 4;
+		    font-size: 12px;
+		    line-height: 1.4;
+		    width: 100%;
+		    height: 100%;
+		    resize: none;
+		}
+	</style>
 	<style oceloti-module="cell-editor">
 		[oceloti-thing="cell-editor"] {
 			display: flex;
@@ -671,8 +695,6 @@
 			};
 		
 			window.register_oceloti_module = function({ name, deps, init }) {
-				// @TODO: Require a reset callback.
-				//        The goal is to have a way for users to reset modules if something goes wrong.
 				if (!oceloti || !oceloti.room || !oceloti.hud || !oceloti.room_name) {
 					throw new Error("Oceloti was not setup correctly:", oceloti);
 				}
@@ -719,9 +741,6 @@
 			init({ use_module, room, are_dialogs_open, next_loop }) {
 				let room_width = room.offsetWidth;
 				let room_height = room.offsetHeight;
-		
-				// @TODO: Save zoom to local storage.
-				window.zoom = 100;
 		
 				if (window.location.hash) {
 					const id = window.location.hash.replace("#", "");
@@ -836,31 +855,6 @@
 					}
 		
 					if (!e.ctrlKey) return;
-		
-		
-					// @NOTE: alternative transform-based zoom sketch
-		
-					// e.preventDefault();
-		
-					// window.zoom = zoom - e.deltaY;
-					// console.log(window.zoom);
-					// room.style.willChange = "transform";
-					// room.style.transformOrigin = "top left";
-					// room.style.transform = `scale(${window.zoom / 100}) translateZ(0)`
-		
-					// return;
-		
-					const dir = e.deltaY > 0 ? -10 : 10;
-					let zoom = window.devicePixelRatio * 100;
-					zoom = Math.round(zoom + dir);
-					zoom = Math.round(zoom / 10) * 10;
-					window.zoom = zoom;
-					if (zoom === 100) {
-						document.body.classList.remove("has-zoom");
-					} else {
-						document.body.classList.add("has-zoom");
-					}
-					window.dispatchEvent(new Event("zoom"));
 				}
 			}
 		});
@@ -929,13 +923,6 @@
 						}
 					}
 				});
-		
-				// @STEP: Move to the save module.
-				// const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
-				// if (room_snapshot) {
-					// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
-					// room.innerHTML = room_snapshot;
-				// }
 		
 				observer.observe(room, { childList: true });
 		
@@ -1967,6 +1954,12 @@
 					
 					dialog_el.showModal();
 				}
+		
+				// const room_snapshot = localStorage.getItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`);
+				// if (room_snapshot) {
+					// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_initial_${room_name}`, room.innerHTML);
+					// room.innerHTML = room_snapshot;
+				// }
 			}
 		});
 	</script>
@@ -2066,6 +2059,64 @@
 							content.removeAttribute("contenteditable");
 						}
 					}
+				}
+			}
+		});
+	</script>
+	<script oceloti-module="codepad">
+		register_oceloti_module({
+			name: "codepad",
+			deps: ["inventory", "van", "context-menu"],
+			init({ use_module, room, room_name, next_loop }) {
+				const van = use_module("van");
+				const { add_menu } = use_module("context-menu");
+				const { register_item_handler } = use_module("inventory");
+				const { article, div, button, pre, textarea } = van.tags;
+		
+				const THING_NAME = "codepad";
+		
+				register_item_handler({
+					icon: () => "頁",
+					name: THING_NAME,
+					description: ({ content, state }) => {
+						return "A piece of code";
+					},
+					initializer,
+					encoder,
+					renderer
+				});
+		
+				function renderer({ x, y, width, content }) {
+					const el = article({
+						"oceloti-thing": THING_NAME,
+						"oceloti-inner-state": "read",
+						"oceloti-thing-state": "idle",
+						style: `
+							left: ${x - (width / 2)}px;
+							top: ${y - 140}px;
+							width: ${width}px;
+							height: ${width}px;
+						`
+					},
+						textarea({ "oceloti-ref": "content" }, content)
+					);
+		
+					return el;
+				}
+		
+				function encoder(thing) {
+					const content = thing.querySelector(`[oceloti-ref="content"]`);
+					return {
+						handler: THING_NAME,
+						state: "read",
+						width: thing.offsetWidth,
+						height: thing.offsetHeight,
+						content: content.innerText,
+					};
+				}
+		
+				function initializer(thing) {
+		
 				}
 			}
 		});
@@ -2537,7 +2588,7 @@
 				}
 		
 				function initializer(thing) {
-					
+		
 				}
 		
 				window.addEventListener("load", () => {
@@ -2546,13 +2597,13 @@
 						if (!list_el) return;
 						list_el.style.display = "flex";
 					};
-					
+		
 					const css = `font-weight: bold;`;
 					console.log("Call %copen_module_editor()%c in the console to show the UI.", css);
-					
+		
 					const place_code_paper = (content) => {
 						const data = {
-							handler: "notebook-paper",
+							handler: "codepad",
 							width: 300,
 							height: 400,
 							state: "read",
@@ -2569,7 +2620,7 @@
 					},
 						module_list.map((mod) => {
 							const script_el = document.querySelector(`script[oceloti-module="${mod}"]`);
-							const code = `<pre>${script_el.innerHTML}</pre>`;
+							const code = `${script_el.innerHTML.replaceAll("\n\t\t", "\n").trim()}`;
 							return button({ onclick: () => place_code_paper(code) }, mod);
 						})
 					);

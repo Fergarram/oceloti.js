@@ -1,0 +1,21 @@
+[oceloti-thing="codepad"] {
+    min-height: 10rem;
+    min-width: 10rem;
+    padding: 8px;
+    background-color: #f9f7ee;
+    image-rendering: pixelated;
+    box-shadow: var(--thing-thickness-1-fast);
+    overflow: scroll;
+    resize: both;
+    border-radius: 6px;
+}
+
+[oceloti-thing="codepad"] pre, textarea {
+    border-radius: 5px;
+    tab-size: 4;
+    font-size: 12px;
+    line-height: 1.4;
+    width: 100%;
+    height: 100%;
+    resize: none;
+}
