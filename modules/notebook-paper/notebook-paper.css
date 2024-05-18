@@ -1,3 +1,8 @@
+[oceloti-cursor="pointer"] [oceloti-thing="notebook-paper"] {
+	resize: horizontal;
+	overflow: hidden;
+}
+
 [oceloti-thing="notebook-paper"] {
 	height: fit-content;
 	padding: 8px 12px;
@@ -9,8 +14,6 @@
 	image-rendering: pixelated;
 	line-height: 20px;
 	box-shadow: var(--thing-thickness-1-fast);
-	overflow: hidden;
-	resize: both;
 }
 
 [oceloti-thing="notebook-paper"]::before {

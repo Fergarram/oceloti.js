@@ -49,6 +49,7 @@
 			width: fit-content;
 			margin: 0;
 			padding: 0;
+			background-color: black;
 		}
 		
 		[oceloti-room] {
@@ -359,6 +360,11 @@
 	</style>
 	<style oceloti-module="save-to-file"></style>
 	<style oceloti-module="notebook-paper">
+		[oceloti-cursor="pointer"] [oceloti-thing="notebook-paper"] {
+			resize: horizontal;
+			overflow: hidden;
+		}
+		
 		[oceloti-thing="notebook-paper"] {
 			height: fit-content;
 			padding: 8px 12px;
@@ -370,8 +376,6 @@
 			image-rendering: pixelated;
 			line-height: 20px;
 			box-shadow: var(--thing-thickness-1-fast);
-			overflow: hidden;
-			resize: both;
 		}
 		
 		[oceloti-thing="notebook-paper"]::before {
@@ -646,8 +650,8 @@
 			width: 4000px;
 			height: 4000px;
 			background-color: white;
-			background-image: var(--assets-bgs-grid2-png);
-			background-size: 128px;
+			background-image: var(--assets-bgs-wood-png);
+			background-size: 256px;
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
@@ -1215,7 +1219,7 @@
 				exports.register_cursor({
 					name: "Pointer Cursor",
 					slug: "pointer",
-					icon: "指",
+					icon: "👆🏼",
 					description: "Pointer cursor that allows to interact or inspect things."
 				});
 				exports.set_active_cursor("pointer");
@@ -1542,7 +1546,7 @@
 		
 				register_drop_handler({
 					invoking_module: "inventory",
-					dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "Files"],
+					dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "text/html", "Files"],
 					callback: async (e) => {
 						const files = e.dataTransfer.files;
 						const types = e.dataTransfer.types;
@@ -1635,7 +1639,37 @@
 						}
 		
 						for (const type of types) {
-							if (!found_type && (type.includes("url") || type.includes("uri"))) {
+							if (!found_type && type.includes("text/html")) {
+								const html_string = e.dataTransfer.getData("text/html");
+								const parser = new DOMParser();
+								const doc = parser.parseFromString(html_string, 'text/html');
+								const img_element = doc.querySelector('img');
+		
+								if (img_element) {
+									const image_uri = img_element.getAttribute('src');
+									found_type = "image";
+		
+									create_temp_image(image_uri, (tmp_img) => {
+										const width = tmp_img.naturalWidth;
+										const height = tmp_img.naturalHeight;
+										const data = {
+											handler: "image-print",
+											width: width > 400 ? 400 : width,
+											height: width > 400 ? (400 * height) / width : height,
+											state: "default",
+											content: image_uri,
+										};
+										const available_handlers = exports.get_item_handler(data.handler);
+										// @TODO: If no handler available, add to bag and notify.
+										const x = window.scrollX + e.clientX;
+										const y = window.scrollY + e.clientY;
+										van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+									});
+									break;
+								}
+							}
+		
+							if (!found_type && type.includes("url")) {
 								// @FIXME: Handle links and image links
 								const image_type = types.find(t => t.includes("image"));
 								const alt_type = types.find(t => t === "text/plain");
@@ -1723,7 +1757,7 @@
 				register_cursor({
 					name: "Hand Cursor",
 					slug: "hand",
-					icon: "移",
+					icon: "✋🏼",
 					description: "Magic hand that allows you to move things and yourself around."
 				});
 		
@@ -1976,7 +2010,7 @@
 				const THING_NAME = "notebook-paper";
 		
 				register_item_handler({
-					icon: () => "紙",
+					icon: () => "🗒",
 					name: THING_NAME,
 					description: ({ content, state }) => {
 						if (content) return "A piece of paper with text.";
@@ -2340,7 +2374,7 @@
 								const y = window.scrollY + e.clientY;
 								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 							}
-						}, "紙 new paper"),
+						}, "🗒 new paper"),
 					]);
 				});
 			}
@@ -2401,7 +2435,19 @@
 				}
 		
 				function initializer(thing) {
-					
+					thing.addEventListener("mousedown", (e) => {
+						if (e.button !== 2) return;
+						// @TODO: Get click position to know which line to cut and add a menu item to cut there.
+						add_menu("image_actions", [
+							button({ onclick: () => set_wallpaper(thing) }, "🖼 Use as wallpaper"),
+						]);
+					});
+				}
+		
+				function set_wallpaper(thing) {
+					const el = thing.firstElementChild;
+					room.style.backgroundSize = `${el.offsetWidth}px ${el.offsetHeight}px`;
+					room.style.backgroundImage = `url(${el.src})`;
 				}
 			}
 		});

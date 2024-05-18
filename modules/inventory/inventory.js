@@ -197,7 +197,7 @@ register_oceloti_module({
 
 		register_drop_handler({
 			invoking_module: "inventory",
-			dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "Files"],
+			dnd_types: ["oceloti/item", "text/x-moz-url", "text/plain", "text/html", "Files"],
 			callback: async (e) => {
 				const files = e.dataTransfer.files;
 				const types = e.dataTransfer.types;
@@ -290,7 +290,37 @@ register_oceloti_module({
 				}
 
 				for (const type of types) {
-					if (!found_type && (type.includes("url") || type.includes("uri"))) {
+					if (!found_type && type.includes("text/html")) {
+						const html_string = e.dataTransfer.getData("text/html");
+						const parser = new DOMParser();
+						const doc = parser.parseFromString(html_string, 'text/html');
+						const img_element = doc.querySelector('img');
+
+						if (img_element) {
+							const image_uri = img_element.getAttribute('src');
+							found_type = "image";
+
+							create_temp_image(image_uri, (tmp_img) => {
+								const width = tmp_img.naturalWidth;
+								const height = tmp_img.naturalHeight;
+								const data = {
+									handler: "image-print",
+									width: width > 400 ? 400 : width,
+									height: width > 400 ? (400 * height) / width : height,
+									state: "default",
+									content: image_uri,
+								};
+								const available_handlers = exports.get_item_handler(data.handler);
+								// @TODO: If no handler available, add to bag and notify.
+								const x = window.scrollX + e.clientX;
+								const y = window.scrollY + e.clientY;
+								van.add(room, available_handlers[0].renderer({ ...data, x, y }));
+							});
+							break;
+						}
+					}
+
+					if (!found_type && type.includes("url")) {
 						// @FIXME: Handle links and image links
 						const image_type = types.find(t => t.includes("image"));
 						const alt_type = types.find(t => t === "text/plain");

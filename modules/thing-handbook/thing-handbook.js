@@ -26,7 +26,7 @@ register_oceloti_module({
 						const y = window.scrollY + e.clientY;
 						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 					}
-				}, "紙 new paper"),
+				}, "🗒 new paper"),
 			]);
 		});
 	}

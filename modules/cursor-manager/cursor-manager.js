@@ -89,7 +89,7 @@ register_oceloti_module({
 		exports.register_cursor({
 			name: "Pointer Cursor",
 			slug: "pointer",
-			icon: "指",
+			icon: "👆🏼",
 			description: "Pointer cursor that allows to interact or inspect things."
 		});
 		exports.set_active_cursor("pointer");

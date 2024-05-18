@@ -16,7 +16,7 @@ register_oceloti_module({
 		register_cursor({
 			name: "Hand Cursor",
 			slug: "hand",
-			icon: "移",
+			icon: "✋🏼",
 			description: "Magic hand that allows you to move things and yourself around."
 		});
 

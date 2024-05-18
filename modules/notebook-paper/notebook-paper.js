@@ -10,7 +10,7 @@ register_oceloti_module({
 		const THING_NAME = "notebook-paper";
 
 		register_item_handler({
-			icon: () => "紙",
+			icon: () => "🗒",
 			name: THING_NAME,
 			description: ({ content, state }) => {
 				if (content) return "A piece of paper with text.";

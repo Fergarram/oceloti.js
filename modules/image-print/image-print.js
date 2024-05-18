@@ -52,7 +52,19 @@ register_oceloti_module({
 		}
 
 		function initializer(thing) {
-			
+			thing.addEventListener("mousedown", (e) => {
+				if (e.button !== 2) return;
+				// @TODO: Get click position to know which line to cut and add a menu item to cut there.
+				add_menu("image_actions", [
+					button({ onclick: () => set_wallpaper(thing) }, "🖼 Use as wallpaper"),
+				]);
+			});
+		}
+
+		function set_wallpaper(thing) {
+			const el = thing.firstElementChild;
+			room.style.backgroundSize = `${el.offsetWidth}px ${el.offsetHeight}px`;
+			room.style.backgroundImage = `url(${el.src})`;
 		}
 	}
 });
