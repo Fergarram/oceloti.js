@@ -1,6 +1,30 @@
 #module-list-viewer {
-	display: flex;
 	display: none;
 	gap: 0.25rem;
 	flex-direction: column;
+}
+
+[oceloti-dialog="module-installer"] form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 90vw;
+	max-width: 600px;
+}
+
+[oceloti-dialog="module-installer"] h2 {
+	font-size: 16px;
+}
+
+[oceloti-dialog="module-installer"] textarea {
+	padding: 8px;
+	min-height: 200px;
+}
+
+[oceloti-dialog="module-installer"] input {
+	padding: 2px;
+}
+
+[oceloti-dialog="module-installer"] button {
+	width: fit-content;
 }

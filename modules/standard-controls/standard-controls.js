@@ -112,7 +112,11 @@ register_oceloti_module({
 		}
 
 		function handle_wheel(e) {
-			if (are_dialogs_open()) {
+			if (
+				are_dialogs_open() &&
+				e.target.tagName !== "INPUT" &&
+		        e.target.tagName !== "TEXTAREA"
+			) {
 				e.preventDefault();
 				return;
 			}

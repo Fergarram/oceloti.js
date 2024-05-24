@@ -1,72 +1,117 @@
 register_oceloti_module({
 	name: "module-editor",
-	deps: ["inventory", "van", "context-menu"],
-	init({ use_module, room, room_name, next_loop, module_list }) {
+	deps: ["inventory", "van"],
+	init({ get_oceloti, use_module, room, room_name, next_loop, module_list }) {
 		const van = use_module("van");
-		const { add_menu } = use_module("context-menu");
-		const { register_item_handler, get_item_handler } = use_module("inventory");
-		const { article, div, button, span } = van.tags;
-
-		const THING_NAME = "module-editor";
-
-		register_item_handler({
-			icon: () => "部",
-			name: THING_NAME,
-			description: ({ content, state }) => "Module",
-			initializer,
-			encoder,
-			renderer
-		});
-
-		function renderer({ x, y, width, content }) {
-			const html = content && content.includes("oceloti-ref")
-				? content
-				: `<div oceloti-ref="content">${content}</div>`;
-			const el = article({
-				"oceloti-thing": THING_NAME,
-				"oceloti-inner-state": "read",
-				"oceloti-thing-state": "idle",
-				style: `
-					left: ${x - (width / 2)}px;
-					top: ${y - 140}px;
-					width: ${width}px;
-				`
-			},
-				div({ "oceloti-ref": "content" }),
-				div({ class: "decor" })
-			);
-			el.firstElementChild.outerHTML = html;
-			el.firstElementChild.removeAttribute("contenteditable");
-
-			return el;
-		}
-
-		function encoder(thing) {
-			const content = thing.querySelector(`[oceloti-ref="content"]`);
-			return {
-				handler: THING_NAME,
-				state: "default",
-				width: thing.offsetWidth,
-				height: thing.offsetHeight,
-				content: content.outerHTML,
-			};
-		}
-
-		function initializer(thing) {
-
-		}
+		const { get_item_handler } = use_module("inventory");
+		const { div, button, dialog, h2, label, textarea, input, form } = van.tags;
 
 		window.addEventListener("load", () => {
-			window.open_module_editor = () => {
+
+			window.open_module_editor = open_module_editor;
+			window.open_module_installer = open_module_installer;
+
+			const css = `font-weight: bold;`;
+			console.log("Call %copen_module_editor()", css, "in the console to show the UI.");
+
+			function InstallerDialog() {
+				return dialog({
+					"oceloti-dialog": "module-installer",
+					onclose: (e) => e.target.remove(),
+				},
+					form({
+						method: "dialog",
+						onsubmit: handle_submit,
+					},
+						h2("Module installer"),
+						label({
+							for: "module-installer-field-name"
+						},
+							"Module name"
+						),
+						input({
+							required: "true",
+							name: "module",
+							id: "module-installer-field-name"
+						}),
+						label({
+							for: "module-installer-field-styles"
+						},
+							"Styles"
+						),
+						textarea({
+							name: "styles",
+							id: "module-installer-field-styles"
+						}),
+						label({
+							for: "module-installer-field-script"
+						},
+							"Script"
+						),
+						textarea({
+							name: "script",
+							id: "module-installer-field-script"
+						}),
+						button("install and run")
+					),
+				);
+			}
+
+			function handle_submit(e) {
+				e.preventDefault();
+
+				const dialog_el = document.querySelector(`[oceloti-dialog="module-installer"]`);
+				if (!dialog_el) return;
+
+				const form = new FormData(e.target);
+				const fields = {};
+				for (const [key, value] of form.entries()) {
+					fields[key] = value;
+				}
+
+				// @TODO: Check if module exists
+
+				const style_el = document.createElement("style");
+				const script_el = document.createElement("script");
+
+				style_el.setAttribute("oceloti-module", fields["module"]);
+				script_el.setAttribute("oceloti-module", fields["module"]);
+				
+				style_el.innerHTML = fields["styles"];
+				script_el.innerHTML = fields["script"];
+
+				const module_list_el = document.querySelector('meta[name="oceloti-module-list"]');
+				const module_list_string = module_list_el.getAttribute("content");
+				module_list_el.setAttribute("content", module_list_string + "\n\t\t" + fields["module"]);
+
+				const oceloti = get_oceloti();
+				oceloti.module_list.push(fields["module"]);
+				
+				van.add(document.head, style_el);
+				van.add(document.body, script_el);
+
+				toggle_dialog(false);
+			}
+
+			function toggle_dialog(visibility) {
+				const dialog_el = document.querySelector(`[oceloti-dialog="module-installer"]`);
+				if (!dialog_el) return;
+				if (visibility) dialog_el.showModal();
+				else dialog_el.close();
+			}
+
+			function open_module_editor() {
 				const list_el = document.getElementById("module-list-viewer");
 				if (!list_el) return;
 				list_el.style.display = "flex";
-			};
+			}
 
-			const css = `font-weight: bold;`;
-			console.log("Call %copen_module_editor()%c in the console to show the UI.", css);
+			function open_module_installer() {
+				van.add(document.body, InstallerDialog());
+				toggle_dialog(true);
+			}
 
-			const place_code_paper = (content) => {
+			function place_code_paper(content) {
 				const data = {
 					handler: "codepad",
 					width: 300,
@@ -78,11 +123,19 @@ register_oceloti_module({
 				const x = window.scrollX + window.innerWidth / 2;
 				const y = window.scrollY + window.innerHeight / 2;
 				van.add(room, available_handlers[0].renderer({ ...data, x, y }));
-			};
+			}
+
+			const add_module_button = button({
+				style: "margin-bottom: 1rem;",
+				onclick: open_module_installer
+			},
+				"install module"
+			);
 
 			const module_list_viewer = div({
 				id: "module-list-viewer"
 			},
+				add_module_button,
 				module_list.map((mod) => {
 					const script_el = document.querySelector(`script[oceloti-module="${mod}"]`);
 					const code = `${script_el.innerHTML.replaceAll("\n\t\t", "\n").trim()}`;

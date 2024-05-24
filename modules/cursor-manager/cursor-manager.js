@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "cursor-manager",
 	deps: ["van"],
-	init({ use_module, hud }) {
+	init({ use_module, hud, are_dialogs_open }) {
 		const van = use_module("van");
 		const { div } = van.tags;
 		const current_cursor = van.state("");
@@ -67,6 +67,10 @@ register_oceloti_module({
 				} else {
 					return;
 				}
+			}
+
+			if (are_dialogs_open()) {
+				return;
 			}
 
 			if (e.key === "Escape") {

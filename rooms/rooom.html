@@ -27,6 +27,8 @@
 		video-player
 		audio-player
 		module-editor
+		arena-api
+		suna-garden
 	">
 	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAHlBMVEUAAACAgID//////wDAwMAAAAAAgIAAgAAAAP8AAIAiroc5AAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAAHdElNRQfiBhoANyCM1dKOAAAAYElEQVQI12NgFAQCAQYGBkYlZSVlRxADSCs5CUBFQkNBIippKcquIBE3sTInEEM5JSNdGCyS5D5jEkREPGMyWESivRMi4tk51RksohIaouQKNRliDogFYriAAIgRCgYMAMxuFv00I9ZjAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE4LTA2LTI2VDAwOjU1OjMyLTA0OjAwDh6OeQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOC0wNi0yNlQwMDo1NTozMi0wNDowMH9DNsUAAAAASUVORK5CYII=" />
 	<style oceloti-assets="cursors bgs">:root {
@@ -204,6 +206,8 @@
 			transition: filter, transform var(--ease-curve-1) 150ms;
 			filter: drop-shadow(2px 2px);
 			text-decoration: none;
+			user-select: none;
+			-webkit-user-select: none;
 		}
 		
 		.button:hover,
@@ -251,6 +255,7 @@
 		
 		.nugget > p {
 			display: flex;
+			flex-wrap: wrap;
 			padding: 0 0.5rem;
 		}
 		
@@ -612,34 +617,38 @@
 	</style>
 	<style oceloti-module="module-editor">
 		#module-list-viewer {
-			display: flex;
 			display: none;
 			gap: 0.25rem;
 			flex-direction: column;
 		}
-	</style>
-	<style>
-		#entrance {
-			position: relative;
-			width: 100vw;
-			max-width: 1920px;
-			height: auto;
-			display: none;
-/*			display: flex;*/
+		
+		[oceloti-dialog="module-installer"] form {
+			display: flex;
 			flex-direction: column;
-			align-items: center;
-			color: white;
-			gap: 1.5rem;
-			padding-top: 10rem;
-			padding-left: 1rem;
-			padding-right: 1rem;
-			transition: opacity var(--ease-curve-1) 150ms;
-			z-index: 1000;
-			height: 100vh;
-			max-height: 1920px;
-			text-decoration: underline;
+			gap: 1rem;
+			width: 90vw;
+			max-width: 600px;
+		}
+		
+		[oceloti-dialog="module-installer"] h2 {
+			font-size: 16px;
+		}
+		
+		[oceloti-dialog="module-installer"] textarea {
+			padding: 8px;
+			min-height: 200px;
+		}
+		
+		[oceloti-dialog="module-installer"] input {
+			padding: 2px;
+		}
+		
+		[oceloti-dialog="module-installer"] button {
+			width: fit-content;
 		}
 	</style>
+	<style oceloti-module="arena-api"></style>
+	<style oceloti-module="suna-garden"></style>
 </head>
 <body>
 	<div id="hud">
@@ -655,7 +664,20 @@
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
-		<section id="entrance"></section>
+		<section
+			id="entrance"
+			style="
+				display: none;
+				position: relative;
+				width: 100vw;
+				max-width: 1920px;
+				height: auto;
+				z-index: 1000;
+				height: 100vh;
+				max-height: 1920px;
+			"
+		>
+		</section>
 	</main>
 </body>
 	<script oceloti-assets=""></script>
@@ -697,6 +719,10 @@
 			oceloti.utils.next_loop = function() {
 				return new Promise((resolve) => setTimeout(resolve, 0));
 			};
+		
+			oceloti.utils.get_oceloti = function() {
+				return oceloti;
+			}
 		
 			window.register_oceloti_module = function({ name, deps, init }) {
 				if (!oceloti || !oceloti.room || !oceloti.hud || !oceloti.room_name) {
@@ -853,7 +879,11 @@
 				}
 		
 				function handle_wheel(e) {
-					if (are_dialogs_open()) {
+					if (
+						are_dialogs_open() &&
+						e.target.tagName !== "INPUT" &&
+				        e.target.tagName !== "TEXTAREA"
+					) {
 						e.preventDefault();
 						return;
 					}
@@ -1131,7 +1161,7 @@
 		register_oceloti_module({
 			name: "cursor-manager",
 			deps: ["van"],
-			init({ use_module, hud }) {
+			init({ use_module, hud, are_dialogs_open }) {
 				const van = use_module("van");
 				const { div } = van.tags;
 				const current_cursor = van.state("");
@@ -1197,6 +1227,10 @@
 						} else {
 							return;
 						}
+					}
+		
+					if (are_dialogs_open()) {
+						return;
 					}
 		
 					if (e.key === "Escape") {
@@ -1375,7 +1409,7 @@
 							thing.addEventListener("mousedown", (e) => {
 								if (e.button !== 2) return;
 								add_menu("inventory_actions", [
-									button({
+									Object.keys(exports.bags).length > 0 ? button({
 										onclick: () => {
 											const handler = thing.getAttribute("oceloti-thing");
 											
@@ -1392,7 +1426,7 @@
 										}
 									},
 										"🎒 Put away"
-									),
+									) : "",
 									button({
 										onclick: () => {
 											const copy = thing.cloneNode(true);
@@ -2581,73 +2615,118 @@
 	<script oceloti-module="module-editor">
 		register_oceloti_module({
 			name: "module-editor",
-			deps: ["inventory", "van", "context-menu"],
-			init({ use_module, room, room_name, next_loop, module_list }) {
+			deps: ["inventory", "van"],
+			init({ get_oceloti, use_module, room, room_name, next_loop, module_list }) {
 				const van = use_module("van");
-				const { add_menu } = use_module("context-menu");
-				const { register_item_handler, get_item_handler } = use_module("inventory");
-				const { article, div, button, span } = van.tags;
-		
-				const THING_NAME = "module-editor";
-		
-				register_item_handler({
-					icon: () => "部",
-					name: THING_NAME,
-					description: ({ content, state }) => "Module",
-					initializer,
-					encoder,
-					renderer
-				});
-		
-				function renderer({ x, y, width, content }) {
-					const html = content && content.includes("oceloti-ref")
-						? content
-						: `<div oceloti-ref="content">${content}</div>`;
-					const el = article({
-						"oceloti-thing": THING_NAME,
-						"oceloti-inner-state": "read",
-						"oceloti-thing-state": "idle",
-						style: `
-							left: ${x - (width / 2)}px;
-							top: ${y - 140}px;
-							width: ${width}px;
-						`
-					},
-						div({ "oceloti-ref": "content" }),
-						div({ class: "decor" })
-					);
-					el.firstElementChild.outerHTML = html;
-					el.firstElementChild.removeAttribute("contenteditable");
-		
-					return el;
-				}
-		
-				function encoder(thing) {
-					const content = thing.querySelector(`[oceloti-ref="content"]`);
-					return {
-						handler: THING_NAME,
-						state: "default",
-						width: thing.offsetWidth,
-						height: thing.offsetHeight,
-						content: content.outerHTML,
-					};
-				}
-		
-				function initializer(thing) {
-		
-				}
+				const { get_item_handler } = use_module("inventory");
+				const { div, button, dialog, h2, label, textarea, input, form } = van.tags;
 		
 				window.addEventListener("load", () => {
-					window.open_module_editor = () => {
+		
+					window.open_module_editor = open_module_editor;
+					window.open_module_installer = open_module_installer;
+		
+					const css = `font-weight: bold;`;
+					console.log("Call %copen_module_editor()", css, "in the console to show the UI.");
+		
+					function InstallerDialog() {
+						return dialog({
+							"oceloti-dialog": "module-installer",
+							onclose: (e) => e.target.remove(),
+						},
+							form({
+								method: "dialog",
+								onsubmit: handle_submit,
+							},
+								h2("Module installer"),
+								label({
+									for: "module-installer-field-name"
+								},
+									"Module name"
+								),
+								input({
+									required: "true",
+									name: "module",
+									id: "module-installer-field-name"
+								}),
+								label({
+									for: "module-installer-field-styles"
+								},
+									"Styles"
+								),
+								textarea({
+									name: "styles",
+									id: "module-installer-field-styles"
+								}),
+								label({
+									for: "module-installer-field-script"
+								},
+									"Script"
+								),
+								textarea({
+									name: "script",
+									id: "module-installer-field-script"
+								}),
+								button("install and run")
+							),
+						);
+					}
+		
+					function handle_submit(e) {
+						e.preventDefault();
+		
+						const dialog_el = document.querySelector(`[oceloti-dialog="module-installer"]`);
+						if (!dialog_el) return;
+		
+						const form = new FormData(e.target);
+						const fields = {};
+						for (const [key, value] of form.entries()) {
+							fields[key] = value;
+						}
+		
+						// @TODO: Check if module exists
+		
+						const style_el = document.createElement("style");
+						const script_el = document.createElement("script");
+		
+						style_el.setAttribute("oceloti-module", fields["module"]);
+						script_el.setAttribute("oceloti-module", fields["module"]);
+						
+						style_el.innerHTML = fields["styles"];
+						script_el.innerHTML = fields["script"];
+		
+						const module_list_el = document.querySelector('meta[name="oceloti-module-list"]');
+						const module_list_string = module_list_el.getAttribute("content");
+						module_list_el.setAttribute("content", module_list_string + "\n\t\t" + fields["module"]);
+		
+						const oceloti = get_oceloti();
+						oceloti.module_list.push(fields["module"]);
+						
+						van.add(document.head, style_el);
+						van.add(document.body, script_el);
+		
+						toggle_dialog(false);
+					}
+		
+					function toggle_dialog(visibility) {
+						const dialog_el = document.querySelector(`[oceloti-dialog="module-installer"]`);
+						if (!dialog_el) return;
+						if (visibility) dialog_el.showModal();
+						else dialog_el.close();
+					}
+		
+					function open_module_editor() {
 						const list_el = document.getElementById("module-list-viewer");
 						if (!list_el) return;
 						list_el.style.display = "flex";
-					};
+					}
 		
-					const css = `font-weight: bold;`;
-					console.log("Call %copen_module_editor()%c in the console to show the UI.", css);
+					function open_module_installer() {
+						van.add(document.body, InstallerDialog());
+						toggle_dialog(true);
+					}
 		
-					const place_code_paper = (content) => {
+					function place_code_paper(content) {
 						const data = {
 							handler: "codepad",
 							width: 300,
@@ -2659,11 +2738,19 @@
 						const x = window.scrollX + window.innerWidth / 2;
 						const y = window.scrollY + window.innerHeight / 2;
 						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
-					};
+					}
+		
+					const add_module_button = button({
+						style: "margin-bottom: 1rem;",
+						onclick: open_module_installer
+					},
+						"install module"
+					);
 		
 					const module_list_viewer = div({
 						id: "module-list-viewer"
 					},
+						add_module_button,
 						module_list.map((mod) => {
 							const script_el = document.querySelector(`script[oceloti-module="${mod}"]`);
 							const code = `${script_el.innerHTML.replaceAll("\n\t\t", "\n").trim()}`;
@@ -2673,6 +2760,311 @@
 		
 					van.add(hud, module_list_viewer);
 				});
+			}
+		});
+	</script>
+	<script oceloti-module="arena-api">
+		register_oceloti_module({
+			name: "arena-api",
+			deps: [],
+			init() {
+				const exports = {
+					user: null,
+					get_user() {
+						return exports.user;
+					},
+					async sign_out() {
+						localStorage.removeItem("ARENA_USER");
+						localStorage.removeItem("ARENA_TOKEN");
+						document.cookie = "arenaAuthToken=; path=/; Secure; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0";
+						exports.user = null;
+					},
+					async sign_in(token) {
+						if (!token) {
+							console.error("Can't sign in without token.");
+							return {
+								status: "error",
+								message: "Can't sign in without token."
+							};
+						}
+		
+						try {
+							const user = await exports.query({
+								endpoint: "/me",
+								token
+							});
+							exports.user = user;
+							document.cookie = `arenaAuthToken=${token}; path=/; Secure; max-age=2628000`;
+							localStorage.setItem("ARENA_TOKEN", token);
+							localStorage.setItem("ARENA_USER", JSON.stringify(user));
+		
+							return {
+								status: "success",
+								message: `Hello ${user.full_name}.`,
+								user
+							}
+						} catch(e) {
+							console.error("Failed to sign in with token:", token);
+							return {
+								status: "error",
+								message: "Bad token. Use a different token or generate again."
+							};
+						}
+					},
+					async query({
+						endpoint,
+						token,
+						params = "",
+						body = {}
+					}) {
+						const local_token = localStorage.getItem("ARENA_TOKEN");
+		
+						const BASE_URL = 'https://api.are.na/v2';
+		
+						const headers = { "Content-Type": "application/json" }
+		
+						if (token || local_token) {
+							headers["Authorization"] = `Bearer ${token || local_token}`
+						}
+		
+						const response = await fetch(`${BASE_URL}${endpoint}${params}`, {
+							method: "GET",
+							headers
+						});
+		
+						if (!response.ok)
+							throw new Error('Network response was not ok');
+		
+						return response.json();
+					}
+				};
+		
+				const ls_user_data = localStorage.getItem("ARENA_USER");
+				const ls_token = localStorage.getItem("ARENA_TOKEN");
+		
+				if (ls_user_data !== null && ls_token !== null) {
+					try {
+						exports.user = JSON.parse(ls_user_data);
+					} catch(e) {
+						console.warn("localStorage arena user data is in bad shape", ls_user_data);
+						localStorage.removeItem("ARENA_USER");
+						localStorage.removeItem("ARENA_TOKEN");
+					}
+				}
+		
+				return exports;
+			}
+		});
+	</script>
+	<script oceloti-module="suna-garden">
+		register_oceloti_module({
+			name: "suna-garden",
+			deps: ["van", "arena-api"],
+			init({ use_module, room, hud }) {
+				const van = use_module("van");
+				const { sign_in, sign_out, get_user } = use_module("arena-api");
+				const { dialog, form, fieldset, input, p, div, span, a, button, img, h2 } = van.tags;
+		
+				const is_authed = van.state(get_user() ? true : false);
+		
+				function LoginForm() {
+					return div({
+						style: `
+							display: flex;
+							flex-direction: column;
+							gap: 1rem;
+							width: 90vw;
+							max-width: 500px;
+						`
+					},
+						form({
+							method: "dialog",
+							onsubmit: handle_submit,
+						},
+							p({
+								style: "margin-bottom: 1rem;",
+							},
+								"Sign In to use Are.na blocks."
+							),
+							fieldset({
+								style: `
+									display: flex;
+									gap: 0.5rem;
+								`
+							},
+								input({
+									"name": "token",
+									"type": "text",
+									"required": "true",
+									"style": "width: 100%;",
+									"autocomplete": "off",
+									// @TODO: Fix this absurd bug... wtf.
+									onclick: (e) => e.target.focus()
+								}),
+								button({
+									style: `
+										width: fit-content;
+										white-space: nowrap;
+									`,
+									"type": "submit"
+								},
+									"add token"
+								)
+							)
+						),
+						div({
+							"oceloti-dialog-messages": ""
+						},
+							div({
+								class: "nugget"
+							},
+								p(
+									span({ style: "margin-right: 8px;" }, "To get your token visit: "),
+									a({
+										target: "_blank",
+										href: "https://arena-token-gen.vercel.app/"
+									},
+										"arena-token-gen.vercel.app"
+									)
+								),
+							)
+						)
+					);
+				}
+		
+				function ArenaDialog() {
+					return dialog({
+						"oceloti-dialog": "arena-token",
+						onclose: (e) => e.target.remove(),
+						style: `
+							display: flex;
+							flex-direction: column;
+							gap: 1rem;
+						`,
+					},
+						() => is_authed.val ? AccountPanel() : LoginForm()
+					);
+				}
+		
+				function AccountPanel() {
+					return div({
+						style: `
+							display: flex;
+							flex-direction: column;
+							gap: 20px;
+							width: 90vw;
+							max-width: 256px;
+						`	
+					},
+						img({
+							style: `
+								max-width: 100%;
+								width: 100%;
+								height: auto;
+								border-radius: 8px;
+							`,
+							src: get_user().avatar_image.display,
+							alt: "arena profile photo"
+						}),
+						div({
+							style: `
+								display: flex;
+								align-items: center;
+								justify-content: space-between;
+							`
+						},
+							h2({ style: `font-size: 16px` }, get_user().full_name),
+							p(`[${get_user().badge}]`)
+						),
+						div({
+							style: `
+								display: grid;
+								grid-template-columns: 1fr 1fr;
+								align-items: center;
+								gap: 8px;
+							`
+						},
+							button({
+								style: "justify-content: center;",
+								onclick: () => toggle_dialog(false)
+							},
+								"close"
+							),
+							button({
+								style: "justify-content: center; background-color: #ff9191",
+								onclick: () => {
+									is_authed.val = false;
+									sign_out();
+									toggle_dialog(false);
+								}
+							},
+								"log out"
+							),
+						),
+					);
+				}
+		
+				function toggle_dialog(visibility) {
+					const dialog_el = document.querySelector(`[oceloti-dialog="arena-token"]`);
+					if (!dialog_el) return;
+					if (visibility) dialog_el.showModal();
+					else dialog_el.close();
+				}
+		
+				async function handle_submit(e) {
+					e.preventDefault();
+					const dialog_el = document.querySelector(`[oceloti-dialog="arena-token"]`);
+					if (!dialog_el) return;
+		
+					const form = new FormData(e.target);
+					const fields = {};
+					for (const [key, value] of form.entries()) {
+						fields[key] = value;
+					}
+					
+					const res = await sign_in(fields.token);
+		
+					const messages_el = dialog_el.querySelector("[oceloti-dialog-messages]");
+		
+					messages_el.innerHTML = "";
+					
+					if (res.status === "error") {
+						van.add(messages_el, div({
+							"class": "nugget nugget-error"
+						}, 
+							p(res.message)
+						));
+						return;
+					}
+		
+					if (res.status === "success") {
+						is_authed.val = true;
+						van.add(messages_el, div({ 
+							"class": "nugget nugget-success"
+						},
+							p(res.message),
+							button({ onclick: () => toggle_dialog(false)}, 
+								"Close"
+							)
+						));
+					}
+				}
+		
+				van.add(hud, button({
+					style: `
+						position: fixed;
+						right: 12px;
+						top: 12px;
+						background: black;
+						color: white;
+					`,
+					onclick: () => {
+						van.add(document.body, ArenaDialog());
+						toggle_dialog(true);
+					}
+				},
+					() => is_authed.val ? get_user().full_name : "** sign in"
+				));
 			}
 		});
 	</script>

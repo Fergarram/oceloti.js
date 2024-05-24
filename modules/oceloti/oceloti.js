@@ -36,6 +36,10 @@
 		return new Promise((resolve) => setTimeout(resolve, 0));
 	};
 
+	oceloti.utils.get_oceloti = function() {
+		return oceloti;
+	}
+
 	window.register_oceloti_module = function({ name, deps, init }) {
 		if (!oceloti || !oceloti.room || !oceloti.hud || !oceloti.room_name) {
 			throw new Error("Oceloti was not setup correctly:", oceloti);

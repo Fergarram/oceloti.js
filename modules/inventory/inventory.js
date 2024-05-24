@@ -26,7 +26,7 @@ register_oceloti_module({
 					thing.addEventListener("mousedown", (e) => {
 						if (e.button !== 2) return;
 						add_menu("inventory_actions", [
-							button({
+							Object.keys(exports.bags).length > 0 ? button({
 								onclick: () => {
 									const handler = thing.getAttribute("oceloti-thing");
 									
@@ -43,7 +43,7 @@ register_oceloti_module({
 								}
 							},
 								"🎒 Put away"
-							),
+							) : "",
 							button({
 								onclick: () => {
 									const copy = thing.cloneNode(true);

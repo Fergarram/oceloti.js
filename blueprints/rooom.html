@@ -27,6 +27,8 @@
 		video-player
 		audio-player
 		module-editor
+		arena-api
+		suna-garden
 	">
 	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAHlBMVEUAAACAgID//////wDAwMAAAAAAgIAAgAAAAP8AAIAiroc5AAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAAHdElNRQfiBhoANyCM1dKOAAAAYElEQVQI12NgFAQCAQYGBkYlZSVlRxADSCs5CUBFQkNBIippKcquIBE3sTInEEM5JSNdGCyS5D5jEkREPGMyWESivRMi4tk51RksohIaouQKNRliDogFYriAAIgRCgYMAMxuFv00I9ZjAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE4LTA2LTI2VDAwOjU1OjMyLTA0OjAwDh6OeQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOC0wNi0yNlQwMDo1NTozMi0wNDowMH9DNsUAAAAASUVORK5CYII=" />
 	<style oceloti-assets="cursors bgs">/* STATIC ASSETS */</style>
@@ -50,28 +52,8 @@
 	<style oceloti-module="video-player"></style>
 	<style oceloti-module="audio-player"></style>
 	<style oceloti-module="module-editor"></style>
-	<style>
-		#entrance {
-			position: relative;
-			width: 100vw;
-			max-width: 1920px;
-			height: auto;
-			display: none;
-/*			display: flex;*/
-			flex-direction: column;
-			align-items: center;
-			color: white;
-			gap: 1.5rem;
-			padding-top: 10rem;
-			padding-left: 1rem;
-			padding-right: 1rem;
-			transition: opacity var(--ease-curve-1) 150ms;
-			z-index: 1000;
-			height: 100vh;
-			max-height: 1920px;
-			text-decoration: underline;
-		}
-	</style>
+	<style oceloti-module="arena-api"></style>
+	<style oceloti-module="suna-garden"></style>
 </head>
 <body>
 	<div id="hud">
@@ -87,7 +69,20 @@
 			image-rendering: pixelated;
 	">
 		<div id="center" aria-hidden="true" oceloti-area="center"></div>
-		<section id="entrance"></section>
+		<section
+			id="entrance"
+			style="
+				display: none;
+				position: relative;
+				width: 100vw;
+				max-width: 1920px;
+				height: auto;
+				z-index: 1000;
+				height: 100vh;
+				max-height: 1920px;
+			"
+		>
+		</section>
 	</main>
 </body>
 	<script oceloti-assets=""></script>
@@ -111,4 +106,6 @@
 	<script oceloti-module="video-player"></script>
 	<script oceloti-module="audio-player"></script>
 	<script oceloti-module="module-editor"></script>
+	<script oceloti-module="arena-api"></script>
+	<script oceloti-module="suna-garden"></script>
 </html>
