@@ -23,8 +23,8 @@ register_oceloti_module({
 		function renderer({ x, y, width, content }) {
 			const el = article({
 				"oceloti-thing": THING_NAME,
-				"oceloti-inner-state": "read",
-				"oceloti-thing-state": "idle",
+				"oceloti-state": "read",
+				"oceloti-motion": "idle",
 				style: `
 					left: ${x - (width / 2)}px;
 					top: ${y - 140}px;

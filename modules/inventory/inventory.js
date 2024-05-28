@@ -5,7 +5,7 @@ register_oceloti_module({
 		const van = use_module("van");
 		const { add_menu } = use_module("context-menu");
 		const { register_drop_handler } = use_module("dnd-manager");
-		const { add_thing_to_room, register_thing_initializer } = use_module("thing-manager");
+		const { register_thing_initializer } = use_module("thing-manager");
 		const { button } = van.tags;
 
 		const exports = {
@@ -29,7 +29,7 @@ register_oceloti_module({
 							Object.keys(exports.bags).length > 0 ? button({
 								onclick: () => {
 									const handler = thing.getAttribute("oceloti-thing");
-									
+
 									const compatible_handlers = exports.item_handlers.filter(h => h.name === handler);
 									if (compatible_handlers.length === 0) {
 										throw new Error(`Could not find registered handlers for "${handler}" but there should have been at least one.`);

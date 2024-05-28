@@ -131,8 +131,8 @@ register_oceloti_module({
 
 			return div({
 				"oceloti-thing": THING_NAME,
-				"oceloti-inner-state": "default",
-				"oceloti-thing-state": "idle",
+				"oceloti-state": "default",
+				"oceloti-motion": "idle",
 				style: `
 					left: ${x - 200}px;
 					top: ${y - 140}px;

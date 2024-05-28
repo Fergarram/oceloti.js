@@ -23,8 +23,8 @@ register_oceloti_module({
 		function renderer({ x, y, width, height, content }) {
 			return div({
 				"oceloti-thing": THING_NAME,
-				"oceloti-inner-state": "default",
-				"oceloti-thing-state": "idle",
+				"oceloti-state": "default",
+				"oceloti-motion": "idle",
 				style: `
 					left: ${x - (width / 2)}px;
 					top: ${y - 140}px;
@@ -55,7 +55,7 @@ register_oceloti_module({
 		}
 
 		function initializer(thing) {
-			
+
 		}
 	}
 });

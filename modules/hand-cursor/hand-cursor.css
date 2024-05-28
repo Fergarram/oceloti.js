@@ -1,5 +1,5 @@
-body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"],
-body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-thing-state="idle"] * {
+body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-motion="idle"],
+body:not(.is-dragging)[oceloti-cursor="hand"] [oceloti-motion="idle"] * {
 	cursor: var(--assets-cursors-grab-svg) 10 10, grab !important;
 }
 

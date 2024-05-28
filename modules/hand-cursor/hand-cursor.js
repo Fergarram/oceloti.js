@@ -37,7 +37,7 @@ register_oceloti_module({
 		on_place(async (thing, first_mount = false) => {
 			if (!first_mount) {
 			    await next_loop();
-		    	thing.setAttribute("oceloti-thing-state", "idle");
+		    	thing.setAttribute("oceloti-motion", "idle");
 			    thing.style.removeProperty("will-change");
 			    thing.style.removeProperty("pointer-events");
 			}
@@ -52,16 +52,16 @@ register_oceloti_module({
 			    const target = e.target;
 			    const is_contenteditable = target.isContentEditable || target.closest('[contenteditable="true"]');
 			    if (
-			        thing.getAttribute("oceloti-thing-state") !== "idle" ||
+			        thing.getAttribute("oceloti-motion") !== "idle" ||
 			        target.tagName === "A" ||
 			        target.tagName === "BUTTON" ||
 			        target.tagName === "INPUT" ||
 			        target.tagName === "TEXTAREA" ||
 			        is_contenteditable ||
 			        (
-			        	target.tagName === "IMG" && 
+			        	target.tagName === "IMG" &&
 			        	target.getAttribute("draggable") !== "false"
-			        ) 
+			        )
 			    ) {
 			    	// @NOTE: This seems to work. It used to just return.
 			    	// I need to test in other browsers.
@@ -125,7 +125,7 @@ register_oceloti_module({
 	    	// @STEP: Get computed transform scale
 
 		    if (dragged_thing && !e.shiftKey) {
-		    	dragged_thing.setAttribute("oceloti-thing-state", "elevated");
+		    	dragged_thing.setAttribute("oceloti-motion", "elevated");
 		    	dragged_thing.parentElement.style.transform = `translate(${dragging_x}px, ${dragging_y}px)`;
 		    } else if (dragged_thing && e.shiftKey) {
 		    	dragged_thing.style.left = `${dragging_x}px`;

@@ -10,23 +10,25 @@ register_oceloti_module({
 		room.addEventListener("mousedown", (e) => {
 			if (e.button !== 2) return;
 			if (e.target !== room) return;
+
+			const data = {
+				handler: "notebook-paper",
+				width: 300,
+				height: 400,
+				state: "write",
+				content: "",
+			};
+			const available_handlers = get_item_handler(data.handler);
+
 			// @STEP: This is unfinished, it's hardcoded.
 			add_menu("handbook", [
 				button({
 					onclick() {
-						const data = {
-							handler: "notebook-paper",
-							width: 300,
-							height: 400,
-							state: "read",
-							content: "",
-						};
-						const available_handlers = get_item_handler(data.handler);
 						const x = window.scrollX + e.clientX;
 						const y = window.scrollY + e.clientY;
 						van.add(room, available_handlers[0].renderer({ ...data, x, y }));
 					}
-				}, "🗒 new paper"),
+				}, `${available_handlers[0].icon()} new paper`),
 			]);
 		});
 	}

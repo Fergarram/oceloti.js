@@ -1,12 +1,12 @@
 register_oceloti_module({
 	name: "thing-manager",
 	deps: [],
-	init({ use_module, room, room_name, hud, next_loop }) {
+	init({ room, next_loop }) {
 		const exports = {
 			thing_initializers: {},
 			place_callbacks: [],
-			register_thing_initializer(thing_type, initializer) {
-				exports.thing_initializers[thing_type] = initializer;
+			register_thing_initializer(thing_name, initializer) {
+				exports.thing_initializers[thing_name] = initializer;
 			},
 			on_place(callback) {
 				exports.place_callbacks.push(callback);
@@ -22,7 +22,7 @@ register_oceloti_module({
 					exports.thing_initializers[thing_name](thing);
 				}
 
-				
+
 				if (!first_mount) {
 					await next_loop();
 					// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
@@ -40,7 +40,8 @@ register_oceloti_module({
 					if (mutation.addedNodes.length > 0) {
 						mutation.addedNodes.forEach((node) => {
 							if (
-								node.getAttribute("oceloti-thing-state") !== "elevated" &&
+								node.nodeType === 1 &&
+								node.getAttribute("oceloti-motion") !== "elevated" &&
 								node.hasAttribute("oceloti-thing")
 							) {
 								exports.place_thing(node);
@@ -51,7 +52,8 @@ register_oceloti_module({
 					if (mutation.removedNodes.length > 0) {
 						mutation.removedNodes.forEach((node) => {
 							if (
-								node.getAttribute("oceloti-thing-state") !== "elevated" &&
+								node.nodeType === 1 &&
+								node.getAttribute("oceloti-motion") !== "elevated" &&
 								node.hasAttribute("oceloti-thing")
 							) {
 								exports.lift_thing(node);
