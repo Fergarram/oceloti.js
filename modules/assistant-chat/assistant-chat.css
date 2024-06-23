@@ -1,0 +1,126 @@
+[oceloti-cursor="pointer"] [oceloti-thing="assistant-chat"] {
+	resize: both;
+	overflow: hidden;
+}
+
+[oceloti-thing="assistant-chat"] {
+	display: flex;
+	flex-direction: column;
+	height: fit-content;
+	background-color: #f9f7ee;
+	line-height: 20px;
+	box-shadow: var(--thing-thickness-1-fast);
+	container-type: inline-size;
+  	container-name: chat-container;
+}
+
+[oceloti-thing="assistant-chat"] header {
+	display: flex;
+	padding: 14px;
+	justify-content: space-between;
+	position: sticky;
+	top: 0;
+	background: #f9f7ee;
+	z-index: 1;
+	border-bottom: 1px solid #00000020;
+}
+
+[oceloti-thing="assistant-chat"] header .title {
+	width: 100%;
+	background: transparent;
+	padding: 0;
+	border: none;
+	font-size: 1rem;
+}
+
+[oceloti-thing="assistant-chat"] header .title:focus {
+	outline: none;
+}
+
+[oceloti-thing="assistant-chat"] footer {
+	border-top: 1px solid #00000020;
+	padding: 14px;
+	position: relative;
+	display: flex;
+	gap: 14px;
+}
+
+[oceloti-thing="assistant-chat"] .new-message {
+	width: 100%;
+}
+
+[oceloti-thing="assistant-chat"] .new-message::before {
+	content: "New message:";
+	display: block;
+	font-style: italic;
+	opacity: 0.25;
+	pointer-events: none;
+	position: absolute;
+}
+
+[oceloti-thing="assistant-chat"] .textarea {
+	flex-grow: 2;
+	border: none;
+	border-radius: 0;
+	font-size: 1rem;
+	padding-top: 24px;
+	background: transparent;
+	min-height: 40px;
+	height: fit-content;
+	word-break: break-word;
+}
+
+[oceloti-thing="assistant-chat"] .textarea:focus {
+	outline: none;
+}
+
+[oceloti-thing="assistant-chat"] .chat {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 2;
+	overflow: scroll;
+}
+
+[oceloti-thing="assistant-chat"] .chat .convo {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 14px;
+}
+
+[oceloti-thing="assistant-chat"] .chat .convo:not(:first-child) {
+	border-top: 1px solid #00000020;
+}
+
+[oceloti-thing="assistant-chat"] .chat .convo:hover {
+	background-color: #e7f3f4;
+	cursor: context-menu;
+}
+
+[oceloti-thing="assistant-chat"] .chat .you::before {
+	content: "You:";
+	display: block;
+	font-weight: bold;
+	opacity: 0.25;
+}
+
+[oceloti-thing="assistant-chat"] .you,
+[oceloti-thing="assistant-chat"] .them{
+	white-space: pre-wrap;
+}
+
+[oceloti-thing="assistant-chat"] .chat .them::before {
+	content: "Assistant:";
+	display: block;
+	font-weight: bold;
+}
+
+@container chat-container (min-width: 768px) {
+	[oceloti-thing="assistant-chat"] .chat .convo {
+		flex-direction: row;
+	}
+	[oceloti-thing="assistant-chat"] .you,
+	[oceloti-thing="assistant-chat"] .them{
+		width: 50%;
+	}
+}

@@ -98,6 +98,7 @@ register_oceloti_module({
 						document.body.classList.toggle("is-scrolling");
 					}
 					is_scrolling = true;
+
 					clearTimeout(scrolling_timeout);
 		            scrolling_timeout = setTimeout(() => {
 						document.body.classList.toggle("is-scrolling");
@@ -112,6 +113,21 @@ register_oceloti_module({
 		}
 
 		function handle_wheel(e) {
+			// if (!e.ctrlKey) {
+			// 	e.preventDefault();
+			// 	const dx = e.deltaX;
+			// 	const dy = e.deltaY;
+
+			// 	const top = window.scrollY + dy;
+			// 	const left = window.scrollX + dx;
+
+			// 	window.scroll({
+			// 		top,
+			// 		left,
+			// 		behavior: "instant"
+			// 	});
+			// }
+
 			if (
 				are_dialogs_open() &&
 				e.target.tagName !== "INPUT" &&
@@ -120,8 +136,6 @@ register_oceloti_module({
 				e.preventDefault();
 				return;
 			}
-
-			if (!e.ctrlKey) return;
 		}
 	}
 });

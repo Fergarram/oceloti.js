@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "hand-cursor",
 	deps: [ "thing-manager", "cursor-manager" ],
-	init({ room, room_name, next_loop, use_module }) {
+	init({ room, next_loop, use_module }) {
 		let last_mouse_x = 0;
 		let last_mouse_y = 0;
 		let delta_x = 0;
@@ -10,7 +10,7 @@ register_oceloti_module({
 		let dragging_x = 0;
 		let dragging_y = 0;
 
-		const { register_cursor, set_active_cursor, is_cursor_active } = use_module("cursor-manager");
+		const { register_cursor, is_cursor_active } = use_module("cursor-manager");
 		const { on_place, place_thing } = use_module("thing-manager");
 
 		register_cursor({
@@ -122,7 +122,6 @@ register_oceloti_module({
 
 		    dragging_x = dragging_x - delta_x;
 	    	dragging_y = dragging_y - delta_y;
-	    	// @STEP: Get computed transform scale
 
 		    if (dragged_thing && !e.shiftKey) {
 		    	dragged_thing.setAttribute("oceloti-motion", "elevated");

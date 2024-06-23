@@ -1,0 +1,16 @@
+[oceloti-thing="graph"] input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+}
+
+[oceloti-thing="graph"] input:focus {
+	border: 1px solid #000000;
+	padding: 2px;
+	background: white;
+	outline: none;
+	opacity: 1;
+}

@@ -12,6 +12,7 @@ register_oceloti_module({
 				exports.place_callbacks.push(callback);
 			},
 			async place_thing(thing, first_mount = false) {
+				console.log("placed")
 				exports.place_callbacks.forEach(c => c(thing, first_mount));
 
 				const thing_name = thing.getAttribute("oceloti-thing");
@@ -29,6 +30,7 @@ register_oceloti_module({
 				}
 			},
 			async lift_thing(thing) {
+				console.log("lifted")
 				await next_loop();
 				// localStorage.setItem(`OCELOTI_ROOM_SNAPSHOT_${room_name}`, room.innerHTML);
 			}
