@@ -1,7 +1,7 @@
 {
 	const room = document.querySelector("[oceloti-room]");
 	if (!room) throw new Error("Oceloti will not work. Room element is missing.");
-	
+
 	const room_name = room.getAttribute("oceloti-room");
 	if (!room_name) throw new Error("Room requires a name.");
 
@@ -64,6 +64,8 @@
 				return;
 			}
 		});
+
+		// @NOTE: We could remove the module_list meta tag and just call init after the document has finishined loading using load event.
 
 		oceloti.active_modules[name] = init({
 			...oceloti.utils,

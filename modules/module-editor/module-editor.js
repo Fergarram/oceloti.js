@@ -1,7 +1,7 @@
 register_oceloti_module({
 	name: "module-editor",
 	deps: ["inventory", "van"],
-	init({ get_oceloti, use_module, room, room_name, next_loop, module_list }) {
+	init({ get_oceloti, use_module, room, module_list }) {
 		const van = use_module("van");
 		const { get_item_handler } = use_module("inventory");
 		const { div, button, dialog, h2, label, textarea, input, form } = van.tags;
@@ -76,7 +76,7 @@ register_oceloti_module({
 
 				style_el.setAttribute("oceloti-module", fields["module"]);
 				script_el.setAttribute("oceloti-module", fields["module"]);
-				
+
 				style_el.innerHTML = fields["styles"];
 				script_el.innerHTML = fields["script"];
 
@@ -86,7 +86,7 @@ register_oceloti_module({
 
 				const oceloti = get_oceloti();
 				oceloti.module_list.push(fields["module"]);
-				
+
 				van.add(document.head, style_el);
 				van.add(document.body, script_el);
 
@@ -113,10 +113,10 @@ register_oceloti_module({
 
 			function place_code_paper(content) {
 				const data = {
-					handler: "codepad",
-					width: 300,
-					height: 400,
-					state: "read",
+					handler: "monaco-editor",
+					width: 600,
+					height: 800,
+					state: "default",
 					content,
 				};
 				const available_handlers = get_item_handler(data.handler);
